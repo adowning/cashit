@@ -1,0 +1,7 @@
+export * from './auth.interface'
+export * from './deposit'
+// export * from './game'
+export * from './prisma'
+export * from './routes'
+export * from './tournament'
+export * from './vip'

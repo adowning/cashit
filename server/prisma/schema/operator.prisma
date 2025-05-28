@@ -1,0 +1,111 @@
+enum PaymentMethod {
+  INSTORE_CASH
+  INSTORE_CARD
+  CASH_APP
+}
+
+enum Role {
+  USER
+  ADMIN
+  VIP
+  MODERATOR
+  SYSTEM
+  OWNER
+  MEMBER
+  OPERATOR
+  SUPPORT_AGENT // Added based on schema.zmodel.txt, not explicitly in seed but good to keep
+}
+
+enum KeyMode {
+  read
+  write
+  upload
+  manage_users
+  manage_settings
+  launch_game
+}
+
+// Models
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  INACTIVE
+}
+
+model Operator {
+  id               String               @id @default(cuid())
+  name             String               @unique
+  operator_secret  String // Hashed secret
+  operator_access  String // e.g., 'ip_whitelist', 'internal_services'
+  callbackUrl      String               @map("callback_url")
+  active           Boolean              @default(true)
+  permissions      KeyMode[] // Array of permissions using the KeyMode enum
+  ips              String[] // List of allowed IP addresses
+  description      String?              @db.Text
+  lastUsedAt       DateTime?            @map("last_used_at")
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+  ownerId          String? // ID of the User who created/owns the operator
+  // ... other operator fields
+  acceptedPayments PaymentMethod[]
+  // owner       User      @relation("OperatorOwner", fields: [ownerId], references: [id])
+  // members     UserOperator[]
+  invitations      OperatorInvitation[]
+  gameLaunchLinks  GameLaunchLink[]
+  products         Product[]
+  games            Game[]
+  wallets          Wallet[]
+  transactions     Transaction[]
+
+  @@map("operator_access_keys")
+}
+
+model OperatorInvitation {
+  id            String       @id @default(cuid())
+  operatorId    String
+  username      String // username of the invited user
+  role          Role         @default(USER)
+  token         String       @unique @default(uuid())
+  expiresAt     DateTime
+  acceptedAt    DateTime?
+  invitedById   String // ID of the User who sent the invitation
+  operator      Operator     @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  invitedUser   UserProfile? @relation("ReceivedInvitations", fields: [username], references: [username]) // Optional: if you want to link to existing user by email
+  userProfileId String?
+
+  @@index([operatorId])
+  @@index([username])
+  @@index([token])
+  @@map("operator_invitations")
+}
+
+model Product {
+  id                       String        @id @default(cuid())
+  title                    String        @default("default")
+  description              String        @default("default")
+  url                      String        @default("default")
+  iconUrl                  String?       @default("default")
+  productType              String        @default("bundle")
+  bonusCode                String?       @default("")
+  bonusTotalInCredits      Int           @default(0)
+  isActive                 Boolean?
+  priceInCents             Int           @default(0)
+  amountToReceiveInCredits Int           @default(0)
+  bestValue                Int           @default(0)
+  discountInCents          Int           @default(0)
+  bonusSpins               Int           @default(0)
+  isPromo                  Boolean?      @default(false)
+  totalDiscountInCents     Int           @default(0)
+  shopId                   String?
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime?     @updatedAt
+  operator                 Operator?     @relation(fields: [shopId], references: [id])
+  transactions             Transaction[] @relation("TransactionProduct") // Explicit relation name
+  //   Transaction              Transaction?    @relation(fields: [transactionId], references: [id])
+  transactionId            String?
+  Transaction              Transaction?  @relation(fields: [transactionId], references: [id])
+
+  @@map("products")
+}

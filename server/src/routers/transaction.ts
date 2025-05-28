@@ -1,0 +1,143 @@
+import z from 'zod/v4'
+import prisma from '../../prisma/index'
+import { protectedProcedure, publicProcedure } from '../lib/orpc'
+import type { ExtendedPrismaClient } from '../../prisma' // Import the exported type
+import { type } from '@orpc/server'
+import { Product, TransactionType } from 'prisma/generated'
+import { DepositHistoryItem, DepositHistoryResponse, GetDepositHistoryResponse } from 'shared'
+
+const _prisma: ExtendedPrismaClient = prisma
+
+export const transactionRouter = {
+  getTransactionById: protectedProcedure
+    .input(type<{ id: string }>())
+    .handler(async ({ context, input }) => {
+      return await _prisma.transaction.findUniqueOrThrow({
+        where: {
+          id: input.id,
+        },
+        // include: {
+        //   // user: true, // Include the user relation if needed
+        // },
+      })
+    }),
+  getUserPendingTransactions: protectedProcedure
+    .input(type<{ id: string }>())
+    .handler(async ({ context, input }) => {
+      return await _prisma.transaction.findMany({
+        where: {
+          status: 'PENDING',
+          userProfileId: context.session.user.id,
+        },
+        // include: {
+        //   // user: true, // Include the user relation if needed
+        // },
+      })
+    }),
+  getTransactionHistory: protectedProcedure
+    .input(
+      z.object({
+        onlyPending: z.boolean().optional().default(false),
+        page: z.number().optional().default(1),
+        limit: z.number().optional().default(10),
+      })
+    )
+    .handler(async ({ context, input }) => {
+      const { onlyPending, page, limit } = input
+      try {
+        const transactions = await _prisma.transaction.findMany({
+          where: {
+            userProfileId: context.session.user.id,
+            // targetUserId: user.id, // Filter by user's profile IDs
+            // type: TransactionType.DEPOSIT, // Filter for deposit transactions
+          },
+          orderBy: {
+            createdAt: 'desc', // Order by latest first
+          },
+          skip: (page - 1) * limit, // Apply pagination
+          take: limit,
+          // select: {
+          //   // Select the fields needed for DepositHistoryItem
+          //   id: true,
+          //   createdAt: true,
+          //   type: true, // Will be 'DEPOSIT'
+          //   amount: true,
+          //   status: true,
+          //   // reference: true, // Using reference for note if available
+          //   // paymentMethod: true, // Using paymentMethod for type if needed
+          //   Operator: true,
+          //   product: true,
+          // },
+          include: {
+            Operator: true,
+            product: true,
+          },
+        })
+
+        // Count total deposit transactions for pagination
+        const totalRecords = await _prisma.transaction.count({
+          where: {
+            userProfileId: context.session.user.id,
+            type: TransactionType.DEPOSIT,
+          },
+        })
+
+        const totalPages = Math.ceil(totalRecords / limit)
+
+        // Map Prisma results to DepositHistoryItem interface
+        const historyRecords: DepositHistoryItem[] = transactions.map((tx) => ({
+          id: parseInt(tx.id), // Assuming id is a number or needs conversion
+          created_at: tx.createdAt.getTime(), // Convert Date to timestamp
+          // type: tx.paymentMethod || tx.type, // Use payment method or transaction type
+          amount: tx.amount.toString(), // Convert amount to string
+          status: tx.status, // === TransactionStatus.COMPLETED ? 1 : 0, // Map status to 1 or 0
+          // note: tx.reference || '', // Use reference as note
+          note: '',
+          type: tx.type,
+          createdAt: tx.createdAt,
+          // currency: tx.currency,
+          currency: 'USD', // tx.profile.currency,
+          product: tx.product as unknown as Product, // Get currency from related profile
+        }))
+
+        const historyData: DepositHistoryResponse = {
+          total_pages: totalPages,
+          record: historyRecords,
+          error: null,
+          code: 200,
+        }
+        // --- End Database Logic ---
+
+        // const response: GetDepositHistoryResponse = {
+        //   code: 200,
+        //   data: historyData,
+        //   message: 'Deposit history fetched successfully',
+        // }
+
+        return historyData
+      } catch (error) {
+        console.error('Failed to fetch deposit history:', error)
+
+        return { total_pages: 0, record: [], error: error as string, code: 500 }
+      }
+    }),
+
+  // toggle: publicProcedure
+  //   .input(z.object({ id: z.number(), completed: z.boolean() }))
+  //   .handler(async ({ input }) => {
+  //     await prisma.userTransaction.update({
+  //       where: { id: input.id },
+  //       data: { completed: input.completed },
+  //     });
+  //     return { success: true };
+  //   }),
+
+  // delete: publicProcedure
+  //   .input(z.object({ id: z.number() }))
+  //   .handler(async ({ input }) => {
+  //     await prisma.userTransaction.delete({
+  //       where: { id: input.id },
+  //     });
+  //     return { success: true };
+  //   }),
+}

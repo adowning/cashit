@@ -1,0 +1,35 @@
+model UserProfile {
+  id                    String                  @id
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  username              String                  @unique
+  avatar                String?                 @default("avatar-10.webp")
+  cashtag               String?
+  balance               Int                     @default(0)
+  totalXpFromOperator   Int                     @default(0)
+  activeCurrencyType    String                  @default("USD")
+  lastDailySpin         DateTime                @default("1970-01-01T00:00:00Z")
+  userId                String
+  isActive              Boolean                 @default(false)
+  // user                 User         @relation("PrimaryProfile", fields: [username], references: [id], onDelete: Cascade)
+  // otherUser            User?        @relation("OtherProfiles", fields: [otherUserid], references: [id])
+  otherUserid           String?
+  // gameSessionId        String?         @unique
+  role                  Role?                   @default(USER)
+  operatorId            String? // Ensure @unique is removed
+  wallets               Wallet[]
+  transactions          Transaction[]
+  rebateTransactions    RebateTransaction[]
+  operatorInvitations   OperatorInvitation[]    @relation("ReceivedInvitations")
+  TournamentReward      TournamentReward[]      @relation("TournamentWinner")
+  gameLaunchLink        GameLaunchLink[]
+  TournamentParticipant TournamentParticipant[]
+  pastGameSessions      GameSession[]           @relation("UserGameSessions")
+  currentGameSessionid  String?
+  currentGameSession    GameSession?            @relation(fields: [currentGameSessionid], references: [id])
+  vipInfoId             String                  @unique
+  vipInfo               VipInfo                 @relation(fields: [vipInfoId], references: [id])
+
+  @@unique([userId])
+  @@map("user_profiles")
+}

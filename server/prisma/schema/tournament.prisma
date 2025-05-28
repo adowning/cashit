@@ -1,0 +1,84 @@
+enum TournamentStatus {
+  PENDING // Setup but not yet started
+  ACTIVE // Currently running
+  COMPLETED // Finished, winners determined
+  CANCELLED // Cancelled by admin
+}
+
+model Tournament {
+  id            String                  @id @default(cuid())
+  name          String
+  description   String?
+  startTime     DateTime // When the tournament becomes active
+  endTime       DateTime? // For time-limited tournaments
+  targetScore   Int? // For score-limited tournaments
+  status        TournamentStatus        @default(PENDING) // PENDING, ACTIVE, COMPLETED, CANCELLED
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  eligibleGames TournamentGame[]
+  participants  TournamentParticipant[]
+  rewards       TournamentReward[]
+  createdByid   String?
+  User          User?                   @relation(fields: [userId], references: [id])
+  userId        String?
+
+  @@index([status, startTime, endTime])
+}
+
+model TournamentGame {
+  id              String     @id @default(cuid())
+  tournament      Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId    String
+  game            Game       @relation(fields: [gameId], references: [id]) // Assumes a 'Game' model exists
+  gameId          String
+  pointMultiplier Float      @default(1.0) // Points from this game might be multiplied
+
+  @@unique([tournamentId, gameId])
+}
+
+model TournamentParticipant {
+  id           String      @id @default(cuid())
+  tournament   Tournament  @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId String
+  user         UserProfile @relation(fields: [userId], references: [id]) // Assumes a 'User' model exists
+  userId       String
+  score        Int         @default(0)
+  rank         Int? // Can be calculated dynamically or stored upon tournament completion
+  joinedAt     DateTime    @default(now())
+
+  gamePlays TournamentGamePlay[] // Log of game activities contributing to the score
+
+  @@unique([tournamentId, userId])
+  @@index([userId])
+  @@index([tournamentId, score]) // For leaderboard querying
+}
+
+// Log each game play that contributes points to a tournament
+model TournamentGamePlay {
+  id                      String                @id @default(cuid())
+  tournamentParticipant   TournamentParticipant @relation(fields: [tournamentParticipantId], references: [id], onDelete: Cascade)
+  tournamentParticipantId String
+  gameId                  String // Which game was played
+  pointsEarned            Int // Points earned in this specific instance for the tournament
+  playedAt                DateTime              @default(now())
+  // Optional: reference to a general game round/session if you have one
+  gameSessionId           String?
+
+  @@index([tournamentParticipantId])
+}
+
+model TournamentReward {
+  id           String       @id @default(cuid())
+  tournament   Tournament   @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  tournamentId String
+  rank         Int // e.g., 1 for 1st place, 2 for 2nd, etc.
+  description  String // e.g., "1000 Bonus Credits"
+  // Add fields for actual reward type, e.g., currencyId, amount, itemId if you have an items system
+  // currencyId    String?
+  // amount        Float?
+  isClaimed    Boolean      @default(false)
+  winnerId     String?
+  winner       UserProfile? @relation("TournamentWinner", fields: [winnerId], references: [id]) // User who won this specific reward
+
+  @@index([tournamentId])
+}
