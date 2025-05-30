@@ -2,12 +2,17 @@ import 'dotenv/config'
 import { RPCHandler } from '@orpc/server/fetch'
 import { createContext, createWsContext } from './lib/context'
 import { appRouter } from './routers/index'
+// import { experimental_RPCHandler } from '@orpc/server/websocket'
 import { AppWsData, WebSocketRouter } from './routers/socket.router'
 import { auth } from './lib/auth'
 import { Context, Hono, type ExecutionContext } from 'hono'
 import { cors } from 'hono/cors'
 import { logger } from 'hono/logger'
+import { createBunWebSocket } from 'hono/bun'
+import { experimental_RPCHandler } from '@orpc/server/bun-ws'
+import { WsData } from 'shared'
 
+const { upgradeWebSocket, websocket } = createBunWebSocket()
 const app = new Hono()
 
 app.use(logger())
@@ -24,6 +29,7 @@ app.use(
 app.on(['POST', 'GET'], '/api/auth/**', (c) => auth.handler(c.req.raw))
 
 const resthandler = new RPCHandler(appRouter)
+const sockethandler = new experimental_RPCHandler(appRouter)
 app.use('/rpc/*', async (c, next) => {
   const context = await createContext({ context: c })
   const { matched, response } = await resthandler.handle(c.req.raw, {
@@ -35,12 +41,105 @@ app.use('/rpc/*', async (c, next) => {
   }
   await next()
 })
+// app.get(
+//   '/rpc/*',
+//   upgradeWebSocket(async (c) => {
+//     console.log(c)
+//     const parsedUrl = new URL(c.req.raw.url)
+//     const clientAuthToken = parsedUrl.searchParams.get('token')
+//     if (clientAuthToken != null) c.req.raw.headers.set('Authorization', clientAuthToken)
+//     const authSession = await auth.api.getSession({
+//       headers: c.req.raw.headers,
+//     })
+//      const context = await createContext({ context: c })
 
+//     console.log(authSession)
+//     return {
+//       onMessage(event, ws) {
+//         console.log(`Message from client: ${event.data}`)
+//          const { matched, response } = await sockethandler.message(ws.data! ,event {
+//     prefix: '/rpc',
+//     context: context,
+//   } )
+
+//         ws.send('Hello from server!')
+//       },
+//       onClose: () => {
+//         console.log('Connection closed')
+//       },
+//     }
+//   })
+// )
+
+const handler = new experimental_RPCHandler(appRouter)
+
+const serverInstance = Bun.serve({
+  async fetch(req, server) {
+    // if (server.upgrade(req)) {
+
+    //   return
+    // }
+    console.log('parsedUrl')
+
+    // const parsedUrl = new URL(req.url)
+    // console.log(parsedUrl)
+    // const clientAuthToken = parsedUrl.searchParams.get('token')
+
+    // if (clientAuthToken != null) req.headers.set('Authorization', clientAuthToken)
+    // const authSession = await auth.api.getSession({
+    //   headers: req.headers,
+    // })
+    // const u = server.upgrade(req, {
+    //   headers: req.headers,
+    //   data: {
+    //     session: authSession,
+    //   },
+    // })
+    // console.log(u)
+    return app.fetch(req) //new Response('Upgrade failed', { status: 500 })
+  },
+  websocket: {
+    message(ws, message) {
+      const mockContext = {
+        req: new Request('http://localhost/'),
+        env: {},
+        finalized: false,
+        error: undefined,
+        get: () => undefined,
+        set: () => {},
+        header: () => undefined,
+        status: () => 200,
+        text: (t: string) => new Response(t),
+        json: (j: any) =>
+          new Response(JSON.stringify(j), { headers: { 'Content-Type': 'application/json' } }),
+        // Add other required properties/methods as needed
+      } as any
+      sockethandler.message(ws, message, mockContext)
+    },
+    close(ws) {
+      sockethandler.close(ws)
+    },
+  },
+})
+// app.use('/wsrpc/*', async (c, next) => {
+//   if (c.req.raw.headers.get('upgrade') !== 'websocket') {
+//     return new Response(null, { status: 501 })
+//   }
+
+//   // const { socket, response } = this.upgradeWebSocket(req)
+//   const context = await createContext({ context: c })
+
+//   sockethandler.upgrade(socket, {
+//     context, // Provide initial context if needed
+//   })
+
+//   return response
+// })
 // app.get('/', (c) => {
 //   return c.text('OK')
 // })
 
-export default app
+export default serverInstance
 // import { experimental_RPCHandler } from '@orpc/server/bun-ws'
 // import type { Server } from 'bun'
 

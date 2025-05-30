@@ -2,7 +2,8 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { store } from '@/stores'
-import { useRouter } from 'vue-router' // Import useRouter if not globally available
+// import { useRouter } from 'vue-router' // Import useRouter if not globally available
+import { router } from '@/router'
 import type {
   AuthCredentials,
   AuthResponseDto,
@@ -29,7 +30,7 @@ interface AuthErrorState {
 export const useAuthStore = defineStore(
   'auth',
   () => {
-    const router = useRouter() // Initialize router instance
+    // const router = useRouter() // Initialize router instance
     const api = useApiClient()
     const { restClient, realtimeClient } = orpcManager.getClients()
 
@@ -55,7 +56,7 @@ export const useAuthStore = defineStore(
     function toggleSignUp() {
       isSignUpMode.value = !isSignUpMode.value
     }
-    function setAuthenticated(val) {
+    function setAuthenticated() {
       isSignUpMode.value = !isSignUpMode.value
     }
     // --- Actions ---
@@ -114,8 +115,8 @@ export const useAuthStore = defineStore(
 
       isLoading.value = true // Should be set at the start of the attempt
       initialAuthCheckComplete.value = false // Reset if re-initializing
-      console.log(isLoading.value, initialAuthCheckComplete.value)
-      console.log(accessToken.value)
+      // console.log(isLoading.value, initialAuthCheckComplete.value)
+      // console.log(accessToken.value)
 
       // pinia-plugin-persistedstate should have already loaded tokens into accessToken and refreshToken refs.
       if (accessToken.value) {
@@ -130,10 +131,15 @@ export const useAuthStore = defineStore(
           // currentUser and tokens would already be updated.
           // This is more of a reconciliation if getMe returns data slightly different
           // from what setAuthData received from login/refresh.
+          console.log(response)
           if (response.data !== null) {
             // currentUser.value = { ...response.user }
+
             accessToken.value = response.data.session.token // Ensure accessToken is set
             setAuthData(response.data.session.token) // Set user data, which includes avatar
+            console.log('here')
+            // const health = await realtimeClient.user.getCurrentUser()
+            // console.log(health)
           } else if (!isAuthenticated.value) {
             // This case implies getMe succeeded (2xx) but returned no user,
             // AND the store isn't marked as authenticated (which is odd).
@@ -180,9 +186,9 @@ export const useAuthStore = defineStore(
       }
       isLoading.value = true
       try {
-        const response = await api.auth.getMe()
-        if (response.user) {
-          currentUser.value = { ...response.user }
+        const response = await restClient.user.getCurrentUser()
+        if (response) {
+          currentUser.value = { ...response }
         }
         authError.value = null
       } catch (e: any) {

@@ -10,6 +10,7 @@ mkdir -p /tmp/ai/ai
 # Copy project folders with exclusions
 rsync -av \
   --exclude=node_modules/ \
+  --exclude=docker/ \
   --exclude=dist/ \
   --exclude=scripts/ \
   --exclude=tasks/ \

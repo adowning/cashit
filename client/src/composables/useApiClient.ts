@@ -6,19 +6,19 @@ import {
   type ApiErrorData,
   type AuthCredentials,
   type AuthResponseDto,
-  type BalanceType,
-  ClientClaimVipRewardPayload,
+  //   type BalanceType,
+  //   ClientClaimVipRewardPayload,
   CreateTournamentAdminRequest,
   DepositHistoryResponse,
   // GetAchievementItem,
   // GetBonusList,
   GetOperatorDataResponse,
   // GetRewardCenterList,
-  GetSessionResponse,
+  //   GetSessionResponse,
   GetTournamentLeaderboardRequestQuery,
   type GoogleSignInDto,
   type GoogleSignInResponse,
-  type InitializeDepositDto,
+  //   type InitializeDepositDto,
   type InitializeDepositResponseDto,
   JoinTournamentResponse,
   // type LaunchGameResponseDto,
@@ -28,26 +28,27 @@ import {
   Product,
   // PromoGroupData,
   type RefreshTokenDto,
-  type SetReferrerDto,
+  //   type SetReferrerDto,
   type SignUpPayload,
-  type TipUserDto,
+  //   type TipUserDto,
   TournamentCore,
   TournamentDetailed,
   TournamentParticipantInfo,
   Game as GameType,
   TransactionType,
-  type UpdatePasswordDto,
+  //   type UpdatePasswordDto,
   UpdateTournamentAdminRequest,
-  type UpdateUserInput,
+  //   type UpdateUserInput,
   UserReward,
-  type UserVipStatus,
-  UserProfile,
+  //   type UserVipStatus,
+  //   UserProfile,
   VipInfo,
-  LaunchGameResponseDto,
+  //   LaunchGameResponseDto,
   GetRewardCenterList,
 } from '../interfaces'
 import { GameBigWinData } from '@/components/home/LiveWin.vue'
 import { GameHistoryItem } from './game'
+import { GetSessionResponse } from 'shared'
 
 //
 
@@ -168,7 +169,7 @@ function useApiClient() {
           }
 
           const refreshedAuthData = (await refreshResponse.json()) as AuthResponseDto // Assuming this is { accessToken, refreshToken, user }
-          authStore.setAuthData(refreshedAuthData)
+          //   authStore.setAuthData(refreshedAuthData)
           console.log('ApiClient: Token refreshed successfully.')
 
           tokenRefreshSubscribers.value.forEach((callback: (newAccessToken: string) => void) =>
@@ -270,151 +271,151 @@ function useApiClient() {
     //   request<void>(NETWORK_CONFIG.LOGIN.RESET_PASSWORD, 'POST', payload), // Ensure path is correct // Assuming NETWORK_CONFIG.LOGIN.RESET_PASSWORD
   }
 
-  const users = {
-    getCurrentUser: (): Promise<UserProfile> =>
-      request<UserProfile>(NETWORK_CONFIG.PERSONAL_INFO_PAGE.USER_INFO, 'GET'), // Adjusted to match existing user.route.ts structure if needed, or /users/me
-    updateCurrentUser: (payload: UpdateUserInput): Promise<UserProfile> =>
-      request<UserProfile>(NETWORK_CONFIG.PERSONAL_INFO_PAGE.USER_CHANGE, 'POST', payload), // Assuming POST based on user.route.ts which uses GET for updateUserInfo, adjust if it's PUT
-    getUserProfileById: (
-      userId: string
-    ): Promise<UserProfile> => // This seems like an admin/public endpoint
-      request<UserProfile>(`/users/profile/${userId}`, 'GET'), // Using provided path, ensure it's prefixed with BASE_PATH on server
-    getMyReferrals: (): Promise<UserProfile[]> =>
-      request<UserProfile[]>(NETWORK_CONFIG.INVITE_PAGE.INVITE_HISTORY, 'GET'), // Assuming NETWORK_CONFIG.INVITE_PAGE.INVITE_LIST
-    setReferrer: (payload: SetReferrerDto): Promise<void> =>
-      request<void>(NETWORK_CONFIG.INVITE_PAGE.SET_REFERRER, 'POST', payload), // Assuming NETWORK_CONFIG.INVITE_PAGE.SET_REFERRER
-    getLeaderboard: (params?: {
-      page?: number
-      limit?: number
-    }): Promise<PaginatedResponse<UserProfile>> => {
-      const qParams: Record<string, string> = {}
-      if (params?.page !== undefined) qParams.page = String(params.page)
-      if (params?.limit !== undefined) qParams.limit = String(params.limit)
-      const queryString = new URLSearchParams(qParams).toString()
-      // Assuming NETWORK_CONFIG.LEADERBOARD_PAGE.LIST
-      return request<PaginatedResponse<UserProfile>>(
-        `${NETWORK_CONFIG.ACHIEVEMENT_ROUTES.ACHIEVEMENT_LIST}${queryString ? '?' + queryString : ''}`,
-        'GET'
-      )
-    },
-    updateCashtag: (cashtag: string): Promise<UserProfile> =>
-      request<UserProfile>(NETWORK_CONFIG.PERSONAL_INFO_PAGE.USER_CASHTAG, 'POST', { cashtag }),
-    updateAvatar: (
-      formData: FormData
-    ): Promise<UserProfile> => // This endpoint might need specific server setup
-      request<UserProfile>(
-        `${NETWORK_CONFIG.PERSONAL_INFO_PAGE.USER_CHANGE}/avatar`,
-        'POST',
-        formData
-      ), // Example path, adjust
-    changePassword: (payload: UpdatePasswordDto): Promise<void> =>
-      request<void>(NETWORK_CONFIG.PERSONAL_INFO_PAGE.USER_PASSWORD, 'POST', payload), // Assuming POST, user.route.ts uses GET, adjust
-  }
+  //   const users = {
+  //     getCurrentUser: (): Promise<UserProfile> =>
+  //       request<UserProfile>(NETWORK_CONFIG.PERSONAL_INFO_PAGE.USER_INFO, 'GET'), // Adjusted to match existing user.route.ts structure if needed, or /users/me
+  //     updateCurrentUser: (payload: UpdateUserInput): Promise<UserProfile> =>
+  //       request<UserProfile>(NETWORK_CONFIG.PERSONAL_INFO_PAGE.USER_CHANGE, 'POST', payload), // Assuming POST based on user.route.ts which uses GET for updateUserInfo, adjust if it's PUT
+  //     getUserProfileById: (
+  //       userId: string
+  //     ): Promise<UserProfile> => // This seems like an admin/public endpoint
+  //       request<UserProfile>(`/users/profile/${userId}`, 'GET'), // Using provided path, ensure it's prefixed with BASE_PATH on server
+  //     getMyReferrals: (): Promise<UserProfile[]> =>
+  //       request<UserProfile[]>(NETWORK_CONFIG.INVITE_PAGE.INVITE_HISTORY, 'GET'), // Assuming NETWORK_CONFIG.INVITE_PAGE.INVITE_LIST
+  //     setReferrer: (payload: SetReferrerDto): Promise<void> =>
+  //       request<void>(NETWORK_CONFIG.INVITE_PAGE.SET_REFERRER, 'POST', payload), // Assuming NETWORK_CONFIG.INVITE_PAGE.SET_REFERRER
+  //     getLeaderboard: (params?: {
+  //       page?: number
+  //       limit?: number
+  //     }): Promise<PaginatedResponse<UserProfile>> => {
+  //       const qParams: Record<string, string> = {}
+  //       if (params?.page !== undefined) qParams.page = String(params.page)
+  //       if (params?.limit !== undefined) qParams.limit = String(params.limit)
+  //       const queryString = new URLSearchParams(qParams).toString()
+  //       // Assuming NETWORK_CONFIG.LEADERBOARD_PAGE.LIST
+  //       return request<PaginatedResponse<UserProfile>>(
+  //         `${NETWORK_CONFIG.ACHIEVEMENT_ROUTES.ACHIEVEMENT_LIST}${queryString ? '?' + queryString : ''}`,
+  //         'GET'
+  //       )
+  //     },
+  //     updateCashtag: (cashtag: string): Promise<UserProfile> =>
+  //       request<UserProfile>(NETWORK_CONFIG.PERSONAL_INFO_PAGE.USER_CASHTAG, 'POST', { cashtag }),
+  //     updateAvatar: (
+  //       formData: FormData
+  //     ): Promise<UserProfile> => // This endpoint might need specific server setup
+  //       request<UserProfile>(
+  //         `${NETWORK_CONFIG.PERSONAL_INFO_PAGE.USER_CHANGE}/avatar`,
+  //         'POST',
+  //         formData
+  //       ), // Example path, adjust
+  //     changePassword: (payload: UpdatePasswordDto): Promise<void> =>
+  //       request<void>(NETWORK_CONFIG.PERSONAL_INFO_PAGE.USER_PASSWORD, 'POST', payload), // Assuming POST, user.route.ts uses GET, adjust
+  //   }
 
-  const currency = {
-    getBalance: (): Promise<BalanceType[]> =>
-      request<BalanceType[]>(NETWORK_CONFIG.CURRENCY.CURRENCY_LIST, 'GET'), // Assuming NETWORK_CONFIG.CURRENCY_PAGE.USER_BALANCE_LIST
-    getTransactions: (params?: {
-      page?: number
-      limit?: number
-      type?: string // 'deposit', 'withdrawal', 'tip', 'game_win', 'bonus' etc.
-    }): Promise<PaginatedResponse<TransactionType>> => {
-      const qParams: Record<string, string> = {}
-      if (params?.page !== undefined) qParams.page = String(params.page)
-      if (params?.limit !== undefined) qParams.limit = String(params.limit)
-      if (params?.type !== undefined) qParams.type = params.type
-      const queryString = new URLSearchParams(qParams).toString()
-      // Assuming NETWORK_CONFIG.TRANSACTION_PAGE.LIST or similar
-      return request<PaginatedResponse<TransactionType>>(
-        `${NETWORK_CONFIG.TRANSACTION_PAGE.TRANSACTION_HISTORY}${queryString ? '?' + queryString : ''}`,
-        'GET'
-      )
-    },
-    tipUser: (payload: TipUserDto): Promise<void> =>
-      request<void>(NETWORK_CONFIG.CURRENCY.CURRENCY_LIST, 'POST', payload), // Assuming NETWORK_CONFIG.CURRENCY_PAGE.USER_TIP
-  }
+  //   const currency = {
+  //     getBalance: (): Promise<BalanceType[]> =>
+  //       request<BalanceType[]>(NETWORK_CONFIG.CURRENCY.CURRENCY_LIST, 'GET'), // Assuming NETWORK_CONFIG.CURRENCY_PAGE.USER_BALANCE_LIST
+  //     getTransactions: (params?: {
+  //       page?: number
+  //       limit?: number
+  //       type?: string // 'deposit', 'withdrawal', 'tip', 'game_win', 'bonus' etc.
+  //     }): Promise<PaginatedResponse<TransactionType>> => {
+  //       const qParams: Record<string, string> = {}
+  //       if (params?.page !== undefined) qParams.page = String(params.page)
+  //       if (params?.limit !== undefined) qParams.limit = String(params.limit)
+  //       if (params?.type !== undefined) qParams.type = params.type
+  //       const queryString = new URLSearchParams(qParams).toString()
+  //       // Assuming NETWORK_CONFIG.TRANSACTION_PAGE.LIST or similar
+  //       return request<PaginatedResponse<TransactionType>>(
+  //         `${NETWORK_CONFIG.TRANSACTION_PAGE.TRANSACTION_HISTORY}${queryString ? '?' + queryString : ''}`,
+  //         'GET'
+  //       )
+  //     },
+  //     tipUser: (payload: TipUserDto): Promise<void> =>
+  //       request<void>(NETWORK_CONFIG.CURRENCY.CURRENCY_LIST, 'POST', payload), // Assuming NETWORK_CONFIG.CURRENCY_PAGE.USER_TIP
+  //   }
 
-  const deposit = {
-    // Paths from existing SDK, ensure they match NETWORK_CONFIG or update
-    getDepositMethods: (): Promise<any[]> =>
-      request<any[]>(NETWORK_CONFIG.DEPOSIT_PAGE.CONFIG, 'GET'),
-    cancelPending: (): Promise<number> =>
-      request<number>(NETWORK_CONFIG.DEPOSIT_PAGE.CANCEL_PENDING, 'POST'), // Assuming
-    initializeDeposit: (payload: InitializeDepositDto): Promise<InitializeDepositResponseDto> =>
-      request<InitializeDepositResponseDto>(NETWORK_CONFIG.DEPOSIT_PAGE.SUBMIT, 'POST', payload),
-    getDepositStatus: (
-      transactionId: string
-    ): Promise<TransactionType> => // This might be part of general transactions now
-      request<TransactionType>(
-        `${NETWORK_CONFIG.TRANSACTION_PAGE.TRANSACTION_HISTORY}/${transactionId}`,
-        'GET'
-      ), // Assuming
-    getProducts: (): Promise<Product[]> =>
-      request<Product[]>(NETWORK_CONFIG.DEPOSIT_PAGE.PRODUCTS, 'GET'), // Assuming
-    getDepositHistory: (): Promise<DepositHistoryResponse> => // Or use currency.getTransactions({ type: 'deposit' })
-      request<DepositHistoryResponse>(NETWORK_CONFIG.DEPOSIT_PAGE.HISTORY, 'POST'), // POST seems odd for GET history
-    getOperatorData: (): Promise<GetOperatorDataResponse> =>
-      request<GetOperatorDataResponse>(NETWORK_CONFIG.DEPOSIT_PAGE.OPERATOR_DATA, 'POST'), // POST seems odd for GET data
-  }
+  //   const deposit = {
+  //     // Paths from existing SDK, ensure they match NETWORK_CONFIG or update
+  //     getDepositMethods: (): Promise<any[]> =>
+  //       request<any[]>(NETWORK_CONFIG.DEPOSIT_PAGE.CONFIG, 'GET'),
+  //     cancelPending: (): Promise<number> =>
+  //       request<number>(NETWORK_CONFIG.DEPOSIT_PAGE.CANCEL_PENDING, 'POST'), // Assuming
+  //     initializeDeposit: (payload: InitializeDepositDto): Promise<InitializeDepositResponseDto> =>
+  //       request<InitializeDepositResponseDto>(NETWORK_CONFIG.DEPOSIT_PAGE.SUBMIT, 'POST', payload),
+  //     getDepositStatus: (
+  //       transactionId: string
+  //     ): Promise<TransactionType> => // This might be part of general transactions now
+  //       request<TransactionType>(
+  //         `${NETWORK_CONFIG.TRANSACTION_PAGE.TRANSACTION_HISTORY}/${transactionId}`,
+  //         'GET'
+  //       ), // Assuming
+  //     getProducts: (): Promise<Product[]> =>
+  //       request<Product[]>(NETWORK_CONFIG.DEPOSIT_PAGE.PRODUCTS, 'GET'), // Assuming
+  //     getDepositHistory: (): Promise<DepositHistoryResponse> => // Or use currency.getTransactions({ type: 'deposit' })
+  //       request<DepositHistoryResponse>(NETWORK_CONFIG.DEPOSIT_PAGE.HISTORY, 'POST'), // POST seems odd for GET history
+  //     getOperatorData: (): Promise<GetOperatorDataResponse> =>
+  //       request<GetOperatorDataResponse>(NETWORK_CONFIG.DEPOSIT_PAGE.OPERATOR_DATA, 'POST'), // POST seems odd for GET data
+  //   }
 
-  const games = {
-    getAllGames: (params?: {
-      q?: string
-      provider_id?: string
-      category_id?: string
-      page?: number
-      limit?: number
-      orderBy?: string
-      orderDirection?: 'asc' | 'desc'
-    }): Promise<PaginatedResponse<GameType>> => {
-      const qParams: Record<string, string> = {}
-      if (params)
-        Object.entries(params).forEach(([key, value]) => {
-          if (value !== undefined) qParams[key] = String(value)
-        })
-      const queryString = new URLSearchParams(qParams).toString()
-      return request<PaginatedResponse<GameType>>(
-        `${NETWORK_CONFIG.GAME_INFO.GAME_SEARCH}${queryString ? '?' + queryString : ''}`, // Ensure this is a GET endpoint
-        'GET'
-      )
-    },
-    getGameBigWins: (): Promise<GameBigWinData> => // This type seems incorrect for big wins, usually an array of wins
-      request<GameBigWinData>(NETWORK_CONFIG.GAME_INFO.GAME_BIGWIN, 'GET'),
-    getGameProviders: (): Promise<any[]> => // GameBigWinData was likely a placeholder
-      request<any[]>(NETWORK_CONFIG.GAME_INFO.PROVIDERS, 'GET'), // Assuming GAME_PROVIDER_LIST
-    // getGameCategories: (): Promise<GameCategoryType[]> =>
-    //   request<GameCategoryType[]>(NETWORK_CONFIG.GAME_INFO.GAME_CATEGORY, 'GET'), // Assuming GAME_TYPE_LIST
-    getGameById: (gameId: string): Promise<GameType> =>
-      request<GameType>(`${NETWORK_CONFIG.GAME_INFO.GAME_DETAIL}/${gameId}`, 'GET'), // Assuming GAME_DETAIL and path param
-    launchGame: (gameId: string): Promise<LaunchGameResponseDto> =>
-      request<LaunchGameResponseDto>(`${NETWORK_CONFIG.GAME_INFO.GAME_ENTER}/${gameId}`, 'POST'), // Assuming GAME_LAUNCH and path param
-    getGameHistory: (params?: {
-      page?: number
-      limit?: number
-    }): Promise<PaginatedResponse<GameHistoryItem>> => {
-      const qParams: Record<string, string> = {}
-      if (params?.page !== undefined) qParams.page = String(params.page)
-      if (params?.limit !== undefined) qParams.limit = String(params.limit)
-      const queryString = new URLSearchParams(qParams).toString()
-      return request<PaginatedResponse<GameHistoryItem>>(
-        `${NETWORK_CONFIG.GAME_INFO.GAME_HISTORY}${queryString ? '?' + queryString : ''}`, // Ensure this is GET
-        'GET'
-      )
-    },
-  }
+  //   const games = {
+  //     getAllGames: (params?: {
+  //       q?: string
+  //       provider_id?: string
+  //       category_id?: string
+  //       page?: number
+  //       limit?: number
+  //       orderBy?: string
+  //       orderDirection?: 'asc' | 'desc'
+  //     }): Promise<PaginatedResponse<GameType>> => {
+  //       const qParams: Record<string, string> = {}
+  //       if (params)
+  //         Object.entries(params).forEach(([key, value]) => {
+  //           if (value !== undefined) qParams[key] = String(value)
+  //         })
+  //       const queryString = new URLSearchParams(qParams).toString()
+  //       return request<PaginatedResponse<GameType>>(
+  //         `${NETWORK_CONFIG.GAME_INFO.GAME_SEARCH}${queryString ? '?' + queryString : ''}`, // Ensure this is a GET endpoint
+  //         'GET'
+  //       )
+  //     },
+  //     getGameBigWins: (): Promise<GameBigWinData> => // This type seems incorrect for big wins, usually an array of wins
+  //       request<GameBigWinData>(NETWORK_CONFIG.GAME_INFO.GAME_BIGWIN, 'GET'),
+  //     getGameProviders: (): Promise<any[]> => // GameBigWinData was likely a placeholder
+  //       request<any[]>(NETWORK_CONFIG.GAME_INFO.PROVIDERS, 'GET'), // Assuming GAME_PROVIDER_LIST
+  //     // getGameCategories: (): Promise<GameCategoryType[]> =>
+  //     //   request<GameCategoryType[]>(NETWORK_CONFIG.GAME_INFO.GAME_CATEGORY, 'GET'), // Assuming GAME_TYPE_LIST
+  //     getGameById: (gameId: string): Promise<GameType> =>
+  //       request<GameType>(`${NETWORK_CONFIG.GAME_INFO.GAME_DETAIL}/${gameId}`, 'GET'), // Assuming GAME_DETAIL and path param
+  //     launchGame: (gameId: string): Promise<LaunchGameResponseDto> =>
+  //       request<LaunchGameResponseDto>(`${NETWORK_CONFIG.GAME_INFO.GAME_ENTER}/${gameId}`, 'POST'), // Assuming GAME_LAUNCH and path param
+  //     getGameHistory: (params?: {
+  //       page?: number
+  //       limit?: number
+  //     }): Promise<PaginatedResponse<GameHistoryItem>> => {
+  //       const qParams: Record<string, string> = {}
+  //       if (params?.page !== undefined) qParams.page = String(params.page)
+  //       if (params?.limit !== undefined) qParams.limit = String(params.limit)
+  //       const queryString = new URLSearchParams(qParams).toString()
+  //       return request<PaginatedResponse<GameHistoryItem>>(
+  //         `${NETWORK_CONFIG.GAME_INFO.GAME_HISTORY}${queryString ? '?' + queryString : ''}`, // Ensure this is GET
+  //         'GET'
+  //       )
+  //     },
+  //   }
 
-  const vip = {
-    getVipStatus: (): Promise<UserVipStatus> =>
-      request<UserVipStatus>(NETWORK_CONFIG.VIP_INFO.USER_VIP_LEVEL, 'GET'),
-    getVipBenefits: (): Promise<UserReward[]> =>
-      request<UserReward[]>(NETWORK_CONFIG.VIP_INFO.USER_VIP_LEVELAWARD_LIST, 'GET'),
-    getVipInfo: (): Promise<VipInfo> =>
-      request<VipInfo>(NETWORK_CONFIG.VIP_INFO.USER_VIP_INFO, 'GET'),
-    claimVipReward: (
-      payload: ClientClaimVipRewardPayload
-    ): Promise<void> => // Ensure path is correct
-      request<void>(NETWORK_CONFIG.VIP_INFO.VIP_LEVEL_AWARD_HISTORY, 'POST', payload), // Assuming USER_VIP_LEVEL_AWARD_GAIN
-  }
+  //   const vip = {
+  //     getVipStatus: (): Promise<UserVipStatus> =>
+  //       request<UserVipStatus>(NETWORK_CONFIG.VIP_INFO.USER_VIP_LEVEL, 'GET'),
+  //     getVipBenefits: (): Promise<UserReward[]> =>
+  //       request<UserReward[]>(NETWORK_CONFIG.VIP_INFO.USER_VIP_LEVELAWARD_LIST, 'GET'),
+  //     getVipInfo: (): Promise<VipInfo> =>
+  //       request<VipInfo>(NETWORK_CONFIG.VIP_INFO.USER_VIP_INFO, 'GET'),
+  //     claimVipReward: (
+  //       payload: ClientClaimVipRewardPayload
+  //     ): Promise<void> => // Ensure path is correct
+  //       request<void>(NETWORK_CONFIG.VIP_INFO.VIP_LEVEL_AWARD_HISTORY, 'POST', payload), // Assuming USER_VIP_LEVEL_AWARD_GAIN
+  //   }
 
   // // --- New Service Groups ---
 
@@ -452,14 +453,14 @@ function useApiClient() {
   //     request<{ message: string }>(NETWORK_CONFIG.BONUS_PAGE.BONUS_CANCEL, 'POST', payload),
   // }
 
-  const reward = {
-    /** Corresponds to dispatchRewardList in Pinia store */
-    getRewardCenterList: (): Promise<GetRewardCenterList> =>
-      request<GetRewardCenterList>(NETWORK_CONFIG.REWARD_ROUTES.REWARD_LIST, 'GET'),
-    /** Corresponds to dispatchReceiveAchievementBonus in Pinia store */
-    receiveAchievementBonus: (): Promise<any> => // Type from GetBonusResponse was 'any', adjust if specific structure known
-      request<any>(NETWORK_CONFIG.REWARD_ROUTES.RECIEVE_ACHIV_BONUS, 'POST'),
-  }
+  //   const reward = {
+  //     /** Corresponds to dispatchRewardList in Pinia store */
+  //     getRewardCenterList: (): Promise<GetRewardCenterList> =>
+  //       request<GetRewardCenterList>(NETWORK_CONFIG.REWARD_ROUTES.REWARD_LIST, 'GET'),
+  //     /** Corresponds to dispatchReceiveAchievementBonus in Pinia store */
+  //     receiveAchievementBonus: (): Promise<any> => // Type from GetBonusResponse was 'any', adjust if specific structure known
+  //       request<any>(NETWORK_CONFIG.REWARD_ROUTES.RECIEVE_ACHIV_BONUS, 'POST'),
+  //   }
 
   // const promo = {
   //   /** Corresponds to dispatchUserActivityList in Pinia store */
@@ -467,92 +468,92 @@ function useApiClient() {
   //     request<PromoGroupData>(NETWORK_CONFIG.ACTIVITY.USER_ACTIVITY_LIST, 'GET'),
   // }
 
-  const health = {
-    check: (): Promise<{
-      status: string
-      timestamp: string
-      version?: string
-    }> =>
-      request<{ status: string; timestamp: string; version?: string }>(
-        NETWORK_CONFIG.HOME_PAGE.HEALTH,
-        'GET'
-      ), // Assuming NETWORK_CONFIG.HEALTH.HEALTH
-  }
+  //   const health = {
+  //     check: (): Promise<{
+  //       status: string
+  //       timestamp: string
+  //       version?: string
+  //     }> =>
+  //       request<{ status: string; timestamp: string; version?: string }>(
+  //         NETWORK_CONFIG.HOME_PAGE.HEALTH,
+  //         'GET'
+  //       ), // Assuming NETWORK_CONFIG.HEALTH.HEALTH
+  //   }
 
   // --- Tournament API Methods ---
-  const tournamentsApi = {
-    list: (query?: ListTournamentsRequestQuery): Promise<TournamentCore[]> =>
-      request<TournamentCore[]>(NETWORK_CONFIG.TOURNAMENTS.LIST, 'GET', query),
+  //   const tournamentsApi = {
+  //     list: (query?: ListTournamentsRequestQuery): Promise<TournamentCore[]> =>
+  //       request<TournamentCore[]>(NETWORK_CONFIG.TOURNAMENTS.LIST, 'GET', query),
 
-    getDetails: (tournamentId: string): Promise<TournamentDetailed> =>
-      request<TournamentDetailed>(
-        NETWORK_CONFIG.TOURNAMENTS.DETAILS.replace(':id', tournamentId),
-        'GET'
-      ),
+  //     getDetails: (tournamentId: string): Promise<TournamentDetailed> =>
+  //       request<TournamentDetailed>(
+  //         NETWORK_CONFIG.TOURNAMENTS.DETAILS.replace(':id', tournamentId),
+  //         'GET'
+  //       ),
 
-    getLeaderboard: (
-      tournamentId: string,
-      query?: GetTournamentLeaderboardRequestQuery
-    ): Promise<TournamentParticipantInfo[]> =>
-      request<TournamentParticipantInfo[]>(
-        NETWORK_CONFIG.TOURNAMENTS.LEADERBOARD.replace(':id', tournamentId),
-        'GET',
-        query
-      ),
+  //     getLeaderboard: (
+  //       tournamentId: string,
+  //       query?: GetTournamentLeaderboardRequestQuery
+  //     ): Promise<TournamentParticipantInfo[]> =>
+  //       request<TournamentParticipantInfo[]>(
+  //         NETWORK_CONFIG.TOURNAMENTS.LEADERBOARD.replace(':id', tournamentId),
+  //         'GET',
+  //         query
+  //       ),
 
-    join: (
-      tournamentId: string
-    ): Promise<JoinTournamentResponse> => // Ensure JoinTournamentResponse is defined in shared/dist
-      request<JoinTournamentResponse>(
-        NETWORK_CONFIG.TOURNAMENTS.JOIN.replace(':id', tournamentId),
-        'POST'
-      ),
-  }
+  //     join: (
+  //       tournamentId: string
+  //     ): Promise<JoinTournamentResponse> => // Ensure JoinTournamentResponse is defined in shared/dist
+  //       request<JoinTournamentResponse>(
+  //         NETWORK_CONFIG.TOURNAMENTS.JOIN.replace(':id', tournamentId),
+  //         'POST'
+  //       ),
+  //   }
 
   // --- Admin Tournament API Methods (Optional - include if client needs admin actions) ---
-  const adminTournamentsApi = {
-    create: (payload: CreateTournamentAdminRequest): Promise<TournamentDetailed> =>
-      request<TournamentDetailed>(NETWORK_CONFIG.ADMIN_TOURNAMENTS.CREATE, 'POST', payload),
+  //   const adminTournamentsApi = {
+  //     create: (payload: CreateTournamentAdminRequest): Promise<TournamentDetailed> =>
+  //       request<TournamentDetailed>(NETWORK_CONFIG.ADMIN_TOURNAMENTS.CREATE, 'POST', payload),
 
-    update: (
-      tournamentId: string,
-      payload: UpdateTournamentAdminRequest
-    ): Promise<TournamentDetailed> =>
-      request<TournamentDetailed>(
-        NETWORK_CONFIG.ADMIN_TOURNAMENTS.UPDATE.replace(':id', tournamentId),
-        'PUT',
-        payload
-      ),
+  //     update: (
+  //       tournamentId: string,
+  //       payload: UpdateTournamentAdminRequest
+  //     ): Promise<TournamentDetailed> =>
+  //       request<TournamentDetailed>(
+  //         NETWORK_CONFIG.ADMIN_TOURNAMENTS.UPDATE.replace(':id', tournamentId),
+  //         'PUT',
+  //         payload
+  //       ),
 
-    start: (tournamentId: string): Promise<{ message: string }> =>
-      request<{ message: string }>(
-        NETWORK_CONFIG.ADMIN_TOURNAMENTS.START.replace(':id', tournamentId),
-        'POST'
-      ),
+  //     start: (tournamentId: string): Promise<{ message: string }> =>
+  //       request<{ message: string }>(
+  //         NETWORK_CONFIG.ADMIN_TOURNAMENTS.START.replace(':id', tournamentId),
+  //         'POST'
+  //       ),
 
-    end: (tournamentId: string): Promise<{ message: string }> =>
-      request<{ message: string }>(
-        NETWORK_CONFIG.ADMIN_TOURNAMENTS.END.replace(':id', tournamentId),
-        'POST'
-      ),
-  }
+  //     end: (tournamentId: string): Promise<{ message: string }> =>
+  //       request<{ message: string }>(
+  //         NETWORK_CONFIG.ADMIN_TOURNAMENTS.END.replace(':id', tournamentId),
+  //         'POST'
+  //       ),
+  //   }
 
   return {
     isRefreshingToken: readonly(isRefreshingToken),
     request, // Expose generic request if still needed
     auth,
-    users,
-    currency,
-    deposit,
-    games,
-    vip,
-    // achievement,
-    // bonus,
-    reward,
-    // promo,
-    health,
-    tournaments: tournamentsApi, // Expose tournament methods
-    adminTournaments: adminTournamentsApi, // Expose admin tournament methods
+    // users,
+    // currency,
+    // deposit,
+    // games,
+    // vip,
+    // // achievement,
+    // // bonus,
+    // reward,
+    // // promo,
+    // health,
+    // tournaments: tournamentsApi, // Expose tournament methods
+    // adminTournaments: adminTournamentsApi, // Expose admin tournament methods
   }
 
   // return {

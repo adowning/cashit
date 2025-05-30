@@ -21,7 +21,6 @@
   )
   const actualFrameWidth = allIconSpriteData.frames[0]?.sourceSize.w || 114 // Fallback to known 94
   const actualFrameHeight = allIconSpriteData.frames[0]?.sourceSize.h || 124 // Fallback to known 94
-  console.log(actualFrameWidth)
 </script>
 
 <template>

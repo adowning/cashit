@@ -181,10 +181,15 @@ export class WebSocketRouter<T extends AppWsData = AppWsData> {
 
   private async defaultOpenHandler(context: OpenHandlerContext<T>): Promise<void> {
     const { ws } = context
-    console.log(`WebSocket opened: ${ws.data.clientId}, UserID: ${ws.data.userId || 'Guest'}`)
+    console.log(ws.data)
+    const userId =
+      typeof ws.data.user === 'object' && ws.data.user !== null && 'id' in ws.data.user
+        ? (ws.data.user as { id?: string }).id
+        : undefined
+    console.log(`WebSocket opened: ${ws.data.clientId}, UserID: ${userId || 'Guest'}`)
     subscribeToTopic(ws, 'global') // Corrected
-    if (ws.data.userId) {
-      subscribeToTopic(ws, `user:${ws.data.userId}`) // Corrected
+    if (userId) {
+      subscribeToTopic(ws, `user_${userId}_updates`) // Corrected
     }
   }
 
@@ -292,6 +297,7 @@ export class WebSocketRouter<T extends AppWsData = AppWsData> {
     const entry = this.messageHandlers.get(actualMessageData.type)
     if (entry) {
       try {
+        console.log(actualMessageData)
         const validatedMessage = entry.schema.parse(actualMessageData)
 
         const send = this.createSendFunction(ws)

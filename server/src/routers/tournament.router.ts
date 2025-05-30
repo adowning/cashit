@@ -108,7 +108,7 @@ export const tournamentRouter = {
             include: { user: true },
             orderBy: { score: 'desc' },
           },
-          User: true, // For createdBy
+          user: true, // For createdBy
         },
       })
 
@@ -138,8 +138,8 @@ export const tournamentRouter = {
           rank: p.rank,
           joinedAt: p.joinedAt.toISOString(),
         })),
-        createdBy: tournament.User
-          ? { id: tournament.User.id, username: tournament.User.username }
+        createdBy: tournament.user
+          ? { id: tournament.user.id, username: tournament.user.username }
           : undefined,
         createdAt: tournament.createdAt.toISOString(),
         updatedAt: tournament.updatedAt.toISOString(),

@@ -143,7 +143,10 @@ export interface NoLimitProxyWsData extends WsData {
 export async function nolimitProxyOpenHandler(context: OpenHandlerContext<NoLimitProxyWsData>) {
   const { ws } = context
   const { clientId, userId, isNoLimitProxy } = ws.data // clientId is from router, userId from auth
-  if (isNoLimitProxy == false) return
+  if (isNoLimitProxy == false || isNoLimitProxy == undefined) {
+    console.log('isNoLimitProxy is false or undefined')
+    return
+  }
   ws.data.nolimitMessageCounter = 0 // Initialize counter
 
   console.log(`[NLC Proxy][${clientId}] Connection opened for user ${userId}.`)

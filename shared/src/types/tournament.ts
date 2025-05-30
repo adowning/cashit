@@ -1,7 +1,71 @@
-import { PrismaUserProfile } from '../index'
+import { Game, PrismaUserProfile, UserProfile } from '../index'
 import type { PrismaTournamentParticipant } from './prisma'
 
 // --- Basic Tournament Information ---
+
+export interface TeamBasedTournament {
+  id: number
+  history_id: number
+  historyId: number
+  title: string
+  slug: string
+  image: string
+  isActive: boolean
+  currentTime: Date
+  start: string
+  end: string
+  betMin: number
+  betsMin: number
+  duration: string
+  isOpen: boolean
+  startDate: Date
+  startTime: string
+  outplayAttempts: number
+  mode: string
+  winners: UserProfile[]
+  isAutoSubscription: boolean
+  betsOn: string
+  betLimit: number
+  minBetLimit: number
+  maxBetLimitShort: string
+  info: string
+  isMajor: boolean
+  prizeLimit: number
+  prizeFund: string
+  prize: string
+  raceType: string
+  prizes: { [key: string]: { coins: number } }[]
+  prizeTotal: [coins: number, entries: number]
+  additionalPrizes: any[]
+  gamesIds: number[]
+  games: Game[]
+  gameSlug: string
+  totalGamesCount: number
+  isTeamBased: boolean
+  // prizeTotal:         PrizeTotal;
+  teams: Team[]
+  images: Images
+  isVipTournament: boolean
+  isTournamentGame: boolean
+  isSubscribed: boolean
+}
+
+export interface Images {
+  imageBanner: string
+  imagePrizeCard: string
+  imageBannerMobile: string
+  bannerDesktop: string
+  bannerMobile: string
+  retinaBannerDesktop: string
+  retinaBannerMobile: string
+}
+
+export interface Team {
+  id: number
+  title: string
+  totalPoints: number
+  isPlayerTeam: boolean
+}
 
 export interface TournamentGameInfo {
   gameId: string

@@ -1,163 +1,303 @@
+// Path: packages/database/src/seed/seedTournaments.ts
 import {
   PrismaClient,
-  Tournament,
-  TournamentGame,
-  TournamentParticipant,
-  TournamentReward,
-  TournamentStatus,
   Game,
-  UserProfile,
-  TournamentGamePlay,
-  Role,
-} from '../generated/'
+  TournamentStatus,
+  Role as PrismaRoleEnum,
+  Prisma,
+  Tournament,
+  UserProfile, // Using UserProfile
+} from '../generated/' // Adjust path to your Prisma client if needed
 import { faker } from '@faker-js/faker'
+
+// Helper to get a random item from an array
+function getRandomItem<T>(arr: T[]): T | undefined {
+  if (arr.length === 0) return undefined
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+
+// Helper function to get the start of a day
+function getStartOfDay(date: Date): Date {
+  const newDate = new Date(date)
+  newDate.setHours(0, 0, 0, 0)
+  return newDate
+}
+
+// Helper function to add days to a date
+function addDays(date: Date, days: number): Date {
+  const newDate = new Date(date.valueOf())
+  newDate.setDate(newDate.getDate() + days)
+  return newDate
+}
+
+// Helper function to set time for a date
+function setTime(
+  date: Date,
+  hours: number,
+  minutes: number,
+  seconds: number,
+  milliseconds: number
+): Date {
+  const newDate = new Date(date)
+  newDate.setHours(hours, minutes, seconds, milliseconds)
+  return newDate
+}
 
 export async function seedTournaments(
   prisma: PrismaClient,
-  allGames: Game[],
-  userProfiles: UserProfile[],
-  creatorUserId: string // ID of the admin user or operator system user
+  userProfilesToSeed: UserProfile[], // Changed to userProfilesToSeed for clarity
+  games: Game[],
+  explicitAdminProfile?: UserProfile // Can pass an explicit admin UserProfile
 ): Promise<Tournament[]> {
-  console.log('Seeding tournaments...')
-  if (allGames.length < 3) {
-    console.log('Not enough games for varied tournaments. Skipping.')
+  console.log('🌱 Seeding Tournaments (Refactored for UserProfile as primary reference)...')
+
+  if (!games || games.length === 0) {
+    console.warn('⚠️ No games available. Skipping tournament seeding.')
     return []
   }
+  if (!userProfilesToSeed || userProfilesToSeed.length === 0) {
+    console.warn('⚠️ No user profiles available. Skipping tournament seeding.')
+    return []
+  }
+
+  // Find an admin user from the UserProfile list based on its role property
+  // UserProfile schema has 'role: Role?'
+  const adminProfile =
+    explicitAdminProfile || userProfilesToSeed.find((up) => up.role === PrismaRoleEnum.ADMIN)
+
+  if (!adminProfile) {
+    console.warn('⚠️ No admin UserProfile found. Skipping tournament seeding.')
+    return []
+  }
+
   const createdTournaments: Tournament[] = []
+  const now = new Date() // Current time reference for seeding
 
-  const tournamentTypes = [
-    {
-      namePrefix: 'Weekly Slot Masters',
-      durationDays: 7,
-      status: TournamentStatus.ACTIVE,
-      gamesCount: 3,
-      targetScoreBase: 100000,
-    },
-    {
-      namePrefix: 'Daily Dash',
-      durationDays: 1,
-      status: TournamentStatus.COMPLETED,
-      gamesCount: 2,
-      targetScoreBase: 20000,
-    },
-    {
-      namePrefix: 'Upcoming Weekend Bonanza',
-      durationDays: 3,
-      status: TournamentStatus.PENDING,
-      gamesCount: 5,
-      targetScoreBase: 50000,
-    },
-  ]
-
-  const adminUserProfile = userProfiles.find((up) => up.role === Role.ADMIN)
-
-  for (const type of tournamentTypes) {
-    const startTime =
-      type.status === TournamentStatus.PENDING
-        ? faker.date.soon({ days: 5 })
-        : faker.date.recent({ days: type.durationDays })
-
-    let endTimeCalc: Date | null = null
-    if (type.status === TournamentStatus.COMPLETED) {
-      endTimeCalc = new Date(
-        startTime.getTime() + type.durationDays * 24 * 60 * 60 * 1000 - 60 * 60 * 1000
-      ) // Ended an hour ago
-    } else if (
-      type.status === TournamentStatus.ACTIVE ||
-      type.status === TournamentStatus.PENDING
-    ) {
-      endTimeCalc = new Date(startTime.getTime() + type.durationDays * 24 * 60 * 60 * 1000)
-    }
-
-    const tournament = await prisma.tournament.create({
-      data: {
-        name: `${type.namePrefix} - ${faker.lorem.words(2)}`,
-        description: faker.lorem.sentence(),
-        startTime,
-        endTime: endTimeCalc,
-        targetScore: faker.number.int({ min: type.targetScoreBase, max: type.targetScoreBase * 2 }),
-        status: type.status,
-        userId: adminUserProfile?.userId || null, // Link to admin user if available
-      },
-    })
-    createdTournaments.push(tournament)
-
-    const eligibleGames = faker.helpers.arrayElements(
-      allGames.filter((g) => g.operatorId === adminUserProfile?.operatorId),
-      { min: 1, max: type.gamesCount }
+  const createTournamentEntry = async (
+    title: string,
+    description: string,
+    status: TournamentStatus,
+    startTime: Date,
+    endTime: Date,
+    targetScore: number | null = null
+  ) => {
+    const selectedGamesForTournament = faker.helpers.arrayElements(
+      games,
+      faker.number.int({ min: Math.min(1, games.length), max: Math.min(5, games.length) })
     )
-    if (eligibleGames.length === 0 && allGames.length > 0) {
-      // Fallback if no games match operator
-      eligibleGames.push(...faker.helpers.arrayElements(allGames, { min: 1, max: type.gamesCount }))
+    if (selectedGamesForTournament.length === 0) {
+      console.warn(`⚠️ No games selected for tournament ${title}, skipping.`)
+      return
     }
 
-    for (const game of eligibleGames) {
-      await prisma.tournamentGame.create({
-        data: {
-          tournamentId: tournament.id,
+    // Tournament.userId is the foreign key to UserProfile.id
+    const tournamentInput: Prisma.TournamentCreateInput = {
+      name: title,
+      description,
+      startTime,
+      endTime,
+      status,
+      targetScore,
+      user: { connect: { id: adminProfile.id } }, // Connects Tournament.userId to adminProfile.id
+      eligibleGames: {
+        create: selectedGamesForTournament.map((game) => ({
           gameId: game.id,
-          pointMultiplier: faker.helpers.arrayElement([1.0, 1.2, 1.5, 0.8]),
-        },
-      })
+          pointMultiplier: faker.helpers.arrayElement([1.0, 1.25, 1.5, 1.75, 2.0]),
+        })),
+      },
+      rewards: {
+        create: [
+          {
+            rank: 1,
+            description: `${faker.number.int({ min: 1000, max: 5000 })} Super Coins + Trophy Icon`,
+          },
+          { rank: 2, description: `${faker.number.int({ min: 500, max: 2000 })} Super Coins` },
+          { rank: 3, description: `${faker.number.int({ min: 250, max: 1000 })} Super Coins` },
+        ],
+      },
     }
 
-    const participantsForTournament = faker.helpers.arrayElements(
-      userProfiles.filter((up) => up.role === Role.USER),
-      { min: Math.min(3, userProfiles.length - 1), max: Math.min(10, userProfiles.length - 1) }
-    )
-    for (const profile of participantsForTournament) {
-      if (tournament.status === TournamentStatus.PENDING && faker.datatype.boolean(0.7)) continue
-      if (startTime > new Date()) continue // Skip if tournament hasn't started yet
-      const participant = await prisma.tournamentParticipant.create({
-        data: {
-          tournamentId: tournament.id,
-          userId: profile.userId,
-          score: 0,
-          joinedAt: faker.date.between({ from: startTime, to: new Date() }),
-        },
-      })
+    try {
+      const tournament = await prisma.tournament.create({ data: tournamentInput })
+      createdTournaments.push(tournament)
+      console.log(
+        `🏆 Created tournament: ${tournament.name} (Status: ${tournament.status}, Start: ${tournament.startTime.toISOString()}, End: ${
+          tournament.endTime ? tournament.endTime.toISOString() : 'N/A (Open-ended or not set)'
+        })`
+      )
+      if (
+        (status === TournamentStatus.ACTIVE || status === TournamentStatus.COMPLETED) &&
+        userProfilesToSeed.length > 1
+      ) {
+        const numParticipants = faker.number.int({
+          min: 1,
+          max: Math.min(10, userProfilesToSeed.length - 1),
+        })
+        const potentialParticipants = userProfilesToSeed.filter((up) => up.id !== adminProfile.id) // Compare UserProfile IDs
+        const participantsToSeedForTournament = faker.helpers.arrayElements(
+          potentialParticipants,
+          numParticipants
+        )
 
-      let totalScoreForParticipant = 0
-      if (tournament.status !== TournamentStatus.PENDING) {
-        const numGamePlays = faker.number.int({ min: 5, max: 30 })
-        for (let k = 0; k < numGamePlays; k++) {
-          const pointsEarned = faker.number.int({ min: 10, max: 500 })
-          totalScoreForParticipant += pointsEarned
-          if (eligibleGames.length > 0) {
-            await prisma.tournamentGamePlay.create({
-              data: {
-                tournamentParticipantId: participant.id,
-                gameId: faker.helpers.arrayElement(eligibleGames).id,
-                pointsEarned: pointsEarned,
+        for (const pUserProfile of participantsToSeedForTournament) {
+          let totalScore = 0
+          const gamePlays: Prisma.TournamentGamePlayCreateWithoutTournamentParticipantInput[] = []
+          const numGamePlaySets = faker.number.int({
+            min: 1,
+            max: selectedGamesForTournament.length,
+          })
+          const gamesPlayedThisTournament = faker.helpers.arrayElements(
+            selectedGamesForTournament,
+            numGamePlaySets
+          )
+
+          for (const playedGame of gamesPlayedThisTournament) {
+            const numPlaysInGame = faker.number.int({ min: 1, max: 3 })
+            for (let k = 0; k < numPlaysInGame; k++) {
+              const pointsEarned = faker.number.int({
+                min: 10,
+                max: targetScore ? targetScore / 10 : 2000,
+              })
+              totalScore += pointsEarned
+              gamePlays.push({
+                gameId: playedGame.id,
+                pointsEarned,
                 playedAt: faker.date.between({
                   from: startTime,
-                  to: endTimeCalc && endTimeCalc < new Date() ? endTimeCalc : new Date(),
+                  to: endTime > now && status === TournamentStatus.ACTIVE ? now : endTime,
                 }),
-              },
-            })
+              })
+            }
           }
-        }
-        await prisma.tournamentParticipant.update({
-          where: { id: participant.id },
-          data: { score: totalScoreForParticipant },
-        })
-      }
-    }
+          if (status === TournamentStatus.COMPLETED && targetScore && totalScore > targetScore) {
+            totalScore = faker.number.int({ min: targetScore / 2, max: targetScore })
+          }
 
-    const ranksToReward = [1, 2, 3]
-    for (const rank of ranksToReward) {
-      await prisma.tournamentReward.create({
-        data: {
-          tournamentId: tournament.id,
-          rank: rank,
-          description: `Rank ${rank} Prize: ${faker.commerce.price({ min: 10, max: 500, dec: 0, symbol: '$' })} Bonus Credits`,
-          isClaimed:
-            tournament.status === TournamentStatus.COMPLETED ? faker.datatype.boolean(0.5) : false,
-        },
-      })
+          // TournamentParticipant.userId should link to UserProfile.id
+          await prisma.tournamentParticipant.create({
+            data: {
+              tournamentId: tournament.id,
+              userId: pUserProfile.id, // Use UserProfile's own ID
+              score: totalScore,
+              joinedAt: faker.date.between({
+                from: startTime,
+                to: endTime > now && status === TournamentStatus.ACTIVE ? now : endTime,
+              }),
+              gamePlays: { create: gamePlays },
+            },
+          })
+        }
+      }
+    } catch (e: any) {
+      console.error(`❌ Error creating tournament "${title}":`, e.message)
+      if (e instanceof Prisma.PrismaClientKnownRequestError) {
+        console.error('Prisma Error Code:', e.code)
+        if (e.meta) console.error('Meta:', e.meta)
+      }
     }
   }
 
-  console.log(`Seeded ${createdTournaments.length} tournaments.`)
+  // --- Daily Tournaments ---
+  console.log('  📅 Seeding Daily Tournaments...')
+  for (let i = 1; i <= 7; i++) {
+    const pastDate = addDays(getStartOfDay(now), -i)
+    await createTournamentEntry(
+      `Past Daily Challenge #${i} (${faker.word.adjective()})`,
+      `Daily challenge from ${i} day(s) ago, sponsored by ${faker.company.name()}.`,
+      TournamentStatus.COMPLETED,
+      setTime(pastDate, 0, 0, 0, 0),
+      setTime(pastDate, 23, 59, 59, 999),
+      faker.number.int({ min: 50000, max: 150000 })
+    )
+  }
+
+  const todayStartActive = setTime(getStartOfDay(now), Math.max(0, now.getHours() - 2), 0, 0, 0)
+  const todayEndActive = addDays(todayStartActive, 1)
+  await createTournamentEntry(
+    "Today's Daily Grind",
+    `The current daily challenge by ${faker.company.name()}, live now!`,
+    TournamentStatus.ACTIVE,
+    todayStartActive,
+    todayEndActive,
+    faker.number.int({ min: 50000, max: 150000 })
+  )
+
+  const tomorrowStart = addDays(getStartOfDay(now), 1)
+  await createTournamentEntry(
+    'Upcoming Daily Dash',
+    `Get ready for tomorrow's daily challenge by ${faker.company.name()}!`,
+    TournamentStatus.PENDING,
+    setTime(tomorrowStart, 0, 0, 0, 0),
+    setTime(addDays(tomorrowStart, 0), 23, 59, 59, 999),
+    faker.number.int({ min: 50000, max: 150000 })
+  )
+
+  // --- Weekly Tournaments ---
+  console.log('  🗓️ Seeding Weekly Tournaments...')
+  const lastWeekEnd = addDays(getStartOfDay(now), -(now.getDay() || 7))
+  const lastWeekStart = addDays(lastWeekEnd, -6)
+  await createTournamentEntry(
+    "Last Week's Marathon",
+    `Highlights from the previous week's grand tournament by ${faker.company.name()}.`,
+    TournamentStatus.COMPLETED,
+    setTime(lastWeekStart, 0, 0, 0, 0),
+    setTime(lastWeekEnd, 23, 59, 59, 999),
+    faker.number.int({ min: 200000, max: 1000000 })
+  )
+
+  const currentWeekStartDay = now.getDay() || 7
+  const currentWeekStart = addDays(getStartOfDay(now), -(currentWeekStartDay - 1))
+  const currentWeekEnd = addDays(currentWeekStart, 6)
+  await createTournamentEntry(
+    "This Week's Championship",
+    `The main event for this week by ${faker.company.name()} is ongoing!`,
+    TournamentStatus.ACTIVE,
+    setTime(currentWeekStart, 0, 0, 0, 0),
+    setTime(currentWeekEnd, 23, 59, 59, 999),
+    faker.number.int({ min: 200000, max: 1000000 })
+  )
+
+  const nextWeekStart = addDays(currentWeekEnd, 1)
+  const nextWeekEnd = addDays(nextWeekStart, 6)
+  await createTournamentEntry(
+    "Next Week's Conquest",
+    `Prepare for the upcoming weekly tournament by ${faker.company.name()}.`,
+    TournamentStatus.PENDING,
+    setTime(nextWeekStart, 0, 0, 0, 0),
+    setTime(nextWeekEnd, 23, 59, 59, 999),
+    faker.number.int({ min: 200000, max: 1000000 })
+  )
+
+  // --- Weekend Tournaments ---
+  console.log('  🎉 Seeding Weekend Tournaments...')
+  const pastWeekendEndSunday = addDays(getStartOfDay(now), -(now.getDay() || 7))
+  const pastWeekendStartFriday = addDays(pastWeekendEndSunday, -2)
+  await createTournamentEntry(
+    "Last Weekend's Rumble",
+    `Revisiting the excitement of the past weekend tournament by ${faker.company.name()}.`,
+    TournamentStatus.COMPLETED,
+    setTime(pastWeekendStartFriday, 17, 0, 0, 0),
+    setTime(pastWeekendEndSunday, 22, 59, 59, 999),
+    faker.number.int({ min: 100000, max: 500000 })
+  )
+
+  let daysUntilUpcomingFriday = (5 - now.getDay() + 7) % 7
+  if (daysUntilUpcomingFriday === 0 && now.getHours() >= 17) {
+    daysUntilUpcomingFriday = 7
+  }
+  const upcomingWeekendStartFriday = addDays(getStartOfDay(now), daysUntilUpcomingFriday)
+  const upcomingWeekendEndSunday = addDays(upcomingWeekendStartFriday, 2)
+  await createTournamentEntry(
+    'Upcoming Weekend Blitz',
+    `Get set for the weekend's action-packed tournament by ${faker.company.name()}!`,
+    TournamentStatus.PENDING,
+    setTime(upcomingWeekendStartFriday, 17, 0, 0, 0),
+    setTime(upcomingWeekendEndSunday, 22, 59, 59, 999),
+    faker.number.int({ min: 100000, max: 500000 })
+  )
+
+  console.log(
+    `🌱 Seeded ${createdTournaments.length} tournaments in total (UserProfile ID Refactor).`
+  )
   return createdTournaments
 }

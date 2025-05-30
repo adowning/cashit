@@ -3,6 +3,42 @@ import type { Server, ServerWebSocket } from 'bun'
 import { z } from 'zod'
 import { ZodType, ZodTypeAny } from 'zod'
 
+export interface PgRealtimeClientOptions {
+  user?: string
+  password?: string
+  host?: string
+  port?: number
+  database?: string
+  minPoolConnections?: number
+  maxPoolConnections?: number
+  channel?: string
+  bufferInterval?: number
+  maxBufferSize?: number
+  onError?: (error: Error) => void
+}
+
+export enum Operation {
+  INSERT = 'INSERT',
+  UPDATE = 'UPDATE',
+  DELETE = 'DELETE',
+  ALL = '*',
+}
+export type StringKeyMap = { [key: string]: any }
+export type EventCallback = (event: Event | Event[]) => void
+
+export type TableOperationSubs = { [key: string]: EventCallback }
+
+export interface PendingEvent {
+  type: 'INSERT' | 'UPDATE' | 'DELETE'
+  timestamp: string
+  operation: Operation
+  schema: string
+  table: string
+  data: StringKeyMap
+  primaryKeyData: StringKeyMap
+  columnNamesChanged?: string[]
+}
+
 export function safeJsonParse(message: string | Buffer): {
   success: boolean
   data?: any

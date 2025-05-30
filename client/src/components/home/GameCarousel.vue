@@ -17,7 +17,16 @@
 
   const router = useRouter()
   const gameStore = useGameStore()
-  const games = ref<Game[]>(gameStore.gameSearchList.items)
+  const games = ref<Game[]>(
+    gameStore.gameSearchList.items.map((item: any) => ({
+      id: Number(item.id),
+      title: item.title,
+      developer: item.developer ?? item.providerName ?? 'unknown',
+      name: item.name,
+      temperature: item.temperature ?? 'none',
+      featured: item.featured ?? false,
+    }))
+  )
 
   async function loadGame(game: any) {
     const token = localStorage.getItem('access_token')
@@ -40,8 +49,15 @@
   }
 
   onMounted(() => {
-    games.value = gameStore.gameSearchList.items
-    console.log('Games loaded:', games.value)
+    games.value = gameStore.gameSearchList.items.map((item: any) => ({
+      id: Number(item.id),
+      title: item.title,
+      developer: item.developer ?? item.providerName ?? 'unknown',
+      name: item.name,
+      temperature: item.temperature ?? 'none',
+      featured: item.featured ?? false,
+    }))
+    // console.log('Games loaded:', games.value)
   })
 
   // Fallback for broken images

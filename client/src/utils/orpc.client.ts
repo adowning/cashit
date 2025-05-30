@@ -24,7 +24,7 @@ export class OrpcManager {
 
   public setToken(token: string) {
     // const authStore = useAuthStore()
-    console.log('Setting token:', token)
+    // console.log('Setting token:', token)
     if (token == undefined) {
       throw new Error('No access token found. Please log in.')
     }
@@ -42,12 +42,12 @@ export class OrpcManager {
         token = jtoken?.accessToken
       }
     }
-    console.log('getting token:', token)
+    // console.log('getting token:', token)
     if (token == undefined || token === null) {
       throw new Error('No access token found. Please log in.')
     }
     this.token = token
-
+    // console.log('Token set:', this.token)
     return this.token
   }
   getClients = () => {
@@ -86,7 +86,7 @@ export class OrpcManager {
   //   const contractClient: ContractRouterClient<typeof appRouterType> = getContractRouter(appRouter, ['/rpc'])
   // export const orpcUtils = createORPCVueQueryUtils(client)
   //  export const contractOrpcUtils = createORPCVueQueryUtils(contractClient)
-  private websocket = new WebSocket(`ws://localhost:3000/rpc?token=${this.token}`)
+  private websocket = new WebSocket(`ws://localhost:3000?token=${this.getToken()}`)
 
   private socketLink = new SocketRPCLink({
     websocket: this.websocket,

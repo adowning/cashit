@@ -29,6 +29,7 @@ model UserProfile {
   currentGameSession    GameSession?            @relation(fields: [currentGameSessionid], references: [id])
   vipInfoId             String                  @unique
   vipInfo               VipInfo                 @relation(fields: [vipInfoId], references: [id])
+  Tournament            Tournament[]
 
   @@unique([userId])
   @@map("user_profiles")

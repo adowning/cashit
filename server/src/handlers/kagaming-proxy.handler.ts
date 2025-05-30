@@ -141,8 +141,10 @@ export interface KaGamingProxyWsData extends WsData {
 export async function kagamingProxyOpenHandler(context: OpenHandlerContext<KaGamingProxyWsData>) {
   const { ws } = context
   const { clientId, userId, isKaGamingProxy } = ws.data // clientId is from router, userId from auth
-  if (isKaGamingProxy == false) return
-
+  if (isKaGamingProxy == false || isKaGamingProxy == undefined) {
+    console.log('isKaGamingProxy is false or undefined')
+    return
+  }
   ws.data.kagamingMessageCounter = 0 // Initialize counter
 
   console.log(`[KA Proxy][${clientId}] Connection opened for user ${userId}.`)

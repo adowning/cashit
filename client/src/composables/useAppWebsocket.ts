@@ -1,13 +1,5 @@
-import { App, type Ref, computed, readonly, ref, watch } from 'vue'
-import {
-  definePlugin,
-  CustomModelMeta,
-  createStore,
-  defineDataModel,
-  VueStore,
-  defineItemType,
-  ModelList,
-} from '@rstore/vue'
+import { type Ref, computed, readonly, ref, watch } from 'vue'
+import { VueStore, defineItemType, ModelList } from '@rstore/vue'
 
 // Ensure this path is correct
 import { useEventManager } from '@/composables/EventManager'
@@ -24,21 +16,6 @@ import {
   useWebSocket,
 } from '@vueuse/core'
 import destr from 'destr'
-import { ZodObject, ZodRawShape, type ZodType, ZodTypeAny, z } from 'zod' // Assuming Zod is used for schema
-import {
-  BaseMessageSchema,
-  MessageMetadataSchema,
-  MessageSchemaType,
-  MessageSchemaWithCustomMeta,
-  PayloadMessageSchema,
-  PayloadMessageSchemaWithCustomMeta,
-  // SubscribeToTournamentTopic,
-  // UnsubscribeFromTournamentTopic,
-} from 'shared'
-import { isPayloadMethod } from 'better-auth/vue'
-// import type { MessageSchemaType } from '@/../../server/src/sockets/types' // Adjust path if needed for server's MessageSchemaType
-
-// Ensure this path is correct
 
 export interface WsMessage {
   type: string
@@ -119,24 +96,13 @@ export const useAppWebSocket = createGlobalState(() => {
         timestamp: Date.now(),
       },
     }
-    const schema = { type: 'subscribe' }
+    // const schema = { type: 'subscribe' }
     const payload = { name: 'battles' }
     const meta = { timestamp: Date.now() }
-    sendTypedMessage(message, payload, meta)
+    const messageType = 'SUBSCRIBE_TO_GENERAL_TOURNAMENTS'
+    sendTypedMessage(messageType, payload, meta)
   }
-  function sendTypedMessage<S extends MessageSchemaType>(
-    schema: S,
-    payload: S['shape'] extends { payload: infer P }
-      ? P extends ZodType
-        ? z.infer<P>
-        : unknown
-      : unknown,
-    meta?: S['shape'] extends { meta: infer M }
-      ? M extends ZodType
-        ? Partial<z.infer<M>>
-        : Record<string, never>
-      : Record<string, never>
-  ): boolean {
+  function sendTypedMessage(messageType: string, data: any, meta: any): boolean {
     if (wsStatus.value !== 'OPEN') {
       console.warn('WebSocket not open. Cannot send message.')
       notificationStore.addNotification('error', 'Cannot send message: WebSocket is not connected.')
@@ -144,11 +110,7 @@ export const useAppWebSocket = createGlobalState(() => {
     }
 
     try {
-      const typeDef = schema.shape.type._def
       // Ensure 'value' exists and is the correct property for literal types
-      const messageType =
-        'value' in typeDef && typeof typeDef.value === 'string' ? typeDef.value : undefined
-
       if (!messageType) {
         console.error(
           '[WS Send] Message schema does not have a valid literal string "type" property.'
@@ -156,10 +118,10 @@ export const useAppWebSocket = createGlobalState(() => {
         notificationStore.addNotification('error', 'Internal Error: Invalid message schema type.')
         return false
       }
-
       const messageToSend: Record<string, any> = {
         // Use Record<string, any> for more flexible object assembly
-        type: messageType,
+        messageType,
+        data,
         meta: {
           timestamp: Date.now(),
           ...(meta || {}), // Ensure meta is an object even if undefined initially
@@ -167,20 +129,25 @@ export const useAppWebSocket = createGlobalState(() => {
       }
 
       // Conditionally add payload only if it's not undefined
-      if (payload !== undefined) {
-        messageToSend.payload = payload
+      if (data !== undefined) {
+        messageToSend.payload = data
       }
 
-      const validationResult = schema.safeParse(messageToSend)
+      const validationResult = destr(messageToSend) as {
+        messageType: string
+        data: any
+        meta: any
+        error?: { issues: string[] }
+      }
 
-      if (!validationResult.success) {
+      if (!validationResult.messageType) {
         console.error(
           `[WS Send] Failed to validate message of type "${messageType}":`,
-          validationResult.error.flatten().fieldErrors
+          validationResult.error?.issues
         )
         notificationStore.addNotification(
           'error',
-          `WS Send Error: Invalid format for ${messageType}. ${validationResult.error.issues.map((i) => i.message).join(', ')}`
+          `WS Send Error: Invalid format for ${messageType}. ${validationResult.error?.issues.map((i) => i).join(', ')}`
         )
         return false
       }
@@ -260,7 +227,7 @@ export const useAppWebSocket = createGlobalState(() => {
       wsInstanceRef.value.close()
     }
 
-    const wsURL = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${VITE_HONO_WEBSOCKET_URL}/ws?token=${encodeURIComponent(token)}`
+    const wsURL = `${location.protocol === 'https:' ? 'wss:' : 'ws:'}//${VITE_HONO_WEBSOCKET_URL}?token=${encodeURIComponent(token)}`
     console.log(`WebSocket: Attempting to connect to ${wsURL}`)
     attempt.value = attempt.value + 1
     // Create a new WebSocket connection instance using @vueuse/core

@@ -3,8 +3,8 @@ import { MessageHandlerContext, Ping, Pong } from 'shared'
 // Handler for PING
 export function handlePing(context: MessageHandlerContext<typeof Ping>) {
   const { ws, send } = context
-  const userId = ws.data.userId
-
+  const userId = ws.data.user.id
+  console.log(ws.data)
   if (!userId) {
     console.warn('[WS PING] Received PING without userId.')
     return

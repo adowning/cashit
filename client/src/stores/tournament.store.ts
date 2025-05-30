@@ -116,7 +116,7 @@ export const useTournamentStore = defineStore('tournament', () => {
   async function fetchTournaments(query: ListTournamentsRequestQuery = {}): Promise<void> {
     isLoadingList.value = true
     try {
-      const responseData = await restClient.tournament.list.call(query)
+      const responseData = await restClient.tournament.list(query)
       if (!responseData) {
         // oRPC client might return null or throw an error directly
         notificationStore.addNotification('error', 'Failed to fetch tournaments.')
@@ -257,7 +257,13 @@ export const useTournamentStore = defineStore('tournament', () => {
       )
       return
     }
-    const success = sendTypedMessage(schema, payload as any) // Cast payload as any for simplicity
+    payload.type = 'SUBSCRIBE_TO_GENERAL_TOURNAMENTS'
+    payload.meta = { path: '/gen' }
+    // payload.payload = payload
+    console.log(schema)
+    const success = sendTypedMessage('SUBSCRIBE_TO_GENERAL_TOURNAMENTS', payload as any, {
+      path: '/test',
+    }) // Cast payload as any for simplicity
     if (!success) {
       // sendTypedMessage should internally show an error via notificationStore
     }

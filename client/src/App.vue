@@ -1,6 +1,15 @@
 <template>
   <div id="app" class="roxdisplay">
     <!-- <Transition name="fade-loader"> -->
+    <div
+      v-if="isConnected"
+      style="z-index: 999999; position: absolute; top: -2px; right: -6px; width: 25px"
+    >
+      <img src="/images/common/connection-high.svg" h="10" w="15" @click="runTest" />
+    </div>
+    <div v-else style="z-index: 999999; position: absolute; top: -2px; right: -6px; width: 25px">
+      <img src="/images/common/connection-off.png" h="10" w="15" />
+    </div>
     <div class="animate__animated animate__fadeIn">
       <GlobalLoading v-if="isAppLoading && isMobile" />
     </div>
@@ -35,7 +44,7 @@
     <ShopView v-if="depositStore.shopOpen" />
   </OverlayLayer>
   <OverlayLayer v-if="tournamentStore.isBattlesOpen" :model-value="tournamentStore.isBattlesOpen">
-    <Battles v-if="tournamentStore.isBattlesOpen" />
+    <FunRizeRaces v-if="tournamentStore.isBattlesOpen" />
   </OverlayLayer>
 </template>
 
@@ -44,7 +53,7 @@
   import { storeToRefs } from 'pinia'
   import { useRouter } from 'vue-router'
   import LoginView from '@/views/auth/LoginView.vue' // Explicit import for view
-  import Battles from '@/views/battles/Battles.vue' // Explicit import for view
+  import FunRizeRaces from '@/components/battles/FunRizeRaces.vue' // Explicit import for view
 
   // Pinia Stores
   import { useAuthStore } from '@/stores/auth.store'
@@ -54,7 +63,6 @@
   import { useGameStore } from '@/stores/game.store'
   import { useMonitor } from '@/composables/useMonitor'
   import { orpcManager } from './utils/orpc.client'
-  import { useMutation } from '@tanstack/vue-query'
 
   //
 
@@ -91,6 +99,8 @@
 
     return false // All clear
   })
+  const { status, connect } = useAppWebSocket()
+  const isConnected = computed(() => status.value === 'OPEN')
 
   const showLoaderDueToMinTime = ref(false)
   let loadingStartTime: number | null = null
@@ -100,7 +110,14 @@
   const isAppLoading = computed(() => {
     return underlyingOperationsLoading.value || showLoaderDueToMinTime.value
   })
+  function runTest() {
+    const { sendTypedMessage } = useAppWebSocket()
+    //  type = 'info'
+    // meta = {} // Changed line: Use the schema type directly
+    // payload?: ZodTypeAny)
 
+    sendTypedMessage('info', { data: 'data' }, {})
+  }
   watch(
     underlyingOperationsLoading,
     (isLoadingNow, wasLoadingBefore) => {
@@ -174,9 +191,13 @@
   // --- Watch for authentication state changes for side effects like navigation ---
   watch(
     isAuthenticated,
-    (isNowAuthenticated) => {
+    async (isNowAuthenticated) => {
       console.log(`App.vue Auth Watcher: isAuthenticated changed to ${isNowAuthenticated}.`)
       if (isNowAuthenticated) {
+        if (!isConnected) {
+          console.log('App.vue Auth Watcher: Connecting to socket server')
+          await connect()
+        }
         // If user becomes authenticated and is on the Login page, redirect to Home
         if (router.currentRoute.value.name === 'Login') {
           router.push({ name: 'Home' })
@@ -195,14 +216,15 @@
   // --- Fetch initial data that depends on the user being loaded ---
   watch(
     currentUser,
-    (user) => {
+    async (user) => {
       if (user) {
         console.log('App.vue User Watcher: currentUser is available. Fetching user-specific data.')
         const vipStore = useVipStore()
         const gameStore = useGameStore()
-        vipStore.dispatchVipInfo()
-        gameStore.dispatchGameBigWin()
-        gameStore.dispatchGameSearch()
+        await vipStore.dispatchVipInfo()
+        await gameStore.dispatchGameBigWin()
+        await gameStore.dispatchGameSearch()
+        await connect()
         // Potentially other data fetching dependent on the user
       }
     },
@@ -248,6 +270,159 @@
   .fade-loader-enter-from,
   .fade-loader-leave-to {
     opacity: 0;
+  }
+  :root {
+    --maz-color-primary-50: hsl(210deg 100% 95%);
+    --maz-color-primary-100: hsl(210deg 100% 87%);
+    --maz-color-primary-200: hsl(210deg 100% 79%);
+    --maz-color-primary-300: hsl(210deg 100% 71%);
+    --maz-color-primary-400: hsl(210deg 100% 64%);
+    --maz-color-primary: hsl(210deg 100% 56%);
+    --maz-color-primary-600: hsl(210deg 79% 46%);
+    --maz-color-primary-700: hsl(210deg 78% 36%);
+    --maz-color-primary-800: hsl(210deg 79% 26%);
+    --maz-color-primary-900: hsl(210deg 79% 17%);
+    --maz-color-primary-alpha: hsl(210deg 100% 56% / 60%);
+    --maz-color-primary-alpha-20: hsl(210deg 100% 56% / 20%);
+    --maz-color-primary-alpha-10: hsl(210deg 100% 56% / 10%);
+    --maz-color-primary-alpha-05: hsl(210deg 100% 56% / 05%);
+    --maz-color-primary-contrast: hsl(0deg 0% 100%);
+
+    --maz-color-secondary-50: hsl(164deg 65% 93%);
+    --maz-color-secondary-100: hsl(164deg 66% 84%);
+    --maz-color-secondary-200: hsl(164deg 66% 75%);
+    --maz-color-secondary-300: hsl(164deg 66% 65%);
+    --maz-color-secondary-400: hsl(164deg 66% 56%);
+    --maz-color-secondary: hsl(164deg 76% 46%);
+    --maz-color-secondary-600: hsl(164deg 76% 38%);
+    --maz-color-secondary-700: hsl(164deg 77% 30%);
+    --maz-color-secondary-800: hsl(164deg 77% 22%);
+    --maz-color-secondary-900: hsl(164deg 77% 14%);
+    --maz-color-secondary-alpha: hsl(164deg 76% 46% / 60%);
+    --maz-color-secondary-alpha-20: hsl(164deg 76% 46% / 20%);
+    --maz-color-secondary-alpha-10: hsl(164deg 76% 46% / 10%);
+    --maz-color-secondary-alpha-05: hsl(164deg 76% 46% / 05%);
+    --maz-color-secondary-contrast: hsl(0deg 0% 100%);
+
+    --maz-color-info-50: hsl(188deg 53% 93%);
+    --maz-color-info-100: hsl(188deg 54% 82%);
+    --maz-color-info-200: hsl(188deg 53% 72%);
+    --maz-color-info-300: hsl(188deg 53% 61%);
+    --maz-color-info-400: hsl(188deg 53% 51%);
+    --maz-color-info: hsl(188deg 78% 41%);
+    --maz-color-info-600: hsl(188deg 78% 34%);
+    --maz-color-info-700: hsl(188deg 78% 26%);
+    --maz-color-info-800: hsl(188deg 78% 19%);
+    --maz-color-info-900: hsl(188deg 77% 12%);
+    --maz-color-info-alpha: hsl(188deg 78% 41% / 60%);
+    --maz-color-info-alpha-20: hsl(188deg 78% 41% / 20%);
+    --maz-color-info-alpha-10: hsl(188deg 78% 41% / 10%);
+    --maz-color-info-alpha-05: hsl(188deg 78% 41% / 05%);
+    --maz-color-info-contrast: hsl(0deg 0% 100%);
+
+    --maz-color-success-50: hsl(80deg 63% 94%);
+    --maz-color-success-100: hsl(80deg 61% 85%);
+    --maz-color-success-200: hsl(80deg 60% 76%);
+    --maz-color-success-300: hsl(80deg 61% 68%);
+    --maz-color-success-400: hsl(80deg 61% 59%);
+    --maz-color-success: hsl(80deg 61% 50%);
+    --maz-color-success-600: hsl(80deg 61% 41%);
+    --maz-color-success-700: hsl(80deg 60% 33%);
+    --maz-color-success-800: hsl(80deg 60% 24%);
+    --maz-color-success-900: hsl(80deg 61% 15%);
+    --maz-color-success-alpha: hsl(80deg 61% 50% / 60%);
+    --maz-color-success-alpha-20: hsl(80deg 61% 50% / 20%);
+    --maz-color-success-alpha-10: hsl(80deg 61% 50% / 10%);
+    --maz-color-success-alpha-05: hsl(80deg 61% 50% / 05%);
+    --maz-color-success-contrast: hsl(210deg 8% 14%);
+
+    --maz-color-warning-50: hsl(40deg 100% 95%);
+    --maz-color-warning-100: hsl(40deg 97% 88%);
+    --maz-color-warning-200: hsl(40deg 98% 81%);
+    --maz-color-warning-300: hsl(40deg 97% 73%);
+    --maz-color-warning-400: hsl(40deg 98% 66%);
+    --maz-color-warning: hsl(40deg 97% 59%);
+    --maz-color-warning-600: hsl(40deg 68% 49%);
+    --maz-color-warning-700: hsl(40deg 67% 38%);
+    --maz-color-warning-800: hsl(40deg 68% 28%);
+    --maz-color-warning-900: hsl(40deg 67% 18%);
+    --maz-color-warning-alpha: hsl(40deg 97% 59% / 60%);
+    --maz-color-warning-alpha-20: hsl(40deg 97% 59% / 20%);
+    --maz-color-warning-alpha-10: hsl(40deg 97% 59% / 10%);
+    --maz-color-warning-alpha-05: hsl(40deg 97% 59% / 05%);
+    --maz-color-warning-contrast: hsl(217deg 19% 27%);
+
+    --maz-color-danger-50: hsl(1deg 100% 96%);
+    --maz-color-danger-100: hsl(1deg 100% 91%);
+    --maz-color-danger-200: hsl(2deg 100% 86%);
+    --maz-color-danger-300: hsl(1deg 100% 81%);
+    --maz-color-danger-400: hsl(1deg 100% 76%);
+    --maz-color-danger: hsl(1deg 100% 71%);
+    --maz-color-danger-600: hsl(1deg 58% 58%);
+    --maz-color-danger-700: hsl(1deg 41% 46%);
+    --maz-color-danger-800: hsl(1deg 42% 34%);
+    --maz-color-danger-900: hsl(1deg 41% 21%);
+    --maz-color-danger-alpha: hsl(1deg 100% 71% / 60%);
+    --maz-color-danger-alpha-20: hsl(1deg 100% 71% / 20%);
+    --maz-color-danger-alpha-10: hsl(1deg 100% 71% / 10%);
+    --maz-color-danger-alpha-05: hsl(1deg 100% 71% / 05%);
+    --maz-color-danger-contrast: hsl(0deg 0% 100%);
+
+    /* WHITE */
+    --maz-color-white: hsl(0deg 0% 100%);
+    --maz-color-white-contrast: hsl(0deg 0% 0%);
+
+    /* BLACK */
+    --maz-color-black: hsl(0deg 0% 0%);
+    --maz-color-black-contrast: hsl(0deg 0% 100%);
+
+    /** TEXT COLOR LIGHT **/
+    --maz-color-text-light: hsl(0deg 0% 85%);
+    --maz-color-muted-light: hsl(0deg 0% 0% / 54%);
+
+    /** TEXT COLOR DARK **/
+    /* --maz-color-text-dark: hsl(210deg 8% 14%); */
+    --maz-color-text-dark: #f805af;
+    --maz-color-muted-dark: #f805af79;
+
+    /** BG OVERLAY **/
+    --maz-bg-overlay: hsl(0deg 0% 0% / 30%);
+
+    /** BG LIGHT COLOR **/
+    --maz-bg-color-light-lighter: hsl(0deg 0% 97%);
+    --maz-bg-color-light-light: hsl(0deg 0% 94%);
+    --maz-bg-color-light: hsl(0deg 0% 100%);
+    --maz-bg-color-light-dark: hsl(0deg 0% 91%);
+    --maz-bg-color-light-darker: hsl(0deg 0% 88%);
+
+    /** BG DARK COLOR **/
+    --maz-bg-color-dark-lighter: #7133f7;
+    --maz-bg-color-dark-light: #662fe1;
+    --maz-bg-color-dark: #0e0449;
+    --maz-bg-color-dark-dark: #0e1246;
+    --maz-bg-color-dark-darker: #080b2a;
+    /**
+  * Border of components
+  **/
+    --maz-border-color: hsl(220deg 13.04% 90.98%);
+
+    /**
+  * DEFAULT BORDER WIDTH (0.063rem = 1px with a font-size base of 16px)
+  **/
+    --maz-border-width: 0.063rem;
+
+    /**
+  * DEFAULT BORDER RADIUS (0.7rem = 11.2px with a font-size base of 16px)
+  **/
+    --maz-border-radius: 2rem;
+
+    /**
+  * FONT FAMILY
+  * Not used in the library --> Use this variable on your <html> element (optional)
+  **/
+    --maz-font-family:
+      system-ui, -apple-system, blinkmacsystemfont, 'Segoe UI', roboto, oxygen, ubuntu, cantarell,
+      'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   }
 
   /* Ensure your layout components like DesktopSection and MobileSection fill the viewport as needed */

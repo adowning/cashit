@@ -191,7 +191,6 @@ export const gameRouter = {
         take: limit,
       })
       const x = gamesData.map(mapPrismaGameToSharedGame)
-      console.log(x)
       return {
         items: gamesData.map(mapPrismaGameToSharedGame),
         total: totalGames,

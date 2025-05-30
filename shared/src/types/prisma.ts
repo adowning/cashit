@@ -129,7 +129,6 @@ export type PrismaUser = {
   updatedAt: Date;
   sessions?: PrismaSession[];
   accounts?: PrismaAccount[];
-  Tournament?: PrismaTournament[];
 };
 
 export type PrismaSession = {
@@ -370,7 +369,7 @@ export type PrismaTournament = {
   participants?: PrismaTournamentParticipant[];
   rewards?: PrismaTournamentReward[];
   createdByid: string | null;
-  User?: PrismaUser | null;
+  user?: PrismaUserProfile | null;
   userId: string | null;
 };
 
@@ -513,6 +512,7 @@ export type PrismaUserProfile = {
   currentGameSession?: PrismaGameSession | null;
   vipInfoId: string;
   vipInfo?: PrismaVipInfo;
+  Tournament?: PrismaTournament[];
 };
 
 export type PrismaVipInfo = {

@@ -4,6 +4,7 @@
       <BattlesHeaderOverview v-if="battlesGetRouteName === 'BattlesOverview'" />
       <BattlesHeaderCreate v-else-if="battlesGetRouteName === 'BattlesCreate'" />
       <BattlesHeaderGame v-else-if="battlesGetRouteName === 'BattlesGame'" />
+      <FunRizeRaces v-else-if="battlesGetRouteName === 'FunRizeRaces'" />
     </div>
     <div class="battles-content">
       <transition name="slide-fade" mode="out-in">
@@ -18,6 +19,7 @@
   import BattlesHeaderOverview from '@/components/battles/BattlesHeaderOverview.vue'
   import BattlesHeaderCreate from '@/components/battles/BattlesHeaderCreate.vue'
   import BattlesHeaderGame from '@/components/battles/BattlesHeaderGame.vue'
+  import FunRizeRaces from '@/components/battles/FunRizeRaces.vue'
   import { computed } from 'vue'
   import { router } from '@/router'
 
@@ -25,7 +27,7 @@
 
   // Computed
   const battlesGetRouteName = computed(() => {
-    return 'BattlesOverview'
+    return 'FunrizeRaces'
   })
   tournamentStore.subscribeToTournamentUpdates()
   tournamentStore.subscribeToGeneralTournamentAnnouncements()

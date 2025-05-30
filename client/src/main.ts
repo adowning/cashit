@@ -2,12 +2,12 @@
 // Setup your client framework here (Vue, React, Svelte, etc.)
 // apps/client/src/main.ts
 import { createApp } from 'vue'
+import './assets/main.css'
 
-// or import 'maz-ui/css/main.css'
+import 'maz-ui/css/main.css'
 // import '@/css/path_to_your_main_file.css';
 import 'maz-ui/styles'
 
-import './assets/main.css'
 // Import Tailwind CSS base styles
 // Path: client/src/main.ts (Example)
 import App from './App.vue'

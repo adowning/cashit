@@ -5,7 +5,6 @@
   import { DepositHistoryItem } from 'shared/dist'
 
   const eventBus = useEventManager()
-  console.log(eventBus)
   const router = useRouter()
   const countdownActive = ref(false)
   const sparkle = ref(false)
@@ -109,7 +108,6 @@
   //     timeToExpire.value = current
   //   }
   // }
-  console.log(trans)
   if (trans.value !== undefined) {
     // console.log(trans.value);
     // trans.forEach((tran) => {
@@ -136,7 +134,6 @@
   }
 
   watch(getDepositHistoryItems, (newVal) => {
-    console.log(newVal)
     const pendings = newVal.find((purch: { status: string }) => purch.status === 'PENDING_PAYMENT')
     if (pendings) {
       countdownTimer(new Date(pendings.createdAt))
@@ -301,7 +298,7 @@
 <style scoped>
   .tbar {
     background-size: cover;
-
+    z-index: 99;
     position: absolute;
     width: 100%;
     max-height: 62px;

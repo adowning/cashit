@@ -113,12 +113,12 @@ export declare const DatabaseUpdate: z.ZodObject<{
     data: z.ZodNullable<z.ZodRecord<z.ZodString, z.ZodAny>>;
 }, "strip", z.ZodTypeAny, {
     table: string;
-    operation: "INSERT" | "UPDATE" | "DELETE";
+    operation: "UPDATE" | "INSERT" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }, {
     table: string;
-    operation: "INSERT" | "UPDATE" | "DELETE";
+    operation: "UPDATE" | "INSERT" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }>;
@@ -239,12 +239,12 @@ export declare const TournamentLeaderboardUpdateEvent: z.ZodObject<{
     data: z.ZodNullable<z.ZodRecord<z.ZodString, z.ZodAny>>;
 }, "strip", z.ZodTypeAny, {
     table: string;
-    operation: "INSERT" | "UPDATE" | "DELETE";
+    operation: "UPDATE" | "INSERT" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }, {
     table: string;
-    operation: "INSERT" | "UPDATE" | "DELETE";
+    operation: "UPDATE" | "INSERT" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }>;

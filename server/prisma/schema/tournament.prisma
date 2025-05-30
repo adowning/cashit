@@ -19,7 +19,7 @@ model Tournament {
   participants  TournamentParticipant[]
   rewards       TournamentReward[]
   createdByid   String?
-  User          User?                   @relation(fields: [userId], references: [id])
+  user          UserProfile?            @relation(fields: [userId], references: [id])
   userId        String?
 
   @@index([status, startTime, endTime])
