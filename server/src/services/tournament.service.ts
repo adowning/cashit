@@ -69,12 +69,9 @@ export async function createTournament(
       targetScore: input.targetScore,
       status: TournamentStatus.PENDING, // Use Prisma's enum
       createdByid: adminUser.id, // Link to the admin user who created it (schema field: createdByid)
-      eligibleGames: input.eligibleGames
+      games: input.eligibleGames // Changed from eligibleGames
         ? {
-            create: input.eligibleGames.map((g) => ({
-              gameId: g.gameId,
-              pointMultiplier: g.pointMultiplier ?? 1.0,
-            })),
+            connect: input.eligibleGames.map((g) => ({ id: g.gameId })),
           }
         : undefined,
       rewards: input.rewards
@@ -87,8 +84,46 @@ export async function createTournament(
           }
         : undefined,
     },
-    include: { eligibleGames: { include: { game: true } }, rewards: true },
+    include: { games: true, rewards: true }, // Changed from eligibleGames
   })
+
+  // After creating the tournament, update game.tournamentDirectives
+  if (input.eligibleGames) {
+    for (const g of input.eligibleGames) {
+      const gameToUpdate = await db.game.findUnique({ where: { id: g.gameId } })
+      if (gameToUpdate) {
+        let directives: any[] = []
+        if (gameToUpdate.tournamentDirectives && Array.isArray(gameToUpdate.tournamentDirectives)) {
+          directives = gameToUpdate.tournamentDirectives
+        } else if (typeof gameToUpdate.tournamentDirectives === 'string') {
+          try {
+            const parsedDirectives = JSON.parse(gameToUpdate.tournamentDirectives)
+            if (Array.isArray(parsedDirectives)) {
+              directives = parsedDirectives
+            }
+          } catch (error) {
+            console.error(
+              `Error parsing tournamentDirectives for game ${g.gameId}:`,
+              error
+            )
+            // Initialize as empty array if parsing fails
+          }
+        }
+        // Remove old entry for this tournament, if any, then add new one
+        directives = directives.filter(
+          (d: any) => d.tournamentId !== tournament.id
+        )
+        directives.push({
+          tournamentId: tournament.id,
+          pointMultiplier: g.pointMultiplier ?? 1.0,
+        })
+        await db.game.update({
+          where: { id: g.gameId },
+          data: { tournamentDirectives: directives as Prisma.InputJsonValue }, // Use Prisma.InputJsonValue
+        })
+      }
+    }
+  }
 
   typedAppEventEmitter.emit(AppEvents.TOURNAMENT_CREATED, {
     tournamentId: tournament.id,
@@ -126,7 +161,7 @@ export async function updateTournament(
       targetScore: input.targetScore,
       status: input.status, // Uses Prisma's enum from input type
     },
-    include: { eligibleGames: { include: { game: true } }, rewards: true },
+    include: { games: true, rewards: true }, // Changed from eligibleGames
   })
   // Consider emitting a TOURNAMENT_UPDATED event
   return updatedTournament
@@ -145,7 +180,7 @@ export async function listTournaments(filters: {
     where.status = filters.status
   }
   if (filters.gameId) {
-    where.eligibleGames = { some: { gameId: filters.gameId } }
+    where.games = { some: { id: filters.gameId } } // Changed from eligibleGames
   }
   if (filters.activeNow) {
     const now = new Date()
@@ -157,8 +192,10 @@ export async function listTournaments(filters: {
   return db.tournament.findMany({
     where,
     include: {
-      eligibleGames: { include: { game: true } }, // Game relation needs select for minimal data if game is large
-      participants: { select: { _count: true } }, // Correct way to get participant count via relation
+      games: { // Changed from eligibleGames
+        select: { id: true, name: true, thumbnailUrl: true, tournamentDirectives: true },
+      },
+      participants: { select: { _count: true } },
       rewards: true,
     },
     orderBy: { startTime: 'asc' },
@@ -172,9 +209,15 @@ export async function getTournamentDetails(tournamentId: string): Promise<Tourna
   return db.tournament.findUnique({
     where: { id: tournamentId },
     include: {
-      eligibleGames: {
-        include: { game: { select: { id: true, name: true, title: true, thumbnailUrl: true } } },
-      }, // Select specific game fields
+      games: { // Changed from eligibleGames
+        select: {
+          id: true,
+          name: true,
+          title: true,
+          thumbnailUrl: true,
+          tournamentDirectives: true,
+        },
+      },
       participants: {
         orderBy: { score: 'desc' },
         take: 100,
@@ -273,12 +316,17 @@ export async function recordTournamentPoints(
         status: TournamentStatus.ACTIVE,
         startTime: { lte: now },
         OR: [{ endTime: { gte: now } }, { endTime: null }],
-        eligibleGames: { some: { gameId } },
+        games: { some: { id: gameId } }, // Changed from eligibleGames
       },
     },
     include: {
       tournament: {
-        include: { eligibleGames: { where: { gameId } } },
+        include: {
+          games: { // Changed from eligibleGames
+            where: { id: gameId },
+            select: { id: true, tournamentDirectives: true },
+          },
+        },
       },
     },
   })
@@ -288,12 +336,27 @@ export async function recordTournamentPoints(
   }
 
   for (const participation of activeParticipations) {
-    const tournamentGame = participation.tournament.eligibleGames.find((eg) => eg.gameId === gameId)
-    if (!tournamentGame) continue
+    const targetGame = participation.tournament.games.find((g) => g.id === gameId) // Changed from tournamentGame
+    if (!targetGame) continue
 
-    const pointsForTournament = Math.floor(
-      pointsEarnedInGame * (tournamentGame.pointMultiplier || 1.0)
-    )
+    let pointMultiplier = 1.0
+    if (targetGame.tournamentDirectives) {
+      // Assuming tournamentDirectives is already parsed by Prisma if Json type is handled well
+      // Or parse if string:
+      // const directives = typeof targetGame.tournamentDirectives === 'string' ? JSON.parse(targetGame.tournamentDirectives) : targetGame.tournamentDirectives;
+      const directives = targetGame.tournamentDirectives as Array<{
+        tournamentId: string
+        pointMultiplier: number
+      }>
+      const directive = directives?.find(
+        (d) => d.tournamentId === participation.tournamentId
+      )
+      if (directive) {
+        pointMultiplier = directive.pointMultiplier
+      }
+    }
+
+    const pointsForTournament = Math.floor(pointsEarnedInGame * pointMultiplier)
 
     if (pointsForTournament <= 0) continue
 
@@ -521,10 +584,12 @@ export async function getTournamentById(tournamentId: string, tx?: Prisma.Transa
   return prismaClient.tournament.findUnique({
     where: { id: tournamentId },
     include: {
-      eligibleGames: { include: { game: true } },
+      games: { // Changed from eligibleGames
+        select: { id: true, name: true, thumbnailUrl: true, tournamentDirectives: true },
+      },
       participants: { include: { user: true } },
       rewards: true,
-      // createdBy: true,
+      // createdBy: true, // This relation might need to be 'user' depending on your schema
     },
   })
 }

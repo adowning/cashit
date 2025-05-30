@@ -99,11 +99,8 @@ export async function seedTournaments(
       status,
       targetScore,
       user: { connect: { id: adminProfile.id } }, // Connects Tournament.userId to adminProfile.id
-      eligibleGames: {
-        create: selectedGamesForTournament.map((game) => ({
-          gameId: game.id,
-          pointMultiplier: faker.helpers.arrayElement([1.0, 1.25, 1.5, 1.75, 2.0]),
-        })),
+      games: { // Changed from eligibleGames to games to match the new relation name
+        connect: selectedGamesForTournament.map((game) => ({ id: game.id })),
       },
       rewards: {
         create: [
@@ -120,6 +117,28 @@ export async function seedTournaments(
     try {
       const tournament = await prisma.tournament.create({ data: tournamentInput })
       createdTournaments.push(tournament)
+
+      // Store pointMultiplier in Game.tournamentDirectives
+      for (const game of selectedGamesForTournament) {
+        const pointMultiplier = faker.helpers.arrayElement([1.0, 1.25, 1.5, 1.75, 2.0]);
+        const gameToUpdate = await prisma.game.findUnique({ where: { id: game.id } });
+        let directives: any[] = [];
+        // Check if tournamentDirectives is a valid array, otherwise initialize
+        if (gameToUpdate && gameToUpdate.tournamentDirectives && Array.isArray(gameToUpdate.tournamentDirectives)) {
+          directives = gameToUpdate.tournamentDirectives.filter((d: any) => d.tournamentId !== tournament.id);
+        } else if (gameToUpdate && gameToUpdate.tournamentDirectives) {
+          // If it's not null and not an array, log warning and initialize
+          console.warn(`Game ${game.id} tournamentDirectives is not an array, re-initializing.`);
+        }
+
+        directives.push({ tournamentId: tournament.id, pointMultiplier: pointMultiplier });
+
+        await prisma.game.update({
+          where: { id: game.id },
+          data: { tournamentDirectives: directives },
+        });
+      }
+
       console.log(
         `🏆 Created tournament: ${tournament.name} (Status: ${tournament.status}, Start: ${tournament.startTime.toISOString()}, End: ${
           tournament.endTime ? tournament.endTime.toISOString() : 'N/A (Open-ended or not set)'

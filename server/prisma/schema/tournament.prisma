@@ -15,7 +15,7 @@ model Tournament {
   status        TournamentStatus        @default(PENDING) // PENDING, ACTIVE, COMPLETED, CANCELLED
   createdAt     DateTime                @default(now())
   updatedAt     DateTime                @updatedAt
-  eligibleGames TournamentGame[]
+  games         Game[]                  @relation("TournamentGames")
   participants  TournamentParticipant[]
   rewards       TournamentReward[]
   createdByid   String?
@@ -23,17 +23,6 @@ model Tournament {
   userId        String?
 
   @@index([status, startTime, endTime])
-}
-
-model TournamentGame {
-  id              String     @id @default(cuid())
-  tournament      Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  tournamentId    String
-  game            Game       @relation(fields: [gameId], references: [id]) // Assumes a 'Game' model exists
-  gameId          String
-  pointMultiplier Float      @default(1.0) // Points from this game might be multiplied
-
-  @@unique([tournamentId, gameId])
 }
 
 model TournamentParticipant {

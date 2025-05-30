@@ -63,7 +63,8 @@ model Game {
   gameLaunchLinks GameLaunchLink[]
   operatorId      String?
   operator        Operator?        @relation(fields: [operatorId], references: [id])
-  TournamentGame  TournamentGame[]
+  tournamentDirectives Json?
+  tournaments     Tournament[]     @relation("TournamentGames")
 
   @@map("games")
 }

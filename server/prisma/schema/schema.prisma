@@ -5,18 +5,19 @@ generator client {
 }
 
 datasource db {
-  provider = "postgres"
-  url      = env("DATABASE_URL")
+  provider  = "postgres"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
-generator typescriptInterfaces {
-  provider          = "ts-node ../node_modules/.bin/prisma-generator-typescript-interfaces"
-  output            = "../../../shared/src/types/prisma.ts"
-  optionalRelations = "true"
-  client            = "../generated"
-  prettier          = "true"
-  modelPrefix       = "Prisma"
-  enumPrefix        = "Prisma"
-  // typePrefix        = "Type"
-  modelType         = "type"
-}
+// generator typescriptInterfaces {
+//   provider          = "ts-node ../node_modules/.bin/prisma-generator-typescript-interfaces"
+//   output            = "../../../shared/src/types/prisma.ts"
+//   optionalRelations = "true"
+//   client            = "../generated"
+//   prettier          = "true"
+//   modelPrefix       = "Prisma"
+//   enumPrefix        = "Prisma"
+//   // typePrefix        = "Type"
+//   modelType         = "type"
+// }

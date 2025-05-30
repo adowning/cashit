@@ -167,7 +167,6 @@ const tableNames = [
   'TournamentGamePlay',
   'TournamentReward',
   'TournamentParticipant',
-  'TournamentGame',
   'Tournament',
   'game_spins',
   'game_launch_links',
@@ -178,31 +177,30 @@ const tableNames = [
   'products',
   'vip_infos',
   'user_profiles',
-  'xp_events',
+  // 'xp_events', // Commented out as it does not exist in the schema
   'operator_invitations',
   'session',
   'account',
   'user',
-  'operator_access', // This should be 'operator' if table name mapped
-  'game_providers',
+  'operator_access_keys', // Corrected to actual table name from @@map
+  'GameProvider', // Changed from 'game_providers'
   'games',
-  'currencies', // This table should be removed if model is deprecated
-  'achievements',
-  'user_achievements',
-  'notifications',
-  'chat_messages',
-  'friendships',
-  'posts',
-  'comments',
-  'event_log',
-  'verification',
-  'todo',
+  // 'currencies', // This table should be removed if model is deprecated
+  // 'achievements', // Commented out as it does not exist in the schema
+  // 'user_achievements', // Commented out as it does not exist in the schema
+  // 'notifications', // Commented out as likely legacy/unmapped
+  // 'chat_messages', // Commented out as likely legacy/unmapped
+  // 'friendships', // Commented out as likely legacy/unmapped
+  // 'posts', // Commented out as likely legacy/unmapped
+  // 'comments', // Commented out as likely legacy/unmapped
+  // 'event_log', // Commented out as likely legacy/unmapped
+  // 'verification', // Commented out as likely legacy/unmapped
+  // 'todo', // Commented out as likely legacy/unmapped
 ]
 
-// Adjust tableNames: remove 'currencies', change 'operator_access' to 'operator' (or actual DB table name)
-const adjustedTableNames = tableNames
-  .filter((name) => name !== 'currencies')
-  .map((name) => (name === 'operator_access' ? 'operator' : name))
+// Adjust tableNames: remove 'currencies'
+// The mapping for 'operator_access' to 'operator' is removed as 'operator_access_keys' is now used directly.
+const adjustedTableNames = tableNames.filter((name) => name !== 'currencies')
 
 async function clearDatabase(client: PrismaClient) {
   console.log('🧹 Clearing database tables...')

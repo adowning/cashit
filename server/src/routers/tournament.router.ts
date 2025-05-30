@@ -9,7 +9,8 @@ import {
   JoinTournamentResponse as JoinTournamentResponseShared,
   TournamentStatus,
   PrismaTournament,
-  PrismaTournamentGame,
+  // PrismaTournamentGame, // Removed
+  PrismaGame, // Added
   PrismaTournamentReward,
   PrismaTournamentParticipant,
 } from 'shared/dist'
@@ -41,7 +42,7 @@ const TournamentIdSchema = z.object({
 const mapPrismaTournamentToTournamentCore = (
   tournament: PrismaTournament & {
     participants?: PrismaTournamentParticipant[]
-    eligibleGames?: PrismaTournamentGame[]
+    games?: PrismaGame[] // Changed from eligibleGames
     rewards?: PrismaTournamentReward[]
   }
 ): TournamentCore => {
@@ -54,7 +55,8 @@ const mapPrismaTournamentToTournamentCore = (
     targetScore: tournament.targetScore,
     status: tournament.status as TournamentStatus, // Prisma enum should match shared enum
     participantCount: tournament.participants?.length ?? 0,
-    // prizeFund is not directly in PrismaTournament, might need to be calculated or added
+    // prizeFund calculation might need to check tournament.games if it was relying on eligibleGames.
+    // For now, assuming it's based on rewards.
     prizeFund:
       tournament.rewards?.reduce(
         (acc, reward) =>
@@ -73,7 +75,7 @@ export const tournamentRouter = {
         whereClause.status = input.status as TournamentStatus
       }
       if (input?.gameId) {
-        whereClause.eligibleGames = { some: { gameId: input.gameId } }
+        whereClause.games = { some: { id: input.gameId } } // Changed from eligibleGames
       }
       if (input?.activeNow) {
         const now = new Date()
@@ -86,7 +88,7 @@ export const tournamentRouter = {
         where: whereClause,
         include: {
           participants: true, // For participantCount
-          eligibleGames: true,
+          games: true, // Changed from eligibleGames
           rewards: true, // For prizeFund (example calculation)
         },
         orderBy: {
@@ -102,7 +104,9 @@ export const tournamentRouter = {
       const tournament = await _prisma.tournament.findUnique({
         where: { id: input.tournamentId },
         include: {
-          eligibleGames: { include: { game: true } },
+          games: { // Changed from eligibleGames
+            select: { id: true, name: true, thumbnailUrl: true, tournamentDirectives: true },
+          },
           rewards: { include: { winner: true } },
           participants: {
             include: { user: true },
@@ -116,12 +120,28 @@ export const tournamentRouter = {
 
       return {
         ...mapPrismaTournamentToTournamentCore(tournament),
-        eligibleGames: tournament.eligibleGames.map((tg) => ({
-          gameId: tg.gameId,
-          name: tg.game?.name ?? 'Unknown Game',
-          pointMultiplier: tg.pointMultiplier,
-          thumbnailUrl: tg.game?.thumbnailUrl ?? undefined,
-        })),
+        eligibleGames: tournament.games.map((game) => {
+          let pointMultiplier = 1.0
+          if (game.tournamentDirectives) {
+            // Assuming tournamentDirectives is already parsed by Prisma if Json type is handled well
+            // If not, parse it:
+            // const directives = typeof game.tournamentDirectives === 'string' ? JSON.parse(game.tournamentDirectives) : game.tournamentDirectives;
+            const directives = game.tournamentDirectives as Array<{
+              tournamentId: string
+              pointMultiplier: number
+            }> // Type assertion
+            const directive = directives?.find((d) => d.tournamentId === tournament.id)
+            if (directive) {
+              pointMultiplier = directive.pointMultiplier
+            }
+          }
+          return {
+            gameId: game.id, // gameId is now game.id
+            name: game.name ?? 'Unknown Game',
+            pointMultiplier: pointMultiplier,
+            thumbnailUrl: game.thumbnailUrl ?? undefined,
+          }
+        }),
         rewards: tournament.rewards.map((r) => ({
           id: r.id,
           rank: r.rank,
