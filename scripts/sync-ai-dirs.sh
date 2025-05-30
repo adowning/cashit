@@ -17,7 +17,7 @@ rsync -av \
   --exclude=client/public/ \
   --exclude=client/src/assets/ \
   --exclude=.*/ \
-  --exclude=prisma/generated/ \
+  --exclude=server/prisma/generated/ \
   --exclude=admin/ \
   --exclude=server/prisma/schema/ \
   . /tmp/ai/ai/

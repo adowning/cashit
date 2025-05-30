@@ -10,6 +10,7 @@ import type {
   TournamentParticipantJoinedPayload,
   TournamentStartedPayload,
 } from './tournament'
+import { UserProfile } from '..'
 /* SPDX-FileCopyrightText: 2025-present Kriasoft */
 /* SPDX-License-Identifier: MIT */
 
@@ -373,18 +374,25 @@ export interface WsData {
 // Application-specific WebSocket data, extending WsData
 export type AppWsData = WsData & {
   // userId: string; // If userId is always expected after auth for non-proxy
-
-  // NoLimit Proxy specific fields
+  user: UserProfile
+  username?: string
+  token: string
+  key?: string
   isNoLimitProxy?: boolean
-  nolimitSessionKey?: string // Key from NLC FS for RC4
-  nolimitRemoteWs?: WebSocket // WebSocket connection to NLC server
+  nolimitSessionKey?: string
+  nolimitRemoteWs?: WebSocket
   nolimitMessageCounter?: number
   nolimitRememberedData?: { extPlayerKey?: string }
-  // Parameters passed from client for NLC FS request
   nolimitGameCodeString?: string
   nolimitClientString?: string
   nolimitLanguage?: string
-  nolimitToken?: string // For real money play
+  nolimitToken?: string
+  subscribedTournamentTopics?: Set<string>
+  mode?: string
+  gameCodeString?: string
+  kaToken?: string
+  gameId?: string
+  isKaGamingProxy?: boolean
 }
 
 // Base type for Zod message schemas used in the router

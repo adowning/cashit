@@ -22,6 +22,7 @@ import {
   SendFunction,
   WsData,
   UpgradeRequestOptions,
+  AppWsData,
 } from 'shared'
 import { subscribeToTopic, unsubscribeFromTopic, safeJsonParse, validateAndSend } from '@/lib/utils'
 import { handleJoinRoom, handleSendMessage } from '@/handlers/chat.handler'
@@ -29,27 +30,27 @@ import { handlePing } from '@/handlers/heartbeat.handler'
 import { kagamingProxyOpenHandler } from '@/handlers/kagaming-proxy.handler'
 import { nolimitProxyMessageHandler, NoLimitProxyWsData } from '@/handlers/nolimit-proxy.handler'
 
-export type AppWsData = WsData & {
-  userId?: string
-  username?: string
-  token: string
-  key?: string
-  isNoLimitProxy?: boolean
-  nolimitSessionKey?: string
-  nolimitRemoteWs?: WebSocket
-  nolimitMessageCounter?: number
-  nolimitRememberedData?: { extPlayerKey?: string }
-  nolimitGameCodeString?: string
-  nolimitClientString?: string
-  nolimitLanguage?: string
-  nolimitToken?: string
-  subscribedTournamentTopics?: Set<string>
-  mode?: string
-  gameCodeString?: string
-  kaToken?: string
-  gameId?: string
-  isKaGamingProxy?: boolean
-}
+// export type AppWsData = WsData & {
+//   userId?: string
+//   username?: string
+//   token: string
+//   key?: string
+//   isNoLimitProxy?: boolean
+//   nolimitSessionKey?: string
+//   nolimitRemoteWs?: WebSocket
+//   nolimitMessageCounter?: number
+//   nolimitRememberedData?: { extPlayerKey?: string }
+//   nolimitGameCodeString?: string
+//   nolimitClientString?: string
+//   nolimitLanguage?: string
+//   nolimitToken?: string
+//   subscribedTournamentTopics?: Set<string>
+//   mode?: string
+//   gameCodeString?: string
+//   kaToken?: string
+//   gameId?: string
+//   isKaGamingProxy?: boolean
+// }
 
 // --- Tournament Topic Subscription Handlers ---
 
@@ -203,16 +204,16 @@ export class WebSocketRouter<T extends AppWsData = AppWsData> {
       ws.data.subscribedTournamentTopics.clear()
     }
     unsubscribeFromTopic(ws, 'global', reason || 'Connection closed') // Corrected
-    if (ws.data.userId) {
-      unsubscribeFromTopic(ws, `user:${ws.data.userId}`, reason || 'Connection closed') // Corrected
+    if (ws.data.user.id) {
+      unsubscribeFromTopic(ws, `user:${ws.data.user.id}`, reason || 'Connection closed') // Corrected
     }
 
-    if (ws.data.currentRoomId && ws.data.userId && this.server && ws.data.username) {
+    if (ws.data.currentRoomId && ws.data.user.id && this.server && ws.data.username) {
       this.server.publish(
         ws.data.currentRoomId,
         JSON.stringify({
           type: UserLeft.shape.type.value,
-          payload: { userId: ws.data.userId, username: ws.data.username },
+          payload: { userId: ws.data.user.id, username: ws.data.username },
           meta: { timestamp: new Date().toISOString() },
         })
       )
@@ -257,14 +258,15 @@ export class WebSocketRouter<T extends AppWsData = AppWsData> {
       nolimitProxyMessageHandler(ws as ServerWebSocket<NoLimitProxyWsData>, message)
       return
     }
-    console.log('message')
     if (ws.data.isKaGamingProxy && typeof kagamingProxyOpenHandler === 'function') {
       kagamingProxyOpenHandler({ ws: ws as any, send: this.createSendFunction(ws as any) })
       return
     }
     const messageString = message instanceof Buffer ? message.toString() : message
     const parseResult = safeJsonParse(messageString)
-
+    console.log('parseResult')
+    console.log(parseResult)
+    console.log('parseResult')
     if (!parseResult.success || !parseResult.data) {
       console.warn(
         `Received malformed or unparseable WebSocket message from ${ws.data.clientId}: ${messageString}`,

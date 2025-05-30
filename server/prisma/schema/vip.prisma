@@ -1,22 +1,18 @@
 model VipInfo {
-    id                    String       @id
-    createdAt             DateTime     @default(now())
-    updatedAt             DateTime     @updatedAt
-    username              String       @unique
-    avatar                String?      @default("avatar-10.webp")
-    userId                String
-    level                 Int          @default(0)
-    currentLevelXp        Int          @default(0)
-    totalXp               Int          @default(0)
-    //   nextLevelXpRequired Int @default(0)// XP needed to reach the next level from 0 XP of current level
-    // Daily/Weekly/Monthly claims or limits
-    dailyBonusClaimedAt   DateTime?
-    weeklyBonusClaimedAt  DateTime?
-    monthlyBonusClaimedAt DateTime?
-    // Other VIP specific benefits or states
-    cashbackPercentage    Int          @default(0)
-    userProfile           UserProfile?
+  id                    String       @id
+  createdAt             DateTime     @default(now())
+  updatedAt             DateTime     @updatedAt
+  username              String       @unique
+  avatar                String?      @default("avatar-10.webp")
+  userId                String       @unique
+  level                 Int          @default(0)
+  currentLevelXp        Int          @default(0)
+  totalXp               Int          @default(0)
+  dailyBonusClaimedAt   DateTime?
+  weeklyBonusClaimedAt  DateTime?
+  monthlyBonusClaimedAt DateTime?
+  cashbackPercentage    Int          @default(0)
+  userProfile           UserProfile?
 
-    @@unique([userId])
-    @@map("vip_infos")
+  @@map("vip_infos")
 }

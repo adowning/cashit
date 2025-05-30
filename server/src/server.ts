@@ -14,6 +14,8 @@ import { setupTournamentWebSocketListeners } from './handlers/tournament.handler
 import * as tournamentService from './services/tournament.service'
 import { RealtimeService } from './services/realtime.service' // Adjust path
 import { PgRealtimeClientOptions } from './lib/utils'
+import { AppWsData } from 'shared'
+import prisma from 'prisma'
 
 // Define the user type based on your authSession.user structure
 type User = {
@@ -59,10 +61,10 @@ const resthandler = new RPCHandler(appRouter)
 const sockethandler = new experimental_RPCHandler(socketRouter)
 
 // WebSocket router
-const ws = new WebSocketRouter<{ user: User; clientId: string; token: string }>()
+const ws = new WebSocketRouter<AppWsData>()
 // ws.addRoutes() // Add routes from another file
 
-const serverInstance = Bun.serve({
+const serverInstance = Bun.serve<AppWsData, {}>({
   port: 3000,
 
   async fetch(req, server) {
@@ -92,19 +94,31 @@ const serverInstance = Bun.serve({
       let user
       if (authSession != null) user = authSession.user
       const clientId = 'uuidv4()'
-      console.log(user)
+
       if (user !== undefined) {
-        const u = { ...user, clientId }
-        const wsUpgrade = ws.upgrade({
-          server,
-          request: req,
-          data: { user: u, token: clientAuthToken as string },
+        user = await prisma.userProfile.findUnique({
+          where: { id: user.id },
         })
-        console.log(wsUpgrade)
-        // ws.upgrade may return undefined/null, so ensure Response
-        if (wsUpgrade && typeof wsUpgrade === 'object' && (wsUpgrade as any) instanceof Response)
-          return wsUpgrade
-        return new Response('WebSocket upgrade failed', { status: 400 })
+        if (user !== null) {
+          console.log(user)
+          // const u = { ...user,  }
+          const wsUpgrade = ws.upgrade({
+            server,
+            request: req,
+            data: {
+              user,
+              token: clientAuthToken as string,
+              username: user.username,
+              isNoLimitProxy: false,
+              isKaGamingProxy: false,
+            },
+          })
+          console.log(wsUpgrade)
+          // ws.upgrade may return undefined/null, so ensure Response
+          if (wsUpgrade && typeof wsUpgrade === 'object' && (wsUpgrade as any) instanceof Response)
+            return wsUpgrade
+          return new Response('WebSocket upgrade failed', { status: 400 })
+        }
       }
     }
     const authSession = await auth.api.getSession({
@@ -129,7 +143,6 @@ const pgOptions: PgRealtimeClientOptions = {
   channel: process.env.DB_LISTEN_CHANNEL || 'spec_data_change',
   onError: (error: Error) => console.error('[DB Listener Error]', error),
 }
-console.log(pgOptions)
 const realtimeService = new RealtimeService(pgOptions)
 realtimeService.setServer(serverInstance)
 realtimeService.startListening().catch((err) => {

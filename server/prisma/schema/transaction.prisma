@@ -1,120 +1,40 @@
-enum TransactionType {
-  DEPOSIT
-  WITHDRAWAL
-  BET
-  WIN
-  TRANSFER_SENT
-  TRANSFER_RECEIVED
-  SYSTEM_ADJUSTMENT_CREDIT // Added from schema.zmodel.txt
-  SYSTEM_ADJUSTMENT_DEBIT // Added from schema.zmodel.txt
-  TOURNAMENT_BUYIN // Added from schema.zmodel.txt
-  TOURNAMENT_PRIZE // Added from schema.zmodel.txt
-  AFFILIATE_COMMISSION // Added from schema.zmodel.txt
-  REFUND // Added from schema.zmodel.txt
-  FEE // Added from schema.zmodel.txt
-  BONUS_AWARD
-  BET_PLACE // Placing a bet
-  BET_WIN // Winning a bet
-  BET_LOSE // Losing a bet (optional, if you record losses explicitly)
-  BET_REFUND // Bet refunded
-  BONUS_WAGER // Wagering bonus funds
-  BONUS_CONVERT // Bonus funds converted to real money after wagering
-  BONUS_EXPIRED // Bonus funds expired
-  XP_AWARD // XP granted
-  ADJUSTMENT_ADD // Manual credit adjustment by admin
-  ADJUSTMENT_SUB // Manual debit adjustment by admin
-  INTERNAL_TRANSFER // Transfer between user's own accounts (e.g., main to betting wallet if separate)
-  PRODUCT_PURCHASE // Purchase of a virtual item or package
-  REBATE_PAYOUT // Cashback/rebate paid out
-}
-
-enum TransactionStatus {
-  PENDING
-  PROCESSING // Added from schema.zmodel.txt
-  COMPLETED
-  FAILED
-  CANCELLED
-  REFUNDED
-  EXPIRED // Added from schema.zmodel.txt
-  REJECTED // Added from schema.zmodel.txt
-  REQUIRES_ACTION
-  ON_HOLD // Added from schema.zmodel.txt
-}
-
-enum RewardStatus {
-  AVAILABLE // User can claim this reward
-  CLAIMED // User has successfully claimed this reward
-  EXPIRED // Reward was available but expired before being claimed
-  PENDING // Reward is pending, e.g., needs verification or processing before becoming available/claimed
-  VOIDED // Reward was voided by an admin or system rule
-}
-
 model Transaction {
-  id          String    @id @default(cuid())
-  // Relationships for originator and receiver (as per your service code)
-  // Assuming 'originatorUserId' and 'receiverUserId' are the foreign key fields
-  processedAt DateTime?
-
-  // originatorUserId    String
-  // originator          UserProfile?               @relation("OriginatedTransactions", fields: [originatorUserId], references: [id], onDelete: Restrict)
-  // receiverUserId      String // Optional: for P2P, commissions, or system-to-user transfers
-  // receiver            UserProfile              @relation("ReceivedTransactions", fields: [receiverUserId], references: [id], onDelete: SetNull)
-
-  // Wallet relation (optional, but good for direct link if a specific wallet is always involved)
-  // If a transaction can occur without directly hitting one specific user wallet (e.g. system fee not tied to user wallet)
-  // then this can be optional. But for user deposits/withdrawals/bets, it's usually tied to their wallet.
-  // Your service code for initializeDeposit uses walletId.
-  walletId            String? // The ID of the primary user's (originator's) wallet involved.
-  wallet              Wallet?            @relation(fields: [walletId], references: [id], onDelete: SetNull)
+  id                  String             @id @default(cuid())
+  processedAt         DateTime?
+  walletId            String?
   type                TransactionType
   status              TransactionStatus  @default(PENDING)
-  amount              Int // Gross amount in CENTS (or smallest unit of the currency)
-  netAmount           Int? // Net amount in CENTS after fees (if applicable)
-  feeAmount           Int? // Fee amount in CENTS (if applicable)
-  productId           String? // Optional: Link to a product if this transaction is for a product purchase/deposit package
-  product             Product?           @relation("TransactionProduct", fields: [productId], references: [id], onDelete: SetNull) // onDelete: SetNull means if product is deleted, transaction still exists but productId is nullified. Use Restrict if transaction should prevent product deletion.
-  paymentMethod       PaymentMethod? // Optional: If this transaction is tied to a specific payment method
-  // Balances for audit trail (recorded at the time of completion, in CENTS)
-  balanceBefore       Int? // User's real balance (cents) before this transaction completed
-  balanceAfter        Int? // User's real balance (cents) after this transaction completed
-  bonusBalanceBefore  Int? // User's bonus balance (cents) before
-  bonusBalanceAfter   Int? // User's bonus balance (cents) after
-  // For bonus-specific transactions or if a transaction awards/uses bonus funds
-  bonusAmount         Int? // Amount of bonus funds involved in this transaction (cents)
-  wageringRequirement Int? // If this bonus award has a wagering requirement (in cents)
-  wageringProgress    Int? // Progress made towards this specific bonus's wagering (in cents)
-  // Details & Metadata
-  description         String?            @db.Text
-  provider            String? // e.g., "Stripe", "CashApp", "System", "PragmaticPlay", "AdminPanel"
-  providerTxId        String? // Transaction ID from the external provider (can be @unique if truly unique per provider)
-  relatedGameId       String? // If related to a game session or bet
-  relatedRoundId      String? // Game round ID
-  metadata            Json? // For any other relevant data:
-  // {
-  //   ipAddress: "...",
-  //   deviceInfo: { ... },
-  //   webhookPayload: { ... },
-  //   recipientDetails: { ... }, // For withdrawals
-  //   noteForPayment: "TX123", // For matching CashApp deposits
-  //   productId: "...", // If deposit was for a product
-  //   paymentMethodId: "...",
-  //   discrepancy: true/false, // For deposits with mismatched amounts
-  //   failureReason: "...", // For failed transactions
-  //   adminNotes: "...",
-  //   systemActionDetails: "..."
-  // }  processedAt         DateTime? // Timestamp when the transaction moved to a final state (COMPLETED, FAILED, CANCELLED, EXPIRED)
+  amount              Int
+  netAmount           Int?
+  feeAmount           Int?
+  productId           String?
+  paymentMethod       PaymentMethod?
+  balanceBefore       Int?
+  balanceAfter        Int?
+  bonusBalanceBefore  Int?
+  bonusBalanceAfter   Int?
+  bonusAmount         Int?
+  wageringRequirement Int?
+  wageringProgress    Int?
+  description         String?
+  provider            String?
+  providerTxId        String?
+  relatedGameId       String?
+  relatedRoundId      String?
+  metadata            Json?
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
-  // For linking to rebate if this transaction generated one
-  rebateGenerated     RebateTransaction?
-  products            Product[]
-  UserProfile         UserProfile?       @relation(fields: [userProfileId], references: [id])
   userProfileId       String?
-  Operator            Operator?          @relation(fields: [operatorId], references: [id])
   operatorId          String?
+  products            Product[]
+  rebateGenerated     RebateTransaction?
+  Operator            Operator?          @relation(fields: [operatorId], references: [id])
+  product             Product?           @relation("TransactionProduct", fields: [productId], references: [id])
+  UserProfile         UserProfile?       @relation(fields: [userProfileId], references: [id])
+  wallet              Wallet?            @relation(fields: [walletId], references: [id])
 
   @@index([walletId])
-  @@index([provider, providerTxId]) // Useful for webhook lookups
+  @@index([provider, providerTxId])
   @@index([paymentMethod])
   @@index([createdAt])
   @@map("transactions")
@@ -123,18 +43,17 @@ model Transaction {
 model RebateTransaction {
   id                  String       @id @default(cuid())
   userId              String
-  user                UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  transactionId       String       @unique // Original transaction that generated the rebate
-  originalTransaction Transaction  @relation(fields: [transactionId], references: [id])
+  transactionId       String       @unique
   rebateAmount        Float
   currencyId          String
-  // currency      Currency @relation(fields: [currencyId], references: [id])
-  vipLevel            Int // VIP level at the time of the original transaction
-  rebatePercentage    Float // Cashback percentage applied
-  status              RewardStatus @default(PENDING) // PENDING until paid out, then CLAIMED/COMPLETED
+  vipLevel            Int
+  rebatePercentage    Float
+  status              RewardStatus @default(PENDING)
   paidOutAt           DateTime?
   createdAt           DateTime     @default(now())
   updatedAt           DateTime     @updatedAt
+  originalTransaction Transaction  @relation(fields: [transactionId], references: [id])
+  user                UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, status])
   @@map("rebate_transactions")
@@ -144,20 +63,69 @@ model Wallet {
   id            String        @id @default(cuid())
   balance       Float         @default(0.0)
   isActive      Boolean       @default(true)
-  address       String?       @unique // For crypto wallets
+  address       String?       @unique
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
   userId        String
-  user          UserProfile   @relation(fields: [userId], references: [id], onDelete: Cascade)
   operatorId    String
-  operator      Operator      @relation(fields: [operatorId], references: [id], onDelete: Cascade)
   paymentMethod PaymentMethod
-  //   currencyId    String
-  //   currency      Currency      @relation(fields: [currencyId], references: [id]) // This is the relation
+  bonusBalance  Int           @default(0)
+  lockedBalance Int           @default(0)
   transactions  Transaction[]
-  bonusBalance  Int           @default(0) // Bonus money balance
-  lockedBalance Int           @default(0) // Balance locked in active bets or pending withdrawals
+  operator      Operator      @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  user          UserProfile   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, paymentMethod])
   @@map("wallets")
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  BET
+  WIN
+  TRANSFER_SENT
+  TRANSFER_RECEIVED
+  SYSTEM_ADJUSTMENT_CREDIT
+  SYSTEM_ADJUSTMENT_DEBIT
+  TOURNAMENT_BUYIN
+  TOURNAMENT_PRIZE
+  AFFILIATE_COMMISSION
+  REFUND
+  FEE
+  BONUS_AWARD
+  BET_PLACE
+  BET_WIN
+  BET_LOSE
+  BET_REFUND
+  BONUS_WAGER
+  BONUS_CONVERT
+  BONUS_EXPIRED
+  XP_AWARD
+  ADJUSTMENT_ADD
+  ADJUSTMENT_SUB
+  INTERNAL_TRANSFER
+  PRODUCT_PURCHASE
+  REBATE_PAYOUT
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+  EXPIRED
+  REJECTED
+  REQUIRES_ACTION
+  ON_HOLD
+}
+
+enum RewardStatus {
+  AVAILABLE
+  CLAIMED
+  EXPIRED
+  PENDING
+  VOIDED
 }

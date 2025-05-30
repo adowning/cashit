@@ -1,4 +1,4 @@
-import type { MessageSchemaType, WsData } from 'shared'
+import type { AppWsData, MessageSchemaType, WsData } from 'shared'
 import type { Server, ServerWebSocket } from 'bun'
 import { z } from 'zod'
 import { ZodType, ZodTypeAny } from 'zod'
@@ -128,7 +128,7 @@ export function validateAndPublish(
   console.warn(`[WS UTILS] published tableName ${payload.table} to topic: ${userTopic}`)
 }
 export function publish<Schema extends MessageSchemaType>(
-  ws: ServerWebSocket<WsData>,
+  ws: ServerWebSocket<AppWsData>,
   server: Server, // Explicitly require the server instance
   topic: string,
   schema: Schema,
@@ -147,7 +147,7 @@ export function publish<Schema extends MessageSchemaType>(
       type: messageType,
       meta: {
         clientId: ws.data.clientId, // Use clientId from ws connection data
-        userId: ws.data.userId, // Include userId if available
+        userId: ws.data.user.id, // Include userId if available
         timestamp: Date.now(),
         ...meta,
       },

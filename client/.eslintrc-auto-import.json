@@ -22,7 +22,6 @@
     "Game": true,
     "GameBigWinData": true,
     "GameBigWinItem": true,
-    "GameCategory": true,
     "GameCategoryName": true,
     "GameEnterBody": true,
     "GameEnterResponse": true,

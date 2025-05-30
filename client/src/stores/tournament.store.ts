@@ -75,11 +75,11 @@ const WS_EVENT_TYPES = {
 type WebSocketMeta = { timestamp: number; clientId?: string; [key: string]: any }
 
 export const useTournamentStore = defineStore('tournament', () => {
-  const { restClient } = orpcManager.getClients() // Get oRPC clients
+  const restClient = orpcManager.getRestClient() // Get oRPC clients
   const { status: wsStatus, sendTypedMessage } = useAppWebSocket()
   const eventManager: IEventManagerService = useEventManager()
   const notificationStore = useNotificationStore()
-  const isBattlesOpen = ref<boolean>(true) // Assuming this is used somewhere in the store
+  const isBattlesOpen = ref<boolean>(false) // Assuming this is used somewhere in the store
   const tournaments = ref<Record<string, TournamentCore>>({})
   const activeTournamentIds = ref<string[]>([])
   const upcomingTournamentIds = ref<string[]>([])

@@ -52,15 +52,15 @@ export class OrpcManager {
   }
   getClients = () => {
     // const token = this.getToken()
-    return this.client
+    return this.restClient
   }
   getRestClient = () => {
     // const token = this.getToken()
-    return this.clientA
+    return this.restClient
   }
-  getRealtimeClient = () => {
-    return this.clientB
-  }
+  // getRealtimeClient = () => {
+  //   return this.clientB
+  // }
 
   getColadaClient = () => {
     // const authStore = useAuthStore()
@@ -86,14 +86,14 @@ export class OrpcManager {
   //   const contractClient: ContractRouterClient<typeof appRouterType> = getContractRouter(appRouter, ['/rpc'])
   // export const orpcUtils = createORPCVueQueryUtils(client)
   //  export const contractOrpcUtils = createORPCVueQueryUtils(contractClient)
-  private websocket = new WebSocket(`ws://localhost:3000?token=${this.getToken()}`)
+  // private websocket = new WebSocket(`ws://localhost:3000?token=${this.getToken()}`)
 
-  private socketLink = new SocketRPCLink({
-    websocket: this.websocket,
-  })
+  // private socketLink = new SocketRPCLink({
+  //   websocket: this.websocket,
+  // })
 
   // Create a client for your router
-  private socketClient: RouterClient<typeof appRouter> = createORPCClient(this.socketLink)
+  // private socketClient: RouterClient<typeof appRouter> = createORPCClient(this.socketLink)
 
   // Or, create a client using a contract
   // export const contractSocketClient: ContractRouterClient<typeof contract> =
@@ -101,13 +101,13 @@ export class OrpcManager {
   private vueQueryClient = createORPCVueQueryUtils(this.orpcClient)
   private orpcColadaClient = createORPCVueColadaUtils(this.orpcClient)
 
-  private clientA: RouterClient<typeof appRouter> = this.orpcClient
-  private clientB: RouterClient<typeof appRouter> = this.socketClient
+  public restClient: RouterClient<typeof appRouter> = this.orpcClient
+  // private clientB: RouterClient<typeof appRouter> = this.socketClient
 
-  public client = {
-    restClient: this.clientA,
-    realtimeClient: this.clientB,
-  }
+  // public client = {
+  //   restClient: this.clientA,
+  //   // realtimeClient: this.clientB,
+  // }
 }
 export const orpcManager = new OrpcManager()
 // export const orpc = orpcManager.getClient()

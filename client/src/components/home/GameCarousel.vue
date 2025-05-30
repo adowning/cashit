@@ -5,6 +5,7 @@
   import { useRouter } from 'vue-router'
 
   // import FlameEffectOverlay from './FlameEffectOverlay.vue'
+  // import SnowEffectOverlay from './SnowEffectOverlay.vue'
 
   interface Game {
     id: number
@@ -21,7 +22,7 @@
     gameStore.gameSearchList.items.map((item: any) => ({
       id: Number(item.id),
       title: item.title,
-      developer: item.developer ?? item.providerName ?? 'unknown',
+      developer: item.developer, //item.developer ?? item.providerName ?? 'unknown',
       name: item.name,
       temperature: item.temperature ?? 'none',
       featured: item.featured ?? false,
@@ -35,29 +36,37 @@
       return
     }
 
-    if (game.developer === 'netgame') {
-      await router.push(`/games/netgame/?gameName=${game.name}&token=${token}`)
-    } else if (game.developer === 'netent') {
-      await router.push(`/games/netent/?gameName=${game.name}&token=${token}`)
-    } else if (game.developer === 'nolimit') {
-      await router.push(`/games/nolimit/?gameName=${game.name}&token=${token}`)
-    } else if (game.developer === 'redtiger') {
-      await router.push(`/games/redtiger/?gameName=${game.name}&token=${token}`)
-    } else {
-      console.warn(`Unsupported developer: ${game.developer}`)
-    }
+    // if (game.developer === 'netgame') {
+    //   await router.push(`/games/netgame/?gameName=${game.name}&token=${token}`)
+    // } else if (game.developer === 'netent') {
+    //   await router.push(`/games/netent/?gameName=${game.name}&token=${token}`)
+    // } else if (game.developer === 'nolimit') {
+    //   await router.push(`/games/nolimit/?gameName=${game.name}&token=${token}`)
+    // } else if (game.developer === 'redtiger') {
+    //   await router.push(`/games/redtiger/?gameName=${game.name}&token=${token}`)
+    // } else {
+    //   console.warn(`Unsupported developer: ${game.developer}`)
+    // }
   }
 
   onMounted(() => {
+    // games.value = gameStore.gameSearchList.items.map((item: any) => ({
+    //   id: Number(item.id),
+    //   title: item.title,
+    //   developer: item.developer, //item.developer ?? item.providerName ?? 'unknown',
+    //   name: item.name,
+    //   temperature: item.temperature ?? 'none',
+    //   featured: item.featured ?? false,
+    // }))
     games.value = gameStore.gameSearchList.items.map((item: any) => ({
-      id: Number(item.id),
+      id: item.id,
       title: item.title,
-      developer: item.developer ?? item.providerName ?? 'unknown',
+      developer: item.developer,
       name: item.name,
       temperature: item.temperature ?? 'none',
       featured: item.featured ?? false,
     }))
-    // console.log('Games loaded:', games.value)
+    console.log('Games loaded:', games.value)
   })
 
   // Fallback for broken images
@@ -138,7 +147,9 @@
             </div>
 
             <div
-              :class="isFeatured(game) ? 'card-image-container feat box' : 'card-image-container'"
+              :class="
+                isFeatured(game) ? 'card-image-container-featured feat box' : 'card-image-container'
+              "
               class="absolute top-0 overflow-hidden"
               style="z-index: 1"
             >
@@ -227,7 +238,16 @@
     position: relative; /* Already present */
     border-radius: inherit;
     top: 0;
-    z-index: 1; /* Keep or adjust as needed for stacking against other elements */
+    z-index: 1;
+  }
+  .card-image-container-featured {
+    height: 100%;
+    flex-grow: 1;
+    overflow: hidden;
+    position: relative; /* Already present */
+    border-radius: inherit;
+    top: 20px;
+    z-index: 1;
   }
 
   /* Ensure the game image has a lower z-index than the effects */
@@ -235,7 +255,7 @@
     z-index: 0; /* Set a lower z-index */
     display: block;
     width: 92%;
-    height: 83%;
+    height: 93%;
     margin-top: 10%;
     margin-left: 8px;
     margin-right: 5px;
@@ -316,20 +336,20 @@
   }
 
   .carousel-container {
-    height: 40vh;
+    height: 42vh;
     min-height: 300px;
-    max-height: 340px;
+    max-height: 380px;
     width: 100%;
     overflow-x: auto;
     max-width: 600px;
     margin: 0 auto;
-    margin-top: 30px;
+    margin-top: 10px;
     overflow-y: hidden;
     overflow-x: auto;
     position: relative;
     padding: 0 0px;
     box-sizing: border-box;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
   }
 
   .carousel-scroll-area {
@@ -472,7 +492,7 @@
     top: 0;
   }
 
-  .card-content.feat {
+  .card-content-image.feat {
     z-index: 2;
     width: 100%;
     height: 95%;
@@ -484,7 +504,7 @@
   }
 
   .card-image-container.feat {
-    margin-top: 25px;
+    margin-top: 0px;
   }
   .card-image-container.feat.span {
     margin-left: 5px;

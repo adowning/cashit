@@ -6,6 +6,7 @@ import { orpcManager } from '@/utils/orpc.client'
 
 import { handleException } from './exception'
 import { PrismaGame } from 'shared'
+import destr from 'destr'
 
 type dialogType = 'login' | 'signup'
 
@@ -374,7 +375,7 @@ export const useGameStore = defineStore(
         const response = await restClient.game.getGameCategories()
         setSuccess(true)
         if (sub_api == '?type=developers') {
-          getGameDevelopers(response)
+          // getGameDevelopers(response)
         } else {
           setGameCategories(response)
         }
@@ -402,8 +403,57 @@ export const useGameStore = defineStore(
                     // Map all required Game properties here, using defaults if missing
                     id: item.id,
                     name: item.name,
-                    developer: item.gameProvider.name.toLowerCase(),
+                    developer: item.gameProvider?.name.toLowerCase(),
 
+                    // Add all required Game properties with sensible defaults
+                    title: item.title ?? '',
+                    category: item.category ?? '',
+                    featured: item.featured ?? false,
+                    // Add all other required properties from Game interface with defaults
+                    // Example:
+                    // propertyName: item.propertyName ?? defaultValue,
+                    // Repeat for all 40+ properties as required by Game interface
+                    // If you don't know the full list, import Game and use a type assertion as a workaround:
+                  }) as Game
+              )
+            : [],
+          total: response.total ? response.total : 0,
+        })
+      } catch (error: any) {
+        setGameSearchList({ items: [], total: 0 })
+        setErrorMessage(handleException(error.code || 500))
+      }
+      // const network: Network = Network.getInstance();
+      // const next = (response: GetGameSearchResponse) => {
+      //   if (response.code == 200) {
+      //     setSuccess(true);
+      //     setGameSearchList(response.data);
+      //     console.log(response.data.list.length);
+      //   } else {
+      //     setGameSearchList({ list: [], total: 0 });
+      //     setErrorMessage(handleException(response.code));
+      //   }
+      // };
+      // await network.sendMsg(route, {}, next, 1, 4);
+    }
+    async function dispatchGetAllGames() {
+      setSuccess(false)
+      try {
+        const api = useApiClient()
+        const response = await restClient.game.getAllGames()
+        setSuccess(true)
+        console.log(response.items)
+        setGameSearchList({
+          items: Array.isArray(response.items)
+            ? response.items.map(
+                (item: any) =>
+                  ({
+                    // Map all required Game properties here, using defaults if missing
+                    id: item.id,
+                    name: item.name,
+                    developer: item.gameProvider?.name.toLowerCase(),
+                    temperature:
+                      Math.random() * 100 < 40 ? 'hot' : Math.random() * 100 < 20 ? 'cold' : 'none',
                     // Add all required Game properties with sensible defaults
                     title: item.title ?? '',
                     category: item.category ?? '',
@@ -443,7 +493,7 @@ export const useGameStore = defineStore(
     async function dispatchUserGame(data: GameUserBody) {
       setSuccess(false)
       try {
-        const response = await restClient.game.getGameDetails(data.id, data.demo)
+        const response = await restClient.game.getGameDetails({ id: data.id })
         setSuccess(true)
         setGameSearchList({
           items: Array.isArray(response) ? response : [],
@@ -477,14 +527,15 @@ export const useGameStore = defineStore(
     async function dispatchGameEnter(data: GameEnterBody) {
       setSuccess(false)
       try {
-        const { data: token, error } = await restClient.POST<string>('/rpc/launch_game', {
-          body: { game_id: data.id },
-          parseAs: 'text',
+        const gameData = await restClient.game.launchGame({
+          id: data.id as string,
+          demo: false,
         })
-
-        if (error || !token) {
-          throw new Error(error?.message || 'Failed to launch game')
-        }
+        const j = destr(gameData) as LaunchGameResponseDto
+        const token = j.game_session_id as string
+        // if (typeof j === Error) {
+        //   throw new Error(error?.message || 'Failed to launch game')
+        // }
 
         setSuccess(true)
         setErrorMessage('')
@@ -644,6 +695,7 @@ export const useGameStore = defineStore(
       dispatchUserSpin,
       dispatchGameBigWin,
       dispatchGameFavoriteList,
+      dispatchGetAllGames,
     }
   },
   {

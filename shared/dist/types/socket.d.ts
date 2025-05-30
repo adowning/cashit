@@ -6,6 +6,7 @@ export interface GetUserBalanceSocket {
 import type { HeadersInit, Server, ServerWebSocket } from 'bun';
 import { z, ZodObject, ZodLiteral, type ZodRawShape, type ZodTypeAny } from 'zod';
 import type { TournamentEndedPayload, TournamentParticipantJoinedPayload, TournamentStartedPayload } from './tournament';
+import { UserProfile } from '..';
 /**
  * Base schema for message metadata.
  * Provides common fields that are available on all messages.
@@ -45,11 +46,11 @@ export declare const UserLeft: PayloadMessageSchema<"USER_LEFT", z.ZodObject<{
     roomId: z.ZodString;
     userId: z.ZodString;
 }, z.UnknownKeysParam, z.ZodTypeAny, {
-    userId: string;
     roomId: string;
+    userId: string;
 }, {
-    userId: string;
     roomId: string;
+    userId: string;
 }>>;
 export declare const SendMessage: PayloadMessageSchema<"SEND_MESSAGE", z.ZodObject<{
     roomId: z.ZodString;
@@ -74,13 +75,13 @@ export declare const NewMessage: PayloadMessageSchema<"NEW_MESSAGE", z.ZodObject
     text: z.ZodString;
     timestamp: z.ZodOptional<z.ZodNumber>;
 }, z.UnknownKeysParam, z.ZodTypeAny, {
-    userId: string;
     roomId: string;
+    userId: string;
     text: string;
     timestamp?: number | undefined;
 }, {
-    userId: string;
     roomId: string;
+    userId: string;
     text: string;
     timestamp?: number | undefined;
 }>>;
@@ -100,11 +101,11 @@ export declare const SubscribeResponse: PayloadMessageSchema<"PONG", z.ZodObject
     userId: z.ZodString;
     status: z.ZodBoolean;
 }, z.UnknownKeysParam, z.ZodTypeAny, {
-    userId: string;
     status: boolean;
+    userId: string;
 }, {
-    userId: string;
     status: boolean;
+    userId: string;
 }>>;
 export declare const DatabaseUpdate: z.ZodObject<{
     table: z.ZodString;
@@ -113,12 +114,12 @@ export declare const DatabaseUpdate: z.ZodObject<{
     data: z.ZodNullable<z.ZodRecord<z.ZodString, z.ZodAny>>;
 }, "strip", z.ZodTypeAny, {
     table: string;
-    operation: "UPDATE" | "INSERT" | "DELETE";
+    operation: "INSERT" | "UPDATE" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }, {
     table: string;
-    operation: "UPDATE" | "INSERT" | "DELETE";
+    operation: "INSERT" | "UPDATE" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }>;
@@ -239,12 +240,12 @@ export declare const TournamentLeaderboardUpdateEvent: z.ZodObject<{
     data: z.ZodNullable<z.ZodRecord<z.ZodString, z.ZodAny>>;
 }, "strip", z.ZodTypeAny, {
     table: string;
-    operation: "UPDATE" | "INSERT" | "DELETE";
+    operation: "INSERT" | "UPDATE" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }, {
     table: string;
-    operation: "UPDATE" | "INSERT" | "DELETE";
+    operation: "INSERT" | "UPDATE" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }>;
@@ -353,6 +354,10 @@ export interface WsData {
     [key: string]: unknown;
 }
 export type AppWsData = WsData & {
+    user: UserProfile;
+    username?: string;
+    token: string;
+    key?: string;
     isNoLimitProxy?: boolean;
     nolimitSessionKey?: string;
     nolimitRemoteWs?: WebSocket;
@@ -364,6 +369,12 @@ export type AppWsData = WsData & {
     nolimitClientString?: string;
     nolimitLanguage?: string;
     nolimitToken?: string;
+    subscribedTournamentTopics?: Set<string>;
+    mode?: string;
+    gameCodeString?: string;
+    kaToken?: string;
+    gameId?: string;
+    isKaGamingProxy?: boolean;
 };
 export type MessageSchemaType = ZodObject<{
     type: ZodLiteral<string>;

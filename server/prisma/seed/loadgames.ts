@@ -13,7 +13,7 @@ export default async function loadGames(prisma: PrismaClient, key: OperatorKey):
   // Return type Promise<any[]>
   // await prisma.$connect(); // Connection managed by main seed script
   console.log('Loading games from games2.json...')
-  // await prisma.game.deleteMany({}); // Deletion managed by main seed script's truncate
+  await prisma.game.deleteMany({}) // Deletion managed by main seed script's truncate
 
   const _games: any[] = []
   const gamesToProcess = (gamesDataFull as any).default || gamesDataFull // Handle if 'default' key exists due to module system

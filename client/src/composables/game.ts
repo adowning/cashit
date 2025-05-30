@@ -15,6 +15,7 @@ import {
   PrismaTransactionStatus,
   PrismaTransactionType,
 } from 'shared'
+import { StringDecoder } from 'string_decoder'
 
 // Ensure RTGUser, RtgSettingsBalance, ResultGame etc. are what ProviderSettingsResponseData maps to.
 // Ensure RTGUser, RtgSpinBalance, RtgGame etc. are what ProviderSpinResponseData maps to.
@@ -505,15 +506,15 @@ export interface Stakes {
   types: string[]
 }
 
-export interface GameCategory {
-  image: string
-  pictures: string
-  game_count: string | number
-  name: string
-  slug: string
-  games: Array<Search>
-  page_no: number
-}
+// export interface GameCategory {
+//   image: string
+//   pictures: string
+//   game_count: string | number
+//   name: string
+//   slug: string
+//   games: Array<Search>
+//   page_no: number
+// }
 export interface GameListResponse {
   code: number
   list: Array<Game>
@@ -543,6 +544,8 @@ export interface GameEnterBody {
 
 export interface GameUserBody {
   game_categories_slug: string
+  id: string
+  demo: boolean
   page: number
   limit: number
 }

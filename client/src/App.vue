@@ -223,7 +223,7 @@
         const gameStore = useGameStore()
         await vipStore.dispatchVipInfo()
         await gameStore.dispatchGameBigWin()
-        await gameStore.dispatchGameSearch()
+        await gameStore.dispatchGetAllGames()
         await connect()
         // Potentially other data fetching dependent on the user
       }

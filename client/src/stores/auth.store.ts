@@ -32,7 +32,7 @@ export const useAuthStore = defineStore(
   () => {
     // const router = useRouter() // Initialize router instance
     const api = useApiClient()
-    const { restClient, realtimeClient } = orpcManager.getClients()
+    const restClient = orpcManager.getRestClient()
 
     // --- State ---
     // These will be automatically hydrated from localStorage if pinia-plugin-persistedstate is configured
@@ -279,6 +279,7 @@ export const useAuthStore = defineStore(
           // return { success: false, error: { message: error?.message as string } }
         } else {
           notificationStore.addNotification('info', 'Login successful')
+          orpcManager.setToken(data.token) // Set token in orpcManager
           // router.push('/dashboard')
           return { success: true, data: data }
         }
@@ -300,6 +301,7 @@ export const useAuthStore = defineStore(
       const authClient = useAuthClient() // Access the auth client from Nuxt app context
       const notificationStore = useNotificationStore()
       console.log(payload)
+      console.log(isBusy.value)
       if (isBusy.value == false)
         try {
           const { data, error } = await authClient.signUp.email({
@@ -344,6 +346,7 @@ export const useAuthStore = defineStore(
             // For instance, if a token refresh fails within an action, apiClient should handle logout.
             // If it's a form validation type error from backend, user might still be "logged in".
             notificationStore.addNotification('error', errPayload.message)
+
             return { success: false, error: errPayload, data: null }
           }
         } catch (e: any) {
@@ -357,7 +360,9 @@ export const useAuthStore = defineStore(
           return { success: false, error: errPayload, data: null }
         } finally {
           isLoading.value = false
+          isBusy.value = false
         }
+      isBusy.value = false
       return { success: false, error: 'Registration failed', data: null }
     }
 

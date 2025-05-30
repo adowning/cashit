@@ -6,7 +6,7 @@ import { UserJoined, NewMessage } from 'shared'
 export function handleJoinRoom(context: MessageHandlerContext<typeof JoinRoom>) {
   const { ws, payload, send, server } = context // Get server from context
   const { roomId } = payload
-  const userId = ws.data.userId
+  const userId = ws.data.user.id
 
   if (!userId || !server) {
     // Check server existence
@@ -25,7 +25,7 @@ export function handleJoinRoom(context: MessageHandlerContext<typeof JoinRoom>) 
 export function handleSendMessage(context: MessageHandlerContext<typeof SendMessage>) {
   const { ws, payload, server } = context // Get server from context
   const { roomId, text } = payload
-  const userId = ws.data.userId
+  const userId = ws.data.user.id
 
   if (!userId || !server) {
     // Check server existence

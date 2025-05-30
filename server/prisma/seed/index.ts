@@ -183,7 +183,7 @@ const tableNames = [
   'session',
   'account',
   'user',
-  'operator_access', // This should be 'operator' if table name mapped
+  'operator', // This should be 'operator' if table name mapped
   'game_providers',
   'games',
   'currencies', // This table should be removed if model is deprecated
@@ -200,14 +200,14 @@ const tableNames = [
 ]
 
 // Adjust tableNames: remove 'currencies', change 'operator_access' to 'operator' (or actual DB table name)
-const adjustedTableNames = tableNames
-  .filter((name) => name !== 'currencies')
-  .map((name) => (name === 'operator_access' ? 'operator' : name))
+// const adjustedTableNames = tableNames
+//   .filter((name) => name !== 'currencies')
+//   .map((name) => (name === 'operator_access' ? 'operator' : name))
 
 async function clearDatabase(client: PrismaClient) {
   console.log('🧹 Clearing database tables...')
   try {
-    for (const tableName of adjustedTableNames) {
+    for (const tableName of tableNames) {
       // Use adjusted list
       console.log(`  Truncating ${tableName}...`)
       // Make sure 'tableName' matches the actual database table name (considering @@map)

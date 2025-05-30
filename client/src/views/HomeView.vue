@@ -13,10 +13,10 @@
 <template>
   <BackGround />
   <LiveWin />
-  <!-- <GameCarousel
+  <GameCarousel
     v-if="gameSearchList !== undefined && gameSearchList?.items.length > 0"
     :style="`${isMobile ? 'margin-top: 0px' : 'margin-top: 20px'}`"
-  /> -->
+  />
   <FilterBar />
   <AdCarousel />
   <SettingsView :has-cancel="false" :model-value="settingsModal" />

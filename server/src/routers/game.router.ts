@@ -153,7 +153,31 @@ export const gameRouter = {
         meta: p.configJson ?? null,
       }))
     }),
+  getAllGames: publicProcedure
+    .input(GameSearchQuerySchema)
+    .output(z.custom<PaginatedResponse<SharedPrismaGame>>())
+    .handler(async ({ input }): Promise<PaginatedResponse<SharedPrismaGame>> => {
+      const { page = 1, limit = 200 } = input ?? {}
 
+      const totalGames = await _prisma.game.count({ where: { isActive: true } })
+      const gamesData = await _prisma.game.findMany({
+        where: { isActive: true },
+        include: { gameProvider: true }, // Include provider info
+        orderBy: [{ featured: 'desc' }, { name: 'asc' }],
+        skip: (page - 1) * limit,
+        take: limit,
+      })
+      const x = gamesData.map(mapPrismaGameToSharedGame)
+      console.log(x[0])
+      console.log(x[1])
+      return {
+        items: gamesData,
+        total: totalGames,
+        page,
+        limit,
+        totalPages: Math.ceil(totalGames / limit),
+      }
+    }),
   searchGames: publicProcedure
     .input(GameSearchQuerySchema)
     .output(z.custom<PaginatedResponse<SharedPrismaGame>>())

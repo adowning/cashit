@@ -207,7 +207,7 @@
         background-position-x: right;
       "
     >
-      <img src="/images/bigwin/bigwin-left-pink.png" style="height: 133px; margin-left: -20px" />
+      <img src="/images/bigwin/bigwin-left-pink.png" style="height: 100px; margin-left: -20px" />
 
       <div class="flex w-[90vw]"></div>
 
@@ -230,13 +230,13 @@ background-size: 3% 100%; */
           -->
         <Swiper
           :modules="swiperModules"
-          :slides-per-view="4.5"
-          :space-between="4"
+          :slides-per-view="2"
+          :space-between="2"
           :loop="true"
           :autoplay="{
-            delay: 800,
+            delay: 1000,
 
-            disableOnInteraction: false,
+            disableOnInteraction: true,
           }"
           class="mx-2"
           style="height: auto"
@@ -247,7 +247,15 @@ background-size: 3% 100%; */
             :virtual-index="index"
             @click="navigateToGame(item)"
           >
-            <div class="text-center">
+            <LiveWinItem
+              :userName="item.user_name"
+              :gameName="item.game_name"
+              :gameImage="`https://images.cashflowcasino.com/all/${item.game_name.toLowerCase()}.avif`"
+              :amount="
+                parseInt(parseInt(item.win_amount) < 1 ? item.wager_amount : item.win_amount) / 100
+              "
+            />
+            <!-- <div class="text-center">
               <img
                 :src="
                   `https://images.cashflowcasino.com/all/${item.game_name.toLowerCase()}.avif` ||
@@ -268,7 +276,7 @@ background-size: 3% 100%; */
                   100
                 }}
               </div>
-            </div>
+            </div> -->
           </SwiperSlide>
         </Swiper>
       </div>
@@ -360,11 +368,11 @@ v-for="(item, index) in mobileLiveWinList"
   }
 
   .m-home-live-win {
-    height: 133px;
+    height: 100px;
 
     position: relative;
 
-    margin: 0px 0px 0px 10px;
+    margin: 0px 0px 0px 0px;
   }
 
   .m-home-live-win .m-live-win-img-width {
