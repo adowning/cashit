@@ -3,7 +3,6 @@ import { appRouter, socketRouter, WebSocketRouter } from './routers/index'
 import { auth } from './lib/auth'
 import { cors } from 'hono/cors'
 import { RPCHandler } from '@orpc/server/fetch'
-import { experimental_RPCHandler } from '@orpc/server/websocket'
 import { createContext } from './lib/context'
 import {
   kagamingProxyOpenHandler,
@@ -16,24 +15,25 @@ import { RealtimeService } from './services/realtime.service' // Adjust path
 import { PgRealtimeClientOptions } from './lib/utils'
 import { AppWsData } from 'shared'
 import prisma from 'prisma'
+import uid from 'short-uuid'
+import { Scalar } from '@scalar/hono-api-reference'
 
 // Define the user type based on your authSession.user structure
 type User = {
   id: string
   clientId: string
   name: string
-  // WebSocket router
-  // ws.addRoutes(appRouter) // Add routes from another file
   updatedAt: Date
   image?: string | null
   username?: string | null
   displayUsername?: string | null
-  // Add any other fields as needed
 }
+const resthandler = new RPCHandler(appRouter)
 
-// HTTP router
 const app = new Hono()
 // app.use(logger())
+app.get('/scalar', Scalar({ url: '/doc' }))
+
 app.use(
   '/*',
   cors({
@@ -47,18 +47,27 @@ app.on(['POST', 'GET'], '/api/auth/**', (c) => auth.handler(c.req.raw))
 
 app.use('/rpc/*', async (c, next) => {
   const context = await createContext({ context: c })
+  const authSession = await auth.api.getSession({
+    headers: c.req.raw.headers,
+  })
+  context.session = authSession
+  console.log('session ', context.session)
+  if (context.session === null) return c.json({ error: 'Unauthorized' }, 401)
   const { matched, response } = await resthandler.handle(c.req.raw, {
     prefix: '/rpc',
-    context: context,
+    //@ts-ignore
+    context: context, // Ensure context is never null
   })
+  console.log('matched', matched)
   if (matched) {
+    console.log('response', response)
+
     return c.newResponse(response.body, response)
   }
   await next()
 })
 app.get('/', (c) => c.text('Welcome to Hono!'))
-const resthandler = new RPCHandler(appRouter)
-const sockethandler = new experimental_RPCHandler(socketRouter)
+// const sockethandler = new experimental_RPCHandler(socketRouter)
 
 // WebSocket router
 const ws = new WebSocketRouter<AppWsData>()
@@ -76,10 +85,9 @@ const serverInstance = Bun.serve<AppWsData, {}>({
       })
       let user
       if (authSession != null) user = authSession.user
-      const context = { session: authSession }
       const res = await app.fetch(req, {
         prefix: '/rpc',
-        context: context,
+        context: authSession,
       })
       // Ensure always returning a Response
       return res instanceof Response ? res : new Response(String(res))
@@ -93,7 +101,7 @@ const serverInstance = Bun.serve<AppWsData, {}>({
       })
       let user
       if (authSession != null) user = authSession.user
-      const clientId = 'uuidv4()'
+      const clientId = uid()
 
       if (user !== undefined) {
         user = await prisma.userProfile.findUnique({
@@ -111,6 +119,7 @@ const serverInstance = Bun.serve<AppWsData, {}>({
               username: user.username,
               isNoLimitProxy: false,
               isKaGamingProxy: false,
+              clientId,
             },
           })
           console.log(wsUpgrade)
@@ -156,4 +165,4 @@ ws.addOpenHandler(nolimitProxyOpenHandler)
 ws.addOpenHandler(kagamingProxyOpenHandler)
 ws.addCloseHandler(nolimitProxyCloseHandler)
 ws.addCloseHandler(kagamingProxyCloseHandler)
-console.log(`WebSocket server listening on ws://localhost:3000/ws`)
+console.log(`WebSocket server listening on ws://localhost:3000/`)

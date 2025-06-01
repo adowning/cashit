@@ -15,7 +15,6 @@ import { UserProfile } from '..'
 /* SPDX-License-Identifier: MIT */
 
 // import type { messageSchema } from './router'
-
 /**
  * Base schema for message metadata.
  * Provides common fields that are available on all messages.
@@ -26,20 +25,31 @@ export const MessageMetadataSchema = z.object({
   timestamp: z.number().int().positive().optional(),
   corelationId: z.string().optional(),
 })
+/**
+ * Base message schema that all specific message types extend.
+ * Defines the minimum structure required for routing.
+ */
+export const MessageSchema = z.object({
+  type: z.string(),
+  meta: MessageMetadataSchema,
+})
+export const NewMessage = messageSchema('NEW_MESSAGE', {
+  roomId: z.string(),
+  userId: z.string(),
+  text: z.string(),
+  timestamp: z.number().optional(),
+})
 export const JoinRoom = messageSchema('JOIN_ROOM', {
   roomId: z.string(),
 })
-
 export const UserJoined = messageSchema('USER_JOINED', {
   roomId: z.string(),
   userId: z.string().optional(),
 })
-
 export const UserLeft = messageSchema('USER_LEFT', {
   roomId: z.string(),
   userId: z.string(),
 })
-
 export const SendMessage = messageSchema('SEND_MESSAGE', {
   roomId: z.string(),
   text: z.string(),
@@ -47,22 +57,15 @@ export const SendMessage = messageSchema('SEND_MESSAGE', {
 export const RoomList = messageSchema('ROOM_LIST', {
   roomId: z.string(),
 })
-
-export const NewMessage = messageSchema('NEW_MESSAGE', {
-  roomId: z.string(),
+export const Ping = messageSchema('PING', {
   userId: z.string(),
-  text: z.string(),
+  content: z.string(),
   timestamp: z.number().optional(),
 })
-export const Ping = messageSchema('PING', {
-  // userId: z.string(),
-  // content: z.string(),
-  // timestamp: z.number().optional(),
-})
 export const Pong = messageSchema('PONG', {
-  // userId: z.string(),
-  // content: z.string(),
-  // timestamp: z.number().optional(),
+  userId: z.string(),
+  content: z.string(),
+  timestamp: z.number().optional(),
 })
 export const Subscribe = messageSchema('SUBSCRIBE', {
   userId: z.string(),
@@ -74,30 +77,11 @@ export const SubscribeResponse = messageSchema('PONG', {
   status: z.boolean(),
   // timestamp: z.number().optional(),
 })
-// Example schema for database updates pushed to clients
-// export const DatabaseUpdate = messageSchema(
-//   "DATABASE_UPDATE",
-//   z.object({
-//     table: z.string(),
-//     operation: z.enum(["INSERT", "UPDATE", "DELETE"]),
-//     recordId: z.union([z.string(), z.number(), z.null()]).optional(), // Allow string/number/null IDs
-//     data: z.record(z.any()).nullable(), // The row data (can be null on DELETE)
-//     // changedColumns: z.array(z.string()).optional(), // Optional: if needed by client
-//   })
-// );
 export const DatabaseUpdate = z.object({
   table: z.string(),
   operation: z.enum(['INSERT', 'UPDATE', 'DELETE']),
   recordId: z.union([z.string(), z.number(), z.null()]).optional(), // Allow string/number/null IDs
   data: z.record(z.any()).nullable(), // The row data (can be null on DELETE))
-})
-/**
- * Base message schema that all specific message types extend.
- * Defines the minimum structure required for routing.
- */
-export const MessageSchema = z.object({
-  type: z.string(),
-  meta: MessageMetadataSchema,
 })
 
 /**
@@ -114,9 +98,7 @@ export const ErrorCode = z.enum([
   'RATE_LIMIT_EXCEEDED', // Client is sending messages too frequently
   'INTERNAL_SERVER_ERROR', // Unexpected server error occurred
 ])
-
 export type ErrorCode = z.infer<typeof ErrorCode>
-
 /**
  * Standard error message schema for consistent error responses.
  */
@@ -125,11 +107,9 @@ export const ErrorMessage = messageSchema('ERROR', {
   message: z.string().optional(),
   context: z.record(z.any()).optional(),
 })
-
 // -----------------------------------------------------------------------
 // Type Definitions
 // -----------------------------------------------------------------------
-
 /**
  * Schema type for messages without a payload
  */

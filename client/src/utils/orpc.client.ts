@@ -47,7 +47,7 @@ export class OrpcManager {
       throw new Error('No access token found. Please log in.')
     }
     this.token = token
-    // console.log('Token set:', this.token)
+    console.log('Token get:', this.token)
     return this.token
   }
   getClients = () => {
@@ -73,7 +73,7 @@ export class OrpcManager {
   private link = new RPCLink({
     url: 'http://localhost:3000/rpc',
     headers: () => ({
-      authorization: this.getToken() as string,
+      authorization: `Bearer ${this.getToken()}`,
     }),
     // fetch: <-- provide fetch polyfill fetch if needed
   })

@@ -25,6 +25,56 @@ export declare const MessageMetadataSchema: z.ZodObject<{
     timestamp?: number | undefined;
     corelationId?: string | undefined;
 }>;
+/**
+ * Base message schema that all specific message types extend.
+ * Defines the minimum structure required for routing.
+ */
+export declare const MessageSchema: z.ZodObject<{
+    type: z.ZodString;
+    meta: z.ZodObject<{
+        clientId: z.ZodOptional<z.ZodString>;
+        timestamp: z.ZodOptional<z.ZodNumber>;
+        corelationId: z.ZodOptional<z.ZodString>;
+    }, "strip", z.ZodTypeAny, {
+        clientId?: string | undefined;
+        timestamp?: number | undefined;
+        corelationId?: string | undefined;
+    }, {
+        clientId?: string | undefined;
+        timestamp?: number | undefined;
+        corelationId?: string | undefined;
+    }>;
+}, "strip", z.ZodTypeAny, {
+    type: string;
+    meta: {
+        clientId?: string | undefined;
+        timestamp?: number | undefined;
+        corelationId?: string | undefined;
+    };
+}, {
+    type: string;
+    meta: {
+        clientId?: string | undefined;
+        timestamp?: number | undefined;
+        corelationId?: string | undefined;
+    };
+}>;
+export declare const NewMessage: PayloadMessageSchema<"NEW_MESSAGE", z.ZodObject<{
+    roomId: z.ZodString;
+    userId: z.ZodString;
+    text: z.ZodString;
+    timestamp: z.ZodOptional<z.ZodNumber>;
+}, z.UnknownKeysParam, z.ZodTypeAny, {
+    roomId: string;
+    userId: string;
+    text: string;
+    timestamp?: number | undefined;
+}, {
+    roomId: string;
+    userId: string;
+    text: string;
+    timestamp?: number | undefined;
+}>>;
 export declare const JoinRoom: PayloadMessageSchema<"JOIN_ROOM", z.ZodObject<{
     roomId: z.ZodString;
 }, z.UnknownKeysParam, z.ZodTypeAny, {
@@ -69,24 +119,32 @@ export declare const RoomList: PayloadMessageSchema<"ROOM_LIST", z.ZodObject<{
 }, {
     roomId: string;
 }>>;
-export declare const NewMessage: PayloadMessageSchema<"NEW_MESSAGE", z.ZodObject<{
-    roomId: z.ZodString;
+export declare const Ping: PayloadMessageSchema<"PING", z.ZodObject<{
     userId: z.ZodString;
-    text: z.ZodString;
+    content: z.ZodString;
     timestamp: z.ZodOptional<z.ZodNumber>;
 }, z.UnknownKeysParam, z.ZodTypeAny, {
-    roomId: string;
     userId: string;
-    text: string;
+    content: string;
     timestamp?: number | undefined;
 }, {
-    roomId: string;
     userId: string;
-    text: string;
+    content: string;
     timestamp?: number | undefined;
 }>>;
-export declare const Ping: PayloadMessageSchema<"PING", z.ZodObject<{}, z.UnknownKeysParam, z.ZodTypeAny, {}, {}>>;
-export declare const Pong: PayloadMessageSchema<"PONG", z.ZodObject<{}, z.UnknownKeysParam, z.ZodTypeAny, {}, {}>>;
+export declare const Pong: PayloadMessageSchema<"PONG", z.ZodObject<{
+    userId: z.ZodString;
+    content: z.ZodString;
+    timestamp: z.ZodOptional<z.ZodNumber>;
+}, z.UnknownKeysParam, z.ZodTypeAny, {
+    userId: string;
+    content: string;
+    timestamp?: number | undefined;
+}, {
+    userId: string;
+    content: string;
+    timestamp?: number | undefined;
+}>>;
 export declare const Subscribe: PayloadMessageSchema<"SUBSCRIBE", z.ZodObject<{
     userId: z.ZodString;
     tableName: z.ZodString;
@@ -122,40 +180,6 @@ export declare const DatabaseUpdate: z.ZodObject<{
     operation: "INSERT" | "UPDATE" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
-}>;
-/**
- * Base message schema that all specific message types extend.
- * Defines the minimum structure required for routing.
- */
-export declare const MessageSchema: z.ZodObject<{
-    type: z.ZodString;
-    meta: z.ZodObject<{
-        clientId: z.ZodOptional<z.ZodString>;
-        timestamp: z.ZodOptional<z.ZodNumber>;
-        corelationId: z.ZodOptional<z.ZodString>;
-    }, "strip", z.ZodTypeAny, {
-        clientId?: string | undefined;
-        timestamp?: number | undefined;
-        corelationId?: string | undefined;
-    }, {
-        clientId?: string | undefined;
-        timestamp?: number | undefined;
-        corelationId?: string | undefined;
-    }>;
-}, "strip", z.ZodTypeAny, {
-    type: string;
-    meta: {
-        clientId?: string | undefined;
-        timestamp?: number | undefined;
-        corelationId?: string | undefined;
-    };
-}, {
-    type: string;
-    meta: {
-        clientId?: string | undefined;
-        timestamp?: number | undefined;
-        corelationId?: string | undefined;
-    };
 }>;
 /**
  * Standard error codes for WebSocket communication.

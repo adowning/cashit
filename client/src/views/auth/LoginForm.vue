@@ -234,10 +234,9 @@
 
   // --- Component Lifecycle Hooks ---
   onMounted(() => {
-    console.log('LoginView mounted.')
+    // console.log('LoginView mounted.')f
 
     // Clear any previous authentication errors when the login view is accessed
-    authStore.clearAuthError()
 
     // Initialize Google Sign-In
     // initializeGoogleSignIn()

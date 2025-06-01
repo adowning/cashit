@@ -1,28 +1,29 @@
 model Game {
-  id                 String             @id @default(cuid())
-  name               String
-  title              String
-  goldsvetData       Json?
-  description        String?
-  supportedProviders GameProviderName[]
-  category           GameCategory
-  tags               String[]
-  isActive           Boolean            @default(true)
-  thumbnailUrl       String?
-  bannerUrl          String?
-  meta               Json?
-  createdAt          DateTime           @default(now())
-  updatedAt          DateTime           @updatedAt
-  featured           Boolean            @default(false)
-  providerName       String?
-  totalWagered       Int                @default(0)
-  gameProviderId     String?
-  operatorId         String?
-  TournamentGame     TournamentGame[]
-  gameLaunchLinks    GameLaunchLink[]
-  gameSessions       GameSession[]
-  gameProvider       GameProvider?      @relation(fields: [gameProviderId], references: [id])
-  operator           Operator?          @relation(fields: [operatorId], references: [id])
+  id                   String             @id @default(cuid())
+  name                 String
+  title                String
+  goldsvetData         Json?
+  description          String?
+  supportedProviders   GameProviderName[]
+  category             GameCategory
+  tags                 String[]
+  isActive             Boolean            @default(true)
+  thumbnailUrl         String?
+  bannerUrl            String?
+  meta                 Json?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  featured             Boolean            @default(false)
+  providerName         String?
+  totalWagered         Int                @default(0)
+  gameProviderId       String?
+  operatorId           String?
+  tournamentDirectives Json?
+  TournamentGames      TournamentGames[]
+  gameLaunchLinks      GameLaunchLink[]
+  gameSessions         GameSession[]
+  gameProvider         GameProvider?      @relation(fields: [gameProviderId], references: [id])
+  operator             Operator?          @relation(fields: [operatorId], references: [id])
 
   @@map("games")
 }

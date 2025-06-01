@@ -218,13 +218,19 @@
     currentUser,
     async (user) => {
       if (user) {
-        console.log('App.vue User Watcher: currentUser is available. Fetching user-specific data.')
-        const vipStore = useVipStore()
-        const gameStore = useGameStore()
-        await vipStore.dispatchVipInfo()
-        await gameStore.dispatchGameBigWin()
-        await gameStore.dispatchGetAllGames()
-        await connect()
+        try {
+          console.log(
+            'App.vue User Watcher: currentUser is available. Fetching user-specific data.'
+          )
+          const vipStore = useVipStore()
+          const gameStore = useGameStore()
+          await vipStore.dispatchVipInfo()
+          await gameStore.dispatchGameBigWin()
+          await gameStore.dispatchGetAllGames()
+          await connect()
+        } catch (e) {
+          console.log(e)
+        }
         // Potentially other data fetching dependent on the user
       }
     },

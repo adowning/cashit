@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GenericWsResponse = exports.GenericWsResponsePayload = exports.UnsubscribeFromGeneralTournaments = exports.SubscribeToGeneralTournaments = exports.UnsubscribeFromTournamentTopic = exports.UnsubscribeFromTournamentTopicPayload = exports.SubscribeToTournamentTopic = exports.SubscribeToTournamentTopicPayload = exports.TournamentNotificationEvent = exports.TournamentParticipantJoinedEvent = exports.TournamentEndedEvent = exports.TournamentStartedEvent = exports.TournamentLeaderboardUpdateEvent = exports.ErrorMessage = exports.ErrorCode = exports.MessageSchema = exports.DatabaseUpdate = exports.SubscribeResponse = exports.Subscribe = exports.Pong = exports.Ping = exports.NewMessage = exports.RoomList = exports.SendMessage = exports.UserLeft = exports.UserJoined = exports.JoinRoom = exports.MessageMetadataSchema = void 0;
+exports.GenericWsResponse = exports.GenericWsResponsePayload = exports.UnsubscribeFromGeneralTournaments = exports.SubscribeToGeneralTournaments = exports.UnsubscribeFromTournamentTopic = exports.UnsubscribeFromTournamentTopicPayload = exports.SubscribeToTournamentTopic = exports.SubscribeToTournamentTopicPayload = exports.TournamentNotificationEvent = exports.TournamentParticipantJoinedEvent = exports.TournamentEndedEvent = exports.TournamentStartedEvent = exports.TournamentLeaderboardUpdateEvent = exports.ErrorMessage = exports.ErrorCode = exports.DatabaseUpdate = exports.SubscribeResponse = exports.Subscribe = exports.Pong = exports.Ping = exports.RoomList = exports.SendMessage = exports.UserLeft = exports.UserJoined = exports.JoinRoom = exports.NewMessage = exports.MessageSchema = exports.MessageMetadataSchema = void 0;
 exports.messageSchema = messageSchema;
 const zod_1 = require("zod");
 /* SPDX-FileCopyrightText: 2025-present Kriasoft */
@@ -15,6 +15,20 @@ exports.MessageMetadataSchema = zod_1.z.object({
     clientId: zod_1.z.string().optional(),
     timestamp: zod_1.z.number().int().positive().optional(),
     corelationId: zod_1.z.string().optional(),
+});
+/**
+ * Base message schema that all specific message types extend.
+ * Defines the minimum structure required for routing.
+ */
+exports.MessageSchema = zod_1.z.object({
+    type: zod_1.z.string(),
+    meta: exports.MessageMetadataSchema,
+});
+exports.NewMessage = messageSchema('NEW_MESSAGE', {
+    roomId: zod_1.z.string(),
+    userId: zod_1.z.string(),
+    text: zod_1.z.string(),
+    timestamp: zod_1.z.number().optional(),
 });
 exports.JoinRoom = messageSchema('JOIN_ROOM', {
     roomId: zod_1.z.string(),
@@ -34,21 +48,15 @@ exports.SendMessage = messageSchema('SEND_MESSAGE', {
 exports.RoomList = messageSchema('ROOM_LIST', {
     roomId: zod_1.z.string(),
 });
-exports.NewMessage = messageSchema('NEW_MESSAGE', {
-    roomId: zod_1.z.string(),
+exports.Ping = messageSchema('PING', {
     userId: zod_1.z.string(),
-    text: zod_1.z.string(),
+    content: zod_1.z.string(),
     timestamp: zod_1.z.number().optional(),
 });
-exports.Ping = messageSchema('PING', {
-// userId: z.string(),
-// content: z.string(),
-// timestamp: z.number().optional(),
-});
 exports.Pong = messageSchema('PONG', {
-// userId: z.string(),
-// content: z.string(),
-// timestamp: z.number().optional(),
+    userId: zod_1.z.string(),
+    content: zod_1.z.string(),
+    timestamp: zod_1.z.number().optional(),
 });
 exports.Subscribe = messageSchema('SUBSCRIBE', {
     userId: zod_1.z.string(),
@@ -60,30 +68,11 @@ exports.SubscribeResponse = messageSchema('PONG', {
     status: zod_1.z.boolean(),
     // timestamp: z.number().optional(),
 });
-// Example schema for database updates pushed to clients
-// export const DatabaseUpdate = messageSchema(
-//   "DATABASE_UPDATE",
-//   z.object({
-//     table: z.string(),
-//     operation: z.enum(["INSERT", "UPDATE", "DELETE"]),
-//     recordId: z.union([z.string(), z.number(), z.null()]).optional(), // Allow string/number/null IDs
-//     data: z.record(z.any()).nullable(), // The row data (can be null on DELETE)
-//     // changedColumns: z.array(z.string()).optional(), // Optional: if needed by client
-//   })
-// );
 exports.DatabaseUpdate = zod_1.z.object({
     table: zod_1.z.string(),
     operation: zod_1.z.enum(['INSERT', 'UPDATE', 'DELETE']),
     recordId: zod_1.z.union([zod_1.z.string(), zod_1.z.number(), zod_1.z.null()]).optional(), // Allow string/number/null IDs
     data: zod_1.z.record(zod_1.z.any()).nullable(), // The row data (can be null on DELETE))
-});
-/**
- * Base message schema that all specific message types extend.
- * Defines the minimum structure required for routing.
- */
-exports.MessageSchema = zod_1.z.object({
-    type: zod_1.z.string(),
-    meta: exports.MessageMetadataSchema,
 });
 /**
  * Standard error codes for WebSocket communication.

@@ -1,7 +1,7 @@
 <script lang="ts" setup>
   import { router } from '@/router'
 
-  const props = defineProps(['to', 'type', 'w', 'text', 'shine', 'color', 'disabled'])
+  const props = defineProps(['to', 'type', 'w', 'text', 'shine', 'color', 'disabled', 'loading'])
 
   function handleClick() {
     if (props.to) {
@@ -16,7 +16,7 @@
 
 <template>
   <div
-    v-if="!disabled"
+    v-if="!disabled && !loading"
     :id="type"
     class="button glass relative flex items-center justify-center text-lg"
     :class="color === 'blue' ? 'blueGlass' : color === 'red' ? 'redGlass' : 'greenGlass'"
@@ -32,9 +32,22 @@
     </div> -->
     <slot class="primary-text" />
   </div>
-  <div v-else class="button glass greyGlass relative flex items-center justify-center text-lg">
+  <div
+    v-if="disabled"
+    class="button glass greyGlass relative flex items-center justify-center text-lg"
+  >
     <div class="" :style="`min-width: ${w}px`">
       <slot class="primary-text" />
+    </div>
+  </div>
+  <div
+    v-if="loading"
+    class="button glass relative flex items-center justify-center text-lg"
+    :class="color === 'blue' ? 'blueGlass' : color === 'red' ? 'redGlass' : 'greenGlass'"
+    :style="buttonStyle"
+  >
+    <div class="" :style="`min-width: ${w}px`">
+      <Loading />
     </div>
   </div>
 </template>

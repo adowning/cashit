@@ -1,4 +1,4 @@
-import { WsData, OpenHandlerContext, CloseHandlerContext } from 'shared'
+import { WsData, OpenHandlerContext, CloseHandlerContext, UserProfile, AppWsData } from 'shared'
 import { ServerWebSocket } from 'bun'
 
 // --- Configuration & Constants ---
@@ -125,7 +125,11 @@ function lzwDecode(input: string): string {
 
 // --- App specific WsData extension for NoLimit Proxy ---
 // Ensure this is compatible or merged with your global AppWsData in types.ts
-export interface NoLimitProxyWsData extends WsData {
+
+export interface NoLimitProxyWsData extends AppWsData {
+  [key: string]: any
+  user: UserProfile
+  token: string
   isNoLimitProxy?: boolean
   clientId: string
   nolimitSessionKey?: string

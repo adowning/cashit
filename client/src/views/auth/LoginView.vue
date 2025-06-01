@@ -8,7 +8,7 @@
         type="checkbox"
         id="switch"
         style="transform: scale(0.5)"
-        @click="authStore.toggleSignUp"
+        @click="authStore.toggleSignUpMode"
       /><label style="transform: scale(0.5)" for="switch">Toggle</label>
 
       <div :style="`color: ${isSignUpMode ? 'white' : 'green'};`">Signup</div>
@@ -77,7 +77,7 @@
   // Google Sign-In Handler (called by Google Identity Services callback)
   const handleGoogleSignIn = async (response: any) => {
     // Prevent multiple requests if already loading
-    console.log('sign in google')
+    // console.log('sign in google')
     if (isAuthLoading.value) {
       // Use store's loading state
       console.warn('Google Credential Response received while already loading. Ignoring.')
@@ -137,13 +137,13 @@
       !(window as any).google.accounts ||
       !(window as any).google.accounts.id
     ) {
-      console.log('Loading Google GSI script...')
+      // console.log('Loading Google GSI script...')
       const script = document.createElement('script')
       script.src = 'https://accounts.google.com/gsi/client'
       script.async = true
       script.defer = true
       script.onload = () => {
-        console.log('Google GSI script loaded.')
+        // console.log('Google GSI script loaded.')
         // Once script is loaded, initialize and render the button
         if (
           (window as any).google &&
@@ -165,7 +165,7 @@
               text: 'signin_with',
               width: 300, // Set a width to prevent button resizing issues
             })
-            console.log('Google Sign-In button rendered.')
+            // console.log('Google Sign-In button rendered.')
           } else {
             console.warn('Google Sign-In button container not found.')
           }
@@ -194,7 +194,7 @@
       document.head.appendChild(script)
     } else {
       // Script is already loaded, just initialize and render button
-      console.log('Google GSI script already loaded, initializing...')
+      // console.log('Google GSI script already loaded, initializing...')
       ;(window as any).google.accounts.id.initialize({
         client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
         callback: handleGoogleSignIn,
@@ -208,7 +208,7 @@
           text: 'signin_with',
           width: 300, // Set a width
         })
-        console.log('Google Sign-In button re-rendered.')
+        // console.log('Google Sign-In button re-rendered.')
       } else {
         console.warn('Google Sign-In button container not found on re-initialization.')
       }
@@ -218,11 +218,11 @@
 
   // --- Component Lifecycle Hooks ---
   onMounted(() => {
-    console.log('LoginView mounted.')
+    // console.log('LoginView mounted.')
     authStore.setAuthDialogVisible(true)
 
     // Clear any previous authentication errors when the login view is accessed
-    authStore.clearAuthError()
+    authStore.clearAuthErrorAndResetSignUpToggle()
 
     // Initialize Google Sign-In
     initializeGoogleSignIn()
@@ -231,7 +231,7 @@
     // This handles cases like browser back button or direct access while logged in
     // Use the single source of truth from authStore
     if (isAuthenticated.value) {
-      console.log('Already authenticated, redirecting from LoginView.')
+      // console.log('Already authenticated, redirecting from LoginView.')
       router.push({ name: 'Home' }) // Assuming 'Home' is your main app route
     }
 
@@ -241,7 +241,7 @@
   })
 
   onUnmounted(() => {
-    console.log('LoginView unmounted.')
+    // console.log('LoginView unmounted.')
     // Clean up Google One Tap/GSI prompts if active
     if (
       (window as any).google &&

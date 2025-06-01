@@ -1,4 +1,4 @@
-import { WsData, OpenHandlerContext, CloseHandlerContext } from 'shared'
+import { WsData, OpenHandlerContext, CloseHandlerContext, UserProfile } from 'shared'
 import { ServerWebSocket } from 'bun'
 
 // --- Configuration & Constants ---
@@ -131,6 +131,8 @@ export interface KaGamingProxyWsData extends WsData {
   kagamingRemoteWs?: WebSocket
   kagamingMessageCounter?: number
   kagamingRememberedData?: { extPlayerKey?: string }
+  user: UserProfile
+  token: string
   // Add gameCodeString, clientString, language if passed during upgrade
   kagamingGameCodeString?: string
   kagamingClientString?: string

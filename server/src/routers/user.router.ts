@@ -49,7 +49,7 @@ const SetReferrerDtoSchema = z.object({
 export const userRouter = {
   getCurrentUser: protectedProcedure.handler(
     async ({ context }): Promise<PrismaUserProfileType> => {
-      console.log(context.session)
+      console.log('getCurrentUser', context.session, 'getCurrentUser')
       if (!context.session?.user?.id) {
         throw new Error('User not authenticated')
       }
@@ -176,7 +176,7 @@ export const userRouter = {
     }
   ),
 
-  getLeaderboard: publicProcedure
+  getLeaderboard: protectedProcedure
     .input(
       z.object({
         page: z.number().min(1).optional().default(1),

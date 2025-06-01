@@ -78,7 +78,8 @@ export const useNotificationStore: () => INotificationStore = defineStore('notif
       type,
       duration,
     }
-    notifications_ref.value.push(newNotification)
+    const exists = notifications_ref.value.find((n) => n.message === newNotification.message)
+    if (!exists) notifications_ref.value.push(newNotification)
     setTimeout(() => {
       removeNotification(newNotification.id)
     }, duration)

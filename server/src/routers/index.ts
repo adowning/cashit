@@ -1,7 +1,6 @@
 // File: ai/server/src/routers/index.ts
 import { protectedProcedure, publicProcedure } from '../lib/orpc'
 import { userRouter } from './user.router'
-import { todoRouter } from './todo'
 import { vipRouter } from './vip.router'
 import { gameRouter } from './game.router'
 import { transactionRouter } from './transaction'
@@ -16,10 +15,9 @@ export const appRouter = {
   privateData: protectedProcedure.handler(({ context }) => {
     return {
       message: 'This is private',
-      user: context.session?.user,
+      // user: context.session?.user,
     }
   }),
-  todo: todoRouter,
   user: userRouter,
   vip: vipRouter,
   transaction: transactionRouter,
@@ -39,7 +37,6 @@ export const socketRouter = {
       user: context.session?.user,
     }
   }),
-  todo: todoRouter,
   user: userRouter,
   vip: vipRouter,
   transaction: transactionRouter,

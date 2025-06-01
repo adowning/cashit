@@ -33,7 +33,6 @@
       notificationStore.addNotification('error', 'Passwords do not match.')
       return
     }
-    isAuthLoading.value = true // Use the store's loading state
     authStore.setAuthDialogVisible(false)
 
     // Use the store's loading state
@@ -49,12 +48,13 @@
       // Notification handled implicitly or show generic success
       // notificationStore.addNotification("success", "Successfully signed up and logged in!");
       // Navigation handled elsewhere
-      notificationStore.addNotification('info', 'Sign in succeeded.')
-      isAuthLoading.value = false // Use the store's loading state
+      // notificationStore.addNotification('info', 'Sign in succeeded.')
+      // isAuthLoading.value = false // Use the store's loading state
       authStore.isSignUpMode = false
     } else if (error) {
       // Error state set in store
-      notificationStore.addNotification('error', 'Sign up failed.')
+      // notificationStore.addNotification('error', 'Sign up failed.')
+      console.log(error)
     }
     setTimeout(() => {
       showError.value = false
@@ -107,6 +107,7 @@
           type="submit"
           class="flip-card__btn"
           :disabled="isAuthLoading"
+          :loading="isAuthLoading"
           @click="handleSignUp"
         >
           Confirm!

@@ -1,32 +1,21 @@
 model Tournament {
-  id            String                  @id @default(cuid())
-  name          String
-  description   String?
-  startTime     DateTime
-  endTime       DateTime?
-  targetScore   Int?
-  status        TournamentStatus        @default(PENDING)
-  createdAt     DateTime                @default(now())
-  updatedAt     DateTime                @updatedAt
-  createdByid   String?
-  userId        String?
-  user          UserProfile?            @relation(fields: [userId], references: [id])
-  eligibleGames TournamentGame[]
-  participants  TournamentParticipant[]
-  rewards       TournamentReward[]
+  id              String                  @id @default(cuid())
+  name            String
+  description     String?
+  startTime       DateTime
+  endTime         DateTime?
+  targetScore     Int?
+  status          TournamentStatus        @default(PENDING)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  createdByid     String?
+  userId          String?
+  user            UserProfile?            @relation(fields: [userId], references: [id])
+  participants    TournamentParticipant[]
+  rewards         TournamentReward[]
+  TournamentGames TournamentGames[]
 
   @@index([status, startTime, endTime])
-}
-
-model TournamentGame {
-  id              String     @id @default(cuid())
-  tournamentId    String
-  gameId          String
-  pointMultiplier Float      @default(1.0)
-  game            Game       @relation(fields: [gameId], references: [id])
-  tournament      Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-
-  @@unique([tournamentId, gameId])
 }
 
 model TournamentParticipant {

@@ -13,7 +13,8 @@ async function main() {
       // The original seedVip.ts seems to update existing VipInfos.
       where: {
         vipInfoId: {
-          not: null,
+          // not: null,
+          not: undefined,
         },
       },
     })

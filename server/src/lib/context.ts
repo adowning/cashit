@@ -18,12 +18,12 @@ export async function createContext({ context }: CreateContextOptions) {
   }
 }
 export async function createWsContext({ context }: CreateWsContextOptions) {
-  // const session = await auth.api .getSession({
-  //   headers:
-  // });
-  // return {
-  //   session,
-  // };
+  const session = await auth.api.getSession({
+    headers: new Headers({ Authorization: context.token }),
+  })
+  return {
+    session,
+  }
 }
 
 export type Context = Awaited<ReturnType<typeof createContext>>
