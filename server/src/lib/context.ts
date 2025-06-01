@@ -13,9 +13,7 @@ export async function createContext({ context }: CreateContextOptions) {
   const session = await auth.api.getSession({
     headers: context.req.raw.headers,
   })
-  return {
-    session,
-  }
+  return { ...context, session }
 }
 export async function createWsContext({ context }: CreateWsContextOptions) {
   const session = await auth.api.getSession({

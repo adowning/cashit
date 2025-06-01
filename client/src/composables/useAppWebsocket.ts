@@ -19,7 +19,10 @@ import destr from 'destr'
 
 export interface WsMessage {
   type: string
-  payload: any
+  payload: {
+    userId: string
+    content: any
+  }
   meta: any
 }
 

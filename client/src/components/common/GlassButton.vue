@@ -32,22 +32,24 @@
     </div> -->
     <slot class="primary-text" />
   </div>
-  <div
-    v-if="disabled"
-    class="button glass greyGlass relative flex items-center justify-center text-lg"
-  >
-    <div class="" :style="`min-width: ${w}px`">
-      <slot class="primary-text" />
+  <div v-else>
+    <div
+      v-if="disabled"
+      class="button glass greyGlass relative flex items-center justify-center text-lg"
+    >
+      <div class="" :style="`min-width: ${w}px`">
+        <slot class="primary-text" />
+      </div>
     </div>
-  </div>
-  <div
-    v-if="loading"
-    class="button glass relative flex items-center justify-center text-lg"
-    :class="color === 'blue' ? 'blueGlass' : color === 'red' ? 'redGlass' : 'greenGlass'"
-    :style="buttonStyle"
-  >
-    <div class="" :style="`min-width: ${w}px`">
-      <Loading />
+    <div
+      v-if="loading"
+      class="button glass relative flex items-center justify-center text-lg"
+      :class="color === 'blue' ? 'blueGlass' : color === 'red' ? 'redGlass' : 'greenGlass'"
+      :style="buttonStyle"
+    >
+      <div class="" :style="`min-width: ${w}px`">
+        <Loading />
+      </div>
     </div>
   </div>
 </template>

@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { appRouter, socketRouter, WebSocketRouter } from './routers/index'
 import { auth } from './lib/auth'
 import { cors } from 'hono/cors'
+import { logger } from 'hono/logger'
 import { RPCHandler } from '@orpc/server/fetch'
 import { createContext } from './lib/context'
 import {
@@ -13,10 +14,12 @@ import { setupTournamentWebSocketListeners } from './handlers/tournament.handler
 import * as tournamentService from './services/tournament.service'
 import { RealtimeService } from './services/realtime.service' // Adjust path
 import { PgRealtimeClientOptions } from './lib/utils'
-import { AppWsData } from 'shared'
+import { AppWsData, UserProfile } from 'shared'
 import prisma from 'prisma'
 import uid from 'short-uuid'
 import { Scalar } from '@scalar/hono-api-reference'
+import { Server } from 'bun'
+import { Session } from 'better-auth'
 
 // Define the user type based on your authSession.user structure
 type User = {
@@ -29,9 +32,26 @@ type User = {
   displayUsername?: string | null
 }
 const resthandler = new RPCHandler(appRouter)
-
+export type HonoEnv = {
+  Bindings: {
+    serverInstance?: Server // Make serverInstance known to Hono's Env
+  }
+  Variables: {
+    skipAuthMiddleWare: boolean
+    session: Session | null
+    user_with_profile: UserProfile | null
+    user: any | null
+    serverInstance?: Server // Make serverInstance known for c.set/c.get
+    gameSymbol: string | null
+    mgckey: string | null
+    pagination: {
+      skip: number
+      take: number
+    }
+  }
+}
 const app = new Hono()
-// app.use(logger())
+app.use(logger())
 app.get('/scalar', Scalar({ url: '/doc' }))
 
 app.use(
@@ -50,13 +70,13 @@ app.use('/rpc/*', async (c, next) => {
   const authSession = await auth.api.getSession({
     headers: c.req.raw.headers,
   })
+  if (authSession === null || authSession.session === undefined)
+    return c.json({ error: 'Unauthorized' }, 401)
   context.session = authSession
-  console.log('session ', context.session)
-  if (context.session === null) return c.json({ error: 'Unauthorized' }, 401)
+  console.log('session id ', context.session.session.id)
   const { matched, response } = await resthandler.handle(c.req.raw, {
     prefix: '/rpc',
-    //@ts-ignore
-    context: context, // Ensure context is never null
+    context, // Ensure context is never null
   })
   console.log('matched', matched)
   if (matched) {

@@ -264,9 +264,7 @@ export class WebSocketRouter<T extends AppWsData = AppWsData> {
     }
     const messageString = message instanceof Buffer ? message.toString() : message
     const parseResult = safeJsonParse(messageString)
-    console.log('parseResult')
-    console.log(parseResult)
-    console.log('parseResult')
+
     if (!parseResult.success || !parseResult.data) {
       console.warn(
         `Received malformed or unparseable WebSocket message from ${ws.data.clientId}: ${messageString}`,
@@ -299,7 +297,11 @@ export class WebSocketRouter<T extends AppWsData = AppWsData> {
     const entry = this.messageHandlers.get(actualMessageData.type)
     if (entry) {
       try {
-        console.log(actualMessageData)
+        actualMessageData.payload = {
+          userId: ws.data.user.id,
+          content: '',
+        }
+
         const validatedMessage = entry.schema.parse(actualMessageData)
 
         const send = this.createSendFunction(ws)

@@ -16,7 +16,7 @@ export const useVipStore = defineStore(
     const success = ref(false)
     const errMessage = ref('')
     const totalXp = ref(0)
-    const { restClient, realtimeClient } = orpcManager.getClients()
+    const restClient = orpcManager.getRestClient() // For fetching current user via ORPC
 
     //     const levelUpDialogVisible = ref(false)
     const vipInfo = ref<VipInfo>({} as VipInfo) // Keeping type assertion as in original
@@ -173,6 +173,7 @@ export const useVipStore = defineStore(
     async function dispatchVipInfo() {
       setSuccess(false)
       try {
+        console.log('here')
         const info = await restClient.vip.getMyVipInfo()
         setSuccess(true)
         setVipInfo(info)

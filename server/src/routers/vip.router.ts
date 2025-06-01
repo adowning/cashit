@@ -10,6 +10,7 @@ export const vipRouter = {
     const vipInfo = await _prisma.vipInfo.findUnique({
       where: { userId: context.session.user.id },
     })
+    console.log(vipInfo)
     if (!vipInfo) {
       throw new Error('vipInfo not found for authenticated user.')
     }

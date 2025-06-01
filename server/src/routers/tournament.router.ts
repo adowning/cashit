@@ -20,8 +20,8 @@ const _prisma: ExtendedPrismaClient = prisma
 // Zod Schemas for input validation, mirroring shared types
 const ListTournamentsQuerySchema = z
   .object({
-    status: z.nativeEnum(TournamentStatus).optional(),
-    gameId: z.string().cuid().optional(),
+    status: z.enum(TournamentStatus).optional(),
+    gameId: z.cuid().optional(),
     activeNow: z.boolean().optional(),
   })
   .optional()

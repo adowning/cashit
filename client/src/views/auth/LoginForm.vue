@@ -44,7 +44,7 @@
 
       return
     }
-    isAuthLoading.value = true // Use the store's loading state
+    // isAuthLoading.value = true // Use the store's loading state
     // authStore.setAuthDialogVisible(false)
     // Use the store's loading state
     // componentLoading.value = true; // Removed
@@ -60,15 +60,15 @@
       // that triggers on isAuthenticated = true, or show a generic success here
       // notificationStore.addNotification("success", "Successfully signed in!");
       // Navigation is handled elsewhere (App.vue or Navigation Guard)
-      notificationStore.addNotification('info', error.message || 'Sign in succeeded.')
+      notificationStore.addNotification('info', error?.message || 'Sign in succeeded.')
     } else {
       showError.value = true
       // Error state is already set in the store and displayed in template or App.vue
       // Optionally add a notification here as well if needed
-      notificationStore.addNotification('error', error.message || 'Sign in failed.')
+      notificationStore.addNotification('error', error?.message || 'Sign in failed.')
       setTimeout(() => {
         showError.value = false
-        isAuthLoading.value = false // Use the store's loading state
+        // isAuthLoading.value = false // Use the store's loading state
 
         // window.location.reload()
       }, 2000)

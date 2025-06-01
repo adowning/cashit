@@ -58,8 +58,6 @@ export const RoomList = messageSchema('ROOM_LIST', {
   roomId: z.string(),
 })
 export const Ping = messageSchema('PING', {
-  userId: z.string(),
-  content: z.string(),
   timestamp: z.number().optional(),
 })
 export const Pong = messageSchema('PONG', {

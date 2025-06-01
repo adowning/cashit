@@ -33,4 +33,12 @@ for file in server/prisma/schema/*.prisma; do
   fi
 done
 
+# Copy and rename vue files
+find /tmp/ai/ai -type f -name "*.vue" | while read -r file; do
+  base=$(basename "$file" .vue)
+  dir=$(dirname "$file")
+  cp "$file" "${dir}/${base}.vue.txt"
+  rm "$file"
+done
+
 echo "Directory sync completed successfully"

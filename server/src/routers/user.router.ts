@@ -47,24 +47,30 @@ const SetReferrerDtoSchema = z.object({
 })
 
 export const userRouter = {
-  getCurrentUser: protectedProcedure.handler(
-    async ({ context }): Promise<PrismaUserProfileType> => {
-      console.log('getCurrentUser', context.session, 'getCurrentUser')
+  getCurrentUser: protectedProcedure
+    // .input(UpdateUserInputSchema)
+    .handler(async ({ context }): Promise<PrismaUserProfileType> => {
+      console.log('getCurrentUser', context.session.user.id, 'getCurrentUser')
+      const id = context.session.user.id
       if (!context.session?.user?.id) {
         throw new Error('User not authenticated')
       }
-      const userProfile = await _prisma.userProfile.findUnique({
-        where: { id: context.session.user.id },
-        include: {
-          wallets: true, // Example: include necessary relations for the full user context
-        },
+      const userProfile = await _prisma.userProfile.findFirst({
+        where: { id },
+        // include: {
+        //   wallets: true, // Example: include necessary relations for the full user context
+        // },
       })
+      console.log('userProfile', userProfile?.id)
+      const userProfiles = await _prisma.userProfile.findMany()
+      console.log('userProfile', userProfiles?.length)
+
       if (!userProfile) {
         throw new Error('UserProfile not found for authenticated user.')
       }
+      console.log('userProfile', userProfile.id)
       return userProfile
-    }
-  ),
+    }),
 
   updateProfile: protectedProcedure
     .input(UpdateUserInputSchema)
