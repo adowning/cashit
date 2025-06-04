@@ -26,7 +26,8 @@ const path = require('path')
 const { readFileSync } = require('fs')
 const ejs = require('ejs')
 import { RtgApi } from '@/routers/rtg.routes'
-import { setupUserEventsWebSocketListeners } from '@/handlers/user-events.handler'
+import { userEventsOpenHandler } from '@/handlers/user-events.handler'
+import performanceRoutes from '@/routers/performance.routes'
 
 // Define the user type based on your authSession.user structure
 type User = {
@@ -62,6 +63,9 @@ app.use(logger())
 app.get('/scalar', Scalar({ url: '/doc' }))
 const gameApi = new GameAPI(app)
 const rtgApi = new RtgApi(app)
+
+// Add performance monitoring routes
+app.route('/performance', performanceRoutes)
 
 app.use(
   '/*',
@@ -210,11 +214,13 @@ const serverInstance = Bun.serve<AppWsData, {}>({
     // console.log('parsedUrl.pathname', parsedUrl.pathname)
     if (parsedUrl.pathname.startsWith('/rtg')) {
       let token: string | undefined
+      let gameName: string | undefined
       const platformSplit = parsedUrl.pathname.split('platform/')
       if (platformSplit.length > 1 && platformSplit[1] !== undefined) {
         const gameSplit = platformSplit[1].split('/game')
         if (gameSplit.length > 0) {
           token = gameSplit[0]?.split('/')[0]
+          gameName = gameSplit[0]?.split('/')[1]
         }
       }
       console.log(token)
@@ -308,9 +314,10 @@ realtimeService.startListening().catch((err) => {
 async function main() {
   console.log('Starting server...')
   setupTournamentWebSocketListeners(serverInstance)
-  setupUserEventsWebSocketListeners(serverInstance)
   tournamentService.initTournamentScheduler()
   ws.addOpenHandler(nolimitProxyOpenHandler)
+  // ws.addOpenHandler(userEventsOpenHandler)
+
   ws.addOpenHandler(kagamingProxyOpenHandler)
   ws.addCloseHandler(nolimitProxyCloseHandler)
   ws.addCloseHandler(kagamingProxyCloseHandler)

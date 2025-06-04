@@ -312,7 +312,7 @@
       <div class="carousel-track">
         <div
           v-for="game in games"
-          :key="game.id"
+          :key="game.name"
           :data-game-id="game.id"
           class="game-card"
           :class="{

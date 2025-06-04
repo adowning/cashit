@@ -1,0 +1,93 @@
+RTG SPIN PERFORMANCE MEASUREMENT SETUP
+=====================================
+
+WHAT WAS IMPLEMENTED:
+- Created rtg-performance.service.ts with comprehensive performance logging
+- Added detailed timing measurements for all database operations
+- Instrumented the top 5 hottest queries identified:
+  1. User Profile + VIP Query
+  2. Main Transaction Block  
+  3. Jackpot Processing
+  4. Tournament Processing
+  5. Wallet Check Query
+
+ROUTES AVAILABLE:
+- /rtg/games/rtg/platform/:id/:token/game/spin (NEW - with performance metrics)
+- /rtg/games/rtg/platform/:id/:token/game/spin-original (original version for comparison)
+
+PERFORMANCE LOGS LOCATION:
+- All performance data will be saved to: performance-logs/rtg-spin-{timestamp}.txt
+- Each spin creates a detailed log with timing breakdowns
+
+TESTING INSTRUCTIONS:
+1. Start your server
+2. Make RTG spin requests to the main endpoint
+3. Performance logs will be automatically generated
+4. Review the logs to see timing breakdowns
+
+WHAT TO LOOK FOR IN LOGS:
+- Total Execution Time
+- Individual query times
+- Database call count
+- Performance breakdown percentages
+- Top 5 hottest queries timing
+
+SAMPLE LOG OUTPUT:
+=== RTG SPIN PERFORMANCE LOG ===
+Timestamp: 2024-01-01T12:00:00.000Z
+User ID: user123
+Game ID: game456
+Success: true
+
+PERFORMANCE METRICS:
+- Total Execution Time: 1250.45ms
+- User Profile Query: 45.23ms
+- Platform Game Query: 23.12ms
+- Active Game Session Query: 34.56ms
+- Wallet Check Query: 67.89ms
+- RGS Call Time: 234.56ms
+- Main Transaction Time: 456.78ms
+- Jackpot Processing Time: 234.12ms
+- Tournament Processing Time: 123.45ms
+
+DATABASE METRICS:
+- Total DB Calls: 15
+- Average DB Call Time: 83.36ms
+
+PERFORMANCE BREAKDOWN:
+- Initial DB Queries: 13.6%
+- RGS Call: 18.8%
+- Main Transaction: 36.5%
+- Jackpot Processing: 18.7%
+- Tournament Processing: 9.9%
+
+TOP 5 HOTTEST QUERIES IDENTIFIED:
+1. User Profile + VIP Query: 45.23ms
+2. Main Transaction Block: 456.78ms  
+3. Jackpot Processing: 234.12ms
+4. Tournament Processing: 123.45ms
+5. Wallet Check Query: 67.89ms
+
+OPTIMIZATION RECOMMENDATIONS:
+- Cache user profiles with VIP info (TTL: 5 minutes)
+- Cache wallet data with optimistic locking (TTL: 30 seconds)
+- Cache active jackpots state (TTL: 10 seconds)
+- Cache active tournaments (TTL: 1 minute)
+- Batch jackpot contribution inserts
+- Use Bun.sql for hot path queries
+
+NEXT STEPS AFTER TESTING:
+1. Run multiple spins to collect baseline metrics
+2. Analyze the performance logs to identify bottlenecks
+3. Report back with the timing data
+4. I will then implement Bun.sql + Redis optimizations for the top 5 hottest queries
+
+CONSOLE OUTPUT:
+You'll also see real-time progress in the console:
+🔍 [1/8] Starting user profile + VIP query...
+✅ User profile query completed in 45.23ms
+🔍 [2/8] Starting provider config query...
+✅ Provider config query completed in 23.12ms
+... and so on
+
+The performance measurement system is now ready for testing!

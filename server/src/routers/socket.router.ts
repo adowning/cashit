@@ -23,6 +23,8 @@ import {
   WsData,
   UpgradeRequestOptions,
   AppWsData,
+  UserBalanceUpdate,
+  UserBalanceUpdatePayload,
 } from 'shared'
 import { subscribeToTopic, unsubscribeFromTopic, safeJsonParse, validateAndSend } from '@/lib/utils'
 import { handleJoinRoom, handleSendMessage } from '@/handlers/chat.handler'
@@ -54,6 +56,7 @@ import { nolimitProxyMessageHandler, NoLimitProxyWsData } from '@/handlers/nolim
 
 // --- Tournament Topic Subscription Handlers ---
 import { UserBalanceUpdateMessageSchema } from 'shared' // From shared types
+import { AppEvents, typedAppEventEmitter } from '@/lib/events'
 
 function handleSubscribeToTournamentTopic(
   context: MessageHandlerContext<typeof SubscribeToTournamentTopic, AppWsData>
@@ -182,7 +185,7 @@ export class WebSocketRouter<T extends AppWsData = AppWsData> {
   }
 
   private async defaultOpenHandler(context: OpenHandlerContext<T>): Promise<void> {
-    const { ws } = context
+    const { ws, send } = context
     console.log(ws.data)
     const userId =
       typeof ws.data.user === 'object' && ws.data.user !== null && 'id' in ws.data.user
@@ -190,6 +193,16 @@ export class WebSocketRouter<T extends AppWsData = AppWsData> {
         : undefined
     console.log(`WebSocket opened: ${ws.data.clientId}, UserID: ${userId || 'Guest'}`)
     subscribeToTopic(ws, 'global') // Corrected
+    typedAppEventEmitter.on(AppEvents.USER_BALANCE_UPDATED, (payload: UserBalanceUpdatePayload) => {
+      const topic = `user:${payload.userId}:balanceUpdated`
+      console.log(topic)
+      send(UserBalanceUpdate, {
+        userId: payload.userId,
+        timestamp: Date.now(),
+        content: payload,
+      })
+      console.log(`Published user update for userId ${payload.userId} to topic ${topic}`)
+    })
     if (userId) {
       subscribeToTopic(ws, `user_${userId}_updates`) // Corrected
     }

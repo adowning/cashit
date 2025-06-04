@@ -1,0 +1,48 @@
+
+=== CACHED RTG SPIN PERFORMANCE LOG ===
+Timestamp: 2025-06-04T14:45:52.346Z
+User ID: lhL30ZMSSK9r1lzpyjjJ4vyJtqxarBZj
+Game ID: BassBossRTG
+Success: true
+CacheDatabase Used: DragonflyDB
+
+
+CACHED PERFORMANCE METRICS (Bun.sql + Redis):
+- Total Execution Time: 417.54ms
+- User Profile Query (Cached): 0.01ms
+- Game Query (Cached): 0.20ms
+- Session Query (Cached): 40.93ms
+- Wallet Query (Cached): 44.93ms
+- RGS Call Time: 0.05ms
+- Cached Transaction (Bun.sql): 327.10ms
+
+CACHE PERFORMANCE (Metrics from CacheService):
+- Cache Hit Rate: 71.43%
+- Cache Hits: 120
+- Cache Misses: 48
+- Cache Avg Response Time: 1.13ms
+- Cache Errors: 0
+
+PERFORMANCE IMPROVEMENT vs BASELINE:
+- Target: <300ms total execution time
+- Previous Baseline: ~3800ms average (example value)
+- Previous Optimized: ~580ms average (example value)
+- Current Cached: 417.54ms
+- Improvement vs Baseline: 89.01% (example calculation)
+- Improvement vs Optimized: 28.01% (example calculation)
+
+CACHED PERFORMANCE BREAKDOWN:
+- Database Operations (incl. transaction): 98.95%
+- RGS Call: 0.01%
+- Cache Operations (estimated): 1.04%
+
+OPTIMIZATION TECHNIQUES APPLIED:
+✅ Bun.sql native PostgreSQL driver
+✅ Redis caching layer (via cacheService)
+✅ Single atomic transaction block
+✅ Intelligent cache invalidation
+✅ Cache warming capabilities (via cacheService.warmCache)
+✅ Performance metrics tracking
+✅ Retry mechanism for transient "prepared statement" DB errors
+
+=====================================

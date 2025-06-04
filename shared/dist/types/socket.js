@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GenericWsResponse = exports.GenericWsResponsePayload = exports.UnsubscribeFromGeneralTournaments = exports.SubscribeToGeneralTournaments = exports.UnsubscribeFromTournamentTopic = exports.UnsubscribeFromTournamentTopicPayload = exports.SubscribeToTournamentTopic = exports.SubscribeToTournamentTopicPayload = exports.TournamentNotificationEvent = exports.TournamentParticipantJoinedEvent = exports.TournamentEndedEvent = exports.TournamentStartedEvent = exports.TournamentLeaderboardUpdateEvent = exports.UserBalanceUpdateEvent = exports.ErrorMessage = exports.ErrorCode = exports.DatabaseUpdate = exports.SubscribeResponse = exports.Subscribe = exports.Pong = exports.Ping = exports.RoomList = exports.SendMessage = exports.UserLeft = exports.UserBalanceUpdateMessageSchema = exports.UserJoined = exports.JoinRoom = exports.NewMessage = exports.MessageSchema = exports.MessageMetadataSchema = exports.UserBalanceUpdatePayloadSchema = void 0;
+exports.GenericWsResponse = exports.GenericWsResponsePayload = exports.UnsubscribeFromGeneralTournaments = exports.SubscribeToGeneralTournaments = exports.UnsubscribeFromTournamentTopic = exports.UnsubscribeFromTournamentTopicPayload = exports.SubscribeToTournamentTopic = exports.SubscribeToTournamentTopicPayload = exports.TournamentNotificationEvent = exports.TournamentParticipantJoinedEvent = exports.TournamentEndedEvent = exports.TournamentStartedEvent = exports.TournamentLeaderboardUpdateEvent = exports.UserBalanceUpdateEvent = exports.ErrorMessage = exports.ErrorCode = exports.DatabaseUpdate = exports.SubscribeResponse = exports.Subscribe = exports.UserBalanceUpdate = exports.Pong = exports.Ping = exports.RoomList = exports.SendMessage = exports.UserLeft = exports.UserBalanceUpdateMessageSchema = exports.UserJoined = exports.JoinRoom = exports.NewMessage = exports.MessageSchema = exports.MessageMetadataSchema = exports.UserBalanceUpdatePayloadSchema = void 0;
 exports.messageSchema = messageSchema;
 const zod_1 = require("zod");
 /* SPDX-FileCopyrightText: 2025-present Kriasoft */
@@ -75,6 +75,11 @@ exports.Ping = messageSchema('PING', {
 exports.Pong = messageSchema('PONG', {
     userId: zod_1.z.string(),
     content: zod_1.z.string(),
+    timestamp: zod_1.z.number().optional(),
+});
+exports.UserBalanceUpdate = messageSchema('USER_BALANCE_UPDATE', {
+    userId: zod_1.z.string(),
+    content: zod_1.z.record(zod_1.z.any()).nullable(),
     timestamp: zod_1.z.number().optional(),
 });
 exports.Subscribe = messageSchema('SUBSCRIBE', {

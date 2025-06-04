@@ -87,6 +87,11 @@ export const Pong = messageSchema('PONG', {
   content: z.string(),
   timestamp: z.number().optional(),
 })
+export const UserBalanceUpdate = messageSchema('USER_BALANCE_UPDATE', {
+  userId: z.string(),
+  content: z.record(z.any()).nullable(),
+  timestamp: z.number().optional(),
+})
 export const Subscribe = messageSchema('SUBSCRIBE', {
   userId: z.string(),
   tableName: z.string(),

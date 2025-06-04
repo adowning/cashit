@@ -28,6 +28,7 @@ export const auth = betterAuth({
               // Set other default values as needed
               balance: 0,
               totalXpFromOperator: 0,
+              operatorId: 'cmbhqua2y0000mdgpha4dsggk',
               activeCurrencyType: 'USD',
               lastDailySpin: new Date('1970-01-01T00:00:00Z'),
               isActive: true,

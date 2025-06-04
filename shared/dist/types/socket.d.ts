@@ -160,6 +160,19 @@ export declare const Pong: PayloadMessageSchema<"PONG", z.ZodObject<{
     content: string;
     timestamp?: number | undefined;
 }>>;
+export declare const UserBalanceUpdate: PayloadMessageSchema<"USER_BALANCE_UPDATE", z.ZodObject<{
+    userId: z.ZodString;
+    content: z.ZodNullable<z.ZodRecord<z.ZodString, z.ZodAny>>;
+    timestamp: z.ZodOptional<z.ZodNumber>;
+}, z.UnknownKeysParam, z.ZodTypeAny, {
+    userId: string;
+    content: Record<string, any> | null;
+    timestamp?: number | undefined;
+}, {
+    userId: string;
+    content: Record<string, any> | null;
+    timestamp?: number | undefined;
+}>>;
 export declare const Subscribe: PayloadMessageSchema<"SUBSCRIBE", z.ZodObject<{
     userId: z.ZodString;
     tableName: z.ZodString;
@@ -187,12 +200,12 @@ export declare const DatabaseUpdate: z.ZodObject<{
     data: z.ZodNullable<z.ZodRecord<z.ZodString, z.ZodAny>>;
 }, "strip", z.ZodTypeAny, {
     table: string;
-    operation: "UPDATE" | "INSERT" | "DELETE";
+    operation: "INSERT" | "UPDATE" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }, {
     table: string;
-    operation: "UPDATE" | "INSERT" | "DELETE";
+    operation: "INSERT" | "UPDATE" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }>;
@@ -279,12 +292,12 @@ export declare const UserBalanceUpdateEvent: z.ZodObject<{
     data: z.ZodNullable<z.ZodRecord<z.ZodString, z.ZodAny>>;
 }, "strip", z.ZodTypeAny, {
     table: string;
-    operation: "UPDATE" | "INSERT" | "DELETE";
+    operation: "INSERT" | "UPDATE" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }, {
     table: string;
-    operation: "UPDATE" | "INSERT" | "DELETE";
+    operation: "INSERT" | "UPDATE" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }>;
@@ -295,12 +308,12 @@ export declare const TournamentLeaderboardUpdateEvent: z.ZodObject<{
     data: z.ZodNullable<z.ZodRecord<z.ZodString, z.ZodAny>>;
 }, "strip", z.ZodTypeAny, {
     table: string;
-    operation: "UPDATE" | "INSERT" | "DELETE";
+    operation: "INSERT" | "UPDATE" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }, {
     table: string;
-    operation: "UPDATE" | "INSERT" | "DELETE";
+    operation: "INSERT" | "UPDATE" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }>;

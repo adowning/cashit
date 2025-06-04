@@ -442,7 +442,7 @@ export const useGameStore = defineStore(
         const api = useApiClient()
         const response = await restClient.game.getAllGames()
         setSuccess(true)
-        console.log(response.items)
+        // console.log(response.items)
         setGameSearchList({
           items: Array.isArray(response.items)
             ? response.items.map(

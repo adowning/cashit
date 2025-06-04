@@ -1,21 +1,21 @@
 model UserProfile {
   id                    String                  @id
-  createdAt             DateTime                @default(now())
-  updatedAt             DateTime                @updatedAt
+  createdAt             DateTime                @default(now()) @map("created_at")
+  updatedAt             DateTime                @updatedAt @map("updated_at")
   username              String                  @unique
   avatar                String?                 @default("avatar-10.webp")
   cashtag               String?
   balance               Int                     @default(0)
-  totalXpFromOperator   Int                     @default(0)
-  activeCurrencyType    String                  @default("USD")
-  lastDailySpin         DateTime                @default(dbgenerated("'1970-01-01 00:00:00'::timestamp without time zone"))
-  userId                String                  @unique
-  isActive              Boolean                 @default(false)
-  otherUserid           String?
+  totalXpFromOperator   Int                     @default(0) @map("total_xp_from_operator")
+  activeCurrencyType    String                  @default("USD") @map("active_currency_type")
+  lastDailySpin         DateTime                @default(dbgenerated("'1970-01-01 00:00:00'::timestamp without time zone")) @map("last_daily_spin")
+  userId                String                  @unique @map("user_id")
+  isActive              Boolean                 @default(false) @map("is_active")
+  otherUserid           String?                 @map("other_userid")
   role                  Role?                   @default(USER)
-  operatorId            String?
-  currentGameSessionid  String?
-  vipInfoId             String                  @unique
+  operatorId            String?                 @map("operator_id")
+  currentGameSessionid  String?                 @map("current_game_sessionid")
+  vipInfoId             String                  @unique @map("vip_info_id")
   Tournament            Tournament[]
   TournamentParticipant TournamentParticipant[]
   TournamentReward      TournamentReward[]      @relation("TournamentWinner")

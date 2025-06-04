@@ -51,7 +51,7 @@ const PROVIDER_CONFIGS_FALLBACK: Record<string, GameProviderConfig> = {
   },
 }
 
-async function getProviderConfig(providerNameStr: string): Promise<GameProviderConfig> {
+export async function getProviderConfig(providerNameStr: string): Promise<GameProviderConfig> {
   const providerEnumKey = providerNameStr.toUpperCase() as keyof typeof GameProviderName
   const provider = await prisma.gameProvider.findUnique({
     where: { name: GameProviderName[providerEnumKey] || providerNameStr },
@@ -78,17 +78,17 @@ async function getProviderConfig(providerNameStr: string): Promise<GameProviderC
   return fallbackConfig
 }
 
-function toCents(amountFloat: number | string): number {
+export function toCents(amountFloat: number | string): number {
   if (typeof amountFloat === 'string') amountFloat = parseFloat(amountFloat)
   if (isNaN(amountFloat)) throw new Error('Invalid amount for toCents conversion')
   return Math.round(amountFloat * 100)
 }
 
-function fromCentsToFloat(amountInCents: number): number {
+export function fromCentsToFloat(amountInCents: number): number {
   return amountInCents / 100
 }
 
-class RgsProxyError extends Error {
+export class RgsProxyError extends Error {
   constructor(
     message: string,
     public status?: number,
@@ -267,7 +267,7 @@ export interface CreateTransactionArgs {
 //   console.log(wallet)
 //   return wallet
 // }
-async function proxyRequestToRgs<_TRequest, TResponse>(
+export async function proxyRequestToRgs<_TRequest, TResponse>(
   // providerName: string,
   _rgsUrlPath: string,
   _method: 'GET' | 'POST' | 'PUT' = 'POST',
@@ -326,7 +326,7 @@ async function proxyRequestToRgs<_TRequest, TResponse>(
   }
 }
 
-interface HandlePlatformGameRoundParams {
+export interface HandlePlatformGameRoundParams {
   userId: string
   platformGameId: string
   providerName: string
@@ -341,7 +341,7 @@ interface HandlePlatformGameRoundParams {
   user: UserProfile
 }
 
-async function handlePlatformGameRound(
+export async function handlePlatformGameRound(
   params: HandlePlatformGameRoundParams,
   tx: Prisma.TransactionClient
 ): Promise<GamePlatformSpinResultDetails> {
@@ -739,6 +739,15 @@ export async function rtgSpin(
       return c.json({ success: false, error: { msg: 'INSUFFICIENT_FUNDS' } }, 200) // Corrected
     }
 
+    typedAppEventEmitter.emit(AppEvents.USER_BALANCE_UPDATED, {
+      userId: user.id,
+      newBalance: wallet.balance - wagerAmountCents,
+      table: 'wallets',
+      // operatorId,
+      changeAmount: fromCentsToFloat(wagerAmountCents) * -1,
+      transactionType: TransactionType.BET,
+      relatedTransactionId: 'pre-transaction',
+    })
     // const rgsSpinPayload = {
     //   token: activeGameSession.authSessionId,
     //   userId: `${rtgProviderConfig.providerUserIdPrefix || ''}${user.id}`,

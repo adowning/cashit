@@ -1,17 +1,17 @@
 model VipInfo {
   id                    String       @id
-  createdAt             DateTime     @default(now())
-  updatedAt             DateTime     @updatedAt
+  createdAt             DateTime     @default(now()) @map("created_at")
+  updatedAt             DateTime     @updatedAt @map("updated_at")
   username              String       @unique
   avatar                String?      @default("avatar-10.webp")
-  userId                String       @unique
+  userId                String       @unique @map("user_id")
   level                 Int          @default(0)
-  currentLevelXp        Int          @default(0)
-  totalXp               Int          @default(0)
-  dailyBonusClaimedAt   DateTime?
-  weeklyBonusClaimedAt  DateTime?
-  monthlyBonusClaimedAt DateTime?
-  cashbackPercentage    Int          @default(0)
+  currentLevelXp        Int          @default(0) @map("current_level_xp")
+  totalXp               Int          @default(0) @map("total_xp")
+  dailyBonusClaimedAt   DateTime?    @map("daily_bonus_claimed_at")
+  weeklyBonusClaimedAt  DateTime?    @map("weekly_bonus_claimed_at")
+  monthlyBonusClaimedAt DateTime?    @map("monthly_bonus_claimed_at")
+  cashbackPercentage    Int          @default(0) @map("cashback_percentage")
   userProfile           UserProfile?
 
   @@map("vip_infos")

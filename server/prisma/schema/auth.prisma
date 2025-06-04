@@ -2,12 +2,12 @@ model User {
   id              String    @id @map("_id")
   name            String
   username        String
-  displayUsername String
+  displayUsername String    @map("display_username")
   email           String    @unique
-  emailVerified   Boolean
+  emailVerified   Boolean   @map("email_verified")
   image           String?
-  createdAt       DateTime
-  updatedAt       DateTime
+  createdAt       DateTime  @map("created_at")
+  updatedAt       DateTime  @map("updated_at")
   accounts        Account[]
   sessions        Session[]
 
@@ -16,13 +16,13 @@ model User {
 
 model Session {
   id        String   @id @map("_id")
-  expiresAt DateTime
+  expiresAt DateTime @map("expires_at")
   token     String   @unique
-  createdAt DateTime
-  updatedAt DateTime
-  ipAddress String?
-  userAgent String?
-  userId    String
+  createdAt DateTime @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  ipAddress String?  @map("ip_address")
+  userAgent String?  @map("user_agent")
+  userId    String   @map("user_id")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("session")
@@ -30,18 +30,18 @@ model Session {
 
 model Account {
   id                    String    @id @map("_id")
-  accountId             String
-  providerId            String
-  userId                String
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
+  accountId             String    @map("account_id")
+  providerId            String    @map("provider_id")
+  userId                String    @map("user_id")
+  accessToken           String?   @map("access_token")
+  refreshToken          String?   @map("refresh_token")
+  idToken               String?   @map("id_token")
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
   scope                 String?
   password              String?
-  createdAt             DateTime
-  updatedAt             DateTime
+  createdAt             DateTime  @map("created_at")
+  updatedAt             DateTime  @map("updated_at")
   user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("account")
@@ -51,9 +51,9 @@ model Verification {
   id         String    @id @map("_id")
   identifier String
   value      String
-  expiresAt  DateTime
-  createdAt  DateTime?
-  updatedAt  DateTime?
+  expiresAt  DateTime  @map("expires_at")
+  createdAt  DateTime? @map("created_at")
+  updatedAt  DateTime? @map("updated_at")
 
   @@map("verification")
 }
