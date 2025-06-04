@@ -5,7 +5,20 @@
       class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50"
     >
       <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
-      <p class="ml-4 text-white text-xl">Loading {{ options?.gameId }}...</p>
+      <p class="ml-4 text-white text-xl">Loading {{ options?.gameName }}...</p>
+    </div>
+    <div
+      v-if="showInsufficientFunds"
+      class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-75 z-50"
+    >
+      <div class="h-400 w-full border-t-4 border-b-4 border-blue-500">
+        <CoinSalePopup
+          :offers="COIN_OFFERS"
+          @close="showInsufficientFunds = false"
+          @shop="router.replace('/home')"
+          @lobby="router.replace('/home')"
+        />
+      </div>
     </div>
     <iframe
       v-if="iframeUrl"
@@ -39,9 +52,13 @@
   import { ref, computed, onMounted, watch, type PropType } from 'vue'
   import { useAuthStore } from '@/stores/auth.store'
   import { useNotificationStore } from '@/stores/notification.store' //
+  import CoinSalePopup from '@/components/games/coins/CoinSalePopup.vue'
+  import { COIN_OFFERS } from '@/components/games/coins/constants'
+  import { router } from '@/router'
 
+  const eventBus = useEventManager()
   interface RtgGameLaunchOptions {
-    gameId: string // e.g., "777Strike"
+    gameName: string // e.g., "777Strike"
     lang?: string
     currency?: string
     mode?: 'real' | 'demo'
@@ -68,17 +85,19 @@
   const gameIframe = ref<HTMLIFrameElement | null>(null)
   const isLoading = ref<boolean>(true)
   const loadError = ref<boolean>(false)
+  const showInsufficientFunds = ref<boolean>(false)
+
   const loadErrorMessage = ref<string>('')
 
   const iframeUrl = computed(() => {
-    if (!props.options || !props.options.gameId) {
+    if (!props.options || !props.options.gameName) {
       loadError.value = true
       loadErrorMessage.value = 'Game ID is missing in options.'
       return null
     }
 
     const params = new URLSearchParams()
-    params.set('gameId', props.options.gameId)
+    params.set('gameName', props.options.gameName)
     params.set('userId', authStore.currentUser?.id || 'GUEST_DEMO_USER') // Ensure you have a fallback or handle unauthenticated
     params.set('token', authStore.accessToken || 'GUEST_DEMO_TOKEN')
     // params.set('lang', props.options.lang || authStore.currentUser?.language || 'en')
@@ -98,9 +117,50 @@
     // Make sure 'rtg_loader_template.html' is in your project's 'public' directory.
     return `/rtg_loader_template.html?${params.toString()}`
   })
-
+  window.addEventListener(
+    'message',
+    (event) => {
+      if (event.data) {
+        // console.log(event.data.type)
+        if (event.data.type) {
+          // console.log(event.data.type)
+          if (event.data.type === 'messageShow') {
+            const sheets =
+              gameIframe.value?.contentWindow?.document.getElementsByClassName('overlay')
+            // console.log(gameIframe.value?.getElementsByClassName('v-card'))
+            // console.log(sheets)
+            if (sheets) {
+              for (var i = 0; i < sheets.length; i++) {
+                if (sheets[i].innerHTML.includes('INSUFFICIENT_FUNDS')) {
+                  console.log(sheets[i].style) //second console output
+                  const parent = sheets[i].parentElement
+                  if (parent !== null) {
+                    const grandparent = parent.parentElement
+                    if (parent !== null) parent.style.opacity = '0'
+                    if (grandparent !== null) grandparent.style.opacity = '0'
+                    // console.log((sheets[i].parentElement.style.opacity = 0)) //second console output
+                    // sheets[i].style.opacity = 0
+                  }
+                  showInsufficientFunds.value = true
+                }
+              }
+            }
+          }
+        } else {
+          console.log(event.data)
+        }
+      } else {
+        console.log(event)
+      }
+      // …
+    },
+    false
+  )
   const onIframeLoad = () => {
     if (gameIframe.value?.contentWindow && authStore.accessToken) {
+      gameIframe.value.contentWindow.addEventListener('message', (event) => {
+        console.log('event listener message >>. ', event)
+      })
       gameIframe.value.contentWindow.postMessage(
         { type: 'SET_AUTH_TOKEN', token: authStore.accessToken, userId: authStore.currentUser?.id },
         '*' // Or better, the specific origin of your rtg_loader_template.html
@@ -108,8 +168,10 @@
     }
     isLoading.value = false
     loadError.value = false
-    console.log(`RTG Game Iframe loaded for: ${props.options.gameId}`)
-    notificationStore.addNotification('info', `Game "${props.options.gameId}" loaded.`)
+
+    console.log(`RTG Game Iframe loaded for: ${props.options.gameName}`)
+    eventBus.emit('hideBottomBar')
+    notificationStore.addNotification('info', `Game "${props.options.gameName}" loaded.`)
   }
 
   const onIframeError = (event: Event) => {
@@ -117,7 +179,7 @@
     loadError.value = true
     loadErrorMessage.value = `The game frame failed to load. Please check console for details.`
     console.error('Game Iframe load error:', event)
-    notificationStore.addNotification('error', `Error loading game: ${props.options.gameId}`)
+    notificationStore.addNotification('error', `Error loading game: ${props.options.gameName}`)
   }
 
   const retryLoadGame = () => {
@@ -135,8 +197,8 @@
   watch(
     () => props.options,
     (newOptions, oldOptions) => {
-      if (newOptions && oldOptions && newOptions.gameId !== oldOptions.gameId) {
-        console.log('Game options changed, reloading game:', newOptions.gameId)
+      if (newOptions && oldOptions && newOptions.gameName !== oldOptions.gameName) {
+        console.log('Game options changed, reloading game:', newOptions.gameName)
         isLoading.value = true // Will be reset by onIframeLoad or onIframeError
         loadError.value = false
         // iframeUrl computed property will automatically update the src

@@ -1,8 +1,10 @@
 <script setup lang="ts">
-  import { onMounted, ref } from 'vue'
+  import { onMounted, ref, nextTick } from 'vue'
 
   import { useGameStore } from '@/stores/game.store'
   import { useRouter } from 'vue-router'
+  import logoPlaceholder from '@/assets/logo.png'
+  import destr from 'destr'
 
   // import FlameEffectOverlay from './FlameEffectOverlay.vue'
   // import SnowEffectOverlay from './SnowEffectOverlay.vue'
@@ -28,36 +30,211 @@
       featured: item.featured ?? false,
     }))
   )
+  const carousel = ref<HTMLElement | null>(null)
 
+  // Lazy loading state
+  const loadedImages = ref<Set<number>>(new Set())
+  const imageLoadingStates = ref<Map<number, 'loading' | 'loaded' | 'error'>>(new Map())
+  const imageDimensions = ref<Map<number, { width: number; height: number; aspectRatio: number }>>(
+    new Map()
+  )
+
+  // Get image URL for a game
+  const getGameImageUrl = (game: Game) => {
+    return `https://images.cashflowcasino.com/${game.developer.toLowerCase()}/${game.name.toLowerCase()}.avif`
+  }
+
+  // Get smart background sizing based on image aspect ratio
+  const getSmartBackgroundSize = (game: Game) => {
+    const dimensions = imageDimensions.value.get(game.id)
+    if (!dimensions) return 'auto 100%' // Default fallback
+
+    const { aspectRatio } = dimensions
+    // Mobile container aspect ratio: 145.19/239 = 0.608
+    const containerAspectRatio = 0.608
+
+    // Special handling for Red Tiger images (rtg.avif)
+    const isRedTiger =
+      game.developer.toLowerCase() === 'redtiger' || getGameImageUrl(game).includes('rtg.avif')
+
+    if (isRedTiger) {
+      // Red Tiger images are 440x440 (square), stretch to fill 145x240 container
+      // console.log(
+      //   `Red Tiger image detected for ${game.title} (${dimensions?.width}x${dimensions?.height}), stretching to 100% 100%`
+      // )
+      return '100% 100%'
+    }
+
+    if (aspectRatio > containerAspectRatio * 1.5) {
+      // Very wide images: fit height, show full width
+      return 'auto 100%'
+    } else if (aspectRatio < containerAspectRatio * 0.7) {
+      // Very tall images: fit width, show full height
+      return '100% auto'
+    } else if (aspectRatio > containerAspectRatio * 1.1) {
+      // Moderately wide: fit height
+      return 'auto 100%'
+    } else {
+      // Similar or tall aspect ratio: use cover
+      return 'cover'
+    }
+  }
+
+  // Get background image style with lazy loading and smart sizing
+  const getBackgroundImageStyle = (game: Game) => {
+    const isLoaded = loadedImages.value.has(game.id)
+    const loadingState = imageLoadingStates.value.get(game.id)
+
+    if (isLoaded && loadingState === 'loaded') {
+      const backgroundSize = getSmartBackgroundSize(game)
+
+      return `background-image: url('${getGameImageUrl(game)}'); background-size: ${backgroundSize};`
+    } else {
+      return `background-image: url('${logoPlaceholder}'); background-size: contain;`
+    }
+  }
+
+  // Preload image and update state
+  const preloadImage = (game: Game) => {
+    if (loadedImages.value.has(game.id)) {
+      console.log('Image already loaded for:', game.title)
+      return
+    }
+
+    console.log('Starting to preload image for:', game.title)
+    imageLoadingStates.value.set(game.id, 'loading')
+
+    const img = new Image()
+    const imageUrl = getGameImageUrl(game)
+
+    img.onload = () => {
+      console.log(`Successfully loaded image for: ${game.title} (${img.width}x${img.height})`)
+
+      // Store image dimensions and aspect ratio
+      const aspectRatio = img.width / img.height
+      imageDimensions.value.set(game.id, {
+        width: img.width,
+        height: img.height,
+        aspectRatio: aspectRatio,
+      })
+
+      loadedImages.value.add(game.id)
+      imageLoadingStates.value.set(game.id, 'loaded')
+    }
+    img.onerror = () => {
+      console.warn(`Failed to load image for game: ${game.title} - URL: ${imageUrl}`)
+      imageLoadingStates.value.set(game.id, 'error')
+      // Keep placeholder image on error
+    }
+    img.src = imageUrl
+  }
+
+  const getScrollDistance = () => {
+    // Calculate scroll distance based on screen size
+    const screenWidth = window.innerWidth
+    if (screenWidth <= 360) {
+      // Very small mobile: 2 cards * 140px + gap
+      return 2 * 140 + 10 + 10
+    } else if (screenWidth <= 480) {
+      // Small mobile: 2 cards * 160px + gap
+      return 2 * 160 + 12 + 12
+    } else if (screenWidth <= 768) {
+      // Mobile: 2 cards * 180px + gap
+      return 2 * 180 + 12 + 12
+    } else {
+      // Desktop: Default scroll distance
+      return 200
+    }
+  }
+
+  const scrollLeft = (distance?: number) => {
+    if (carousel.value) {
+      const scrollDistance = distance || getScrollDistance()
+      carousel.value.scrollBy({
+        left: -scrollDistance,
+        behavior: 'smooth',
+      })
+    }
+  }
+
+  const scrollRight = (distance?: number) => {
+    if (carousel.value) {
+      const scrollDistance = distance || getScrollDistance()
+      carousel.value.scrollBy({
+        left: scrollDistance,
+        behavior: 'smooth',
+      })
+    }
+  }
+
+  defineExpose({
+    scrollLeft,
+    scrollRight,
+  })
   async function loadGame(game: any) {
-    const token = localStorage.getItem('access_token')
+    let token = localStorage.getItem('auth')
+    token = destr(token).accessToken
     if (!token) {
       console.error('No access token found. Cannot load game.')
       return
     }
 
-    // if (game.developer === 'netgame') {
-    //   await router.push(`/games/netgame/?gameName=${game.name}&token=${token}`)
-    // } else if (game.developer === 'netent') {
-    //   await router.push(`/games/netent/?gameName=${game.name}&token=${token}`)
-    // } else if (game.developer === 'nolimit') {
-    //   await router.push(`/games/nolimit/?gameName=${game.name}&token=${token}`)
-    // } else if (game.developer === 'redtiger') {
-    //   await router.push(`/games/redtiger/?gameName=${game.name}&token=${token}`)
-    // } else {
-    //   console.warn(`Unsupported developer: ${game.developer}`)
-    // }
+    if (game.developer === 'netgame') {
+      await router.push(`/games/netgame/?gameName=${game.name}&token=${token}`)
+    } else if (game.developer === 'netent') {
+      await router.push(`/games/netent/?gameName=${game.name}&token=${token}`)
+    } else if (game.developer === 'nolimit') {
+      await router.push(`/games/nolimit/?gameName=${game.name}&token=${token}`)
+    } else if (game.developer === 'redtiger') {
+      await router.push(`/rtggame/?gameName=${game.name}&token=${token}`)
+    } else {
+      console.warn(`Unsupported developer: ${game.developer}`)
+    }
+  }
+
+  // Intersection Observer for lazy loading
+  let intersectionObserver: IntersectionObserver | null = null
+
+  const setupLazyLoading = () => {
+    // Clean up existing observer
+    if (intersectionObserver) {
+      intersectionObserver.disconnect()
+    }
+
+    intersectionObserver = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            const gameId = parseInt(entry.target.getAttribute('data-game-id') || '0')
+            const game = games.value.find((g) => g.id === gameId)
+            console.log('Card in view:', gameId, game?.title) // Debug log
+            if (game && !loadedImages.value.has(game.id)) {
+              preloadImage(game)
+              intersectionObserver?.unobserve(entry.target)
+            }
+          }
+        })
+      },
+      {
+        root: null, // Use viewport instead of carousel container
+        rootMargin: '100px', // Start loading 100px before the card comes into view
+        threshold: 0.1,
+      }
+    )
+
+    // Observe all game cards with a delay to ensure DOM is ready
+    setTimeout(() => {
+      const gameCards = document.querySelectorAll('.game-card')
+      console.log('Setting up observers for', gameCards.length, 'cards') // Debug log
+      gameCards.forEach((card) => {
+        if (intersectionObserver) {
+          intersectionObserver.observe(card)
+        }
+      })
+    }, 100)
   }
 
   onMounted(() => {
-    // games.value = gameStore.gameSearchList.items.map((item: any) => ({
-    //   id: Number(item.id),
-    //   title: item.title,
-    //   developer: item.developer, //item.developer ?? item.providerName ?? 'unknown',
-    //   name: item.name,
-    //   temperature: item.temperature ?? 'none',
-    //   featured: item.featured ?? false,
-    // }))
     games.value = gameStore.gameSearchList.items.map((item: any) => ({
       id: item.id,
       title: item.title,
@@ -67,7 +244,45 @@
       featured: item.featured ?? false,
     }))
     console.log('Games loaded:', games.value)
+
+    // Setup lazy loading after games are loaded
+    nextTick(() => {
+      setupLazyLoading()
+      // Preload first 2-4 images immediately for better initial experience
+      const initialLoadCount = window.innerWidth <= 768 ? 2 : 4
+      games.value.slice(0, initialLoadCount).forEach((game) => {
+        preloadImage(game)
+      })
+
+      // Fallback: Add scroll listener to carousel for manual lazy loading
+      if (carousel.value) {
+        carousel.value.addEventListener('scroll', handleCarouselScroll)
+      }
+    })
   })
+
+  // Fallback scroll handler for lazy loading
+  const handleCarouselScroll = () => {
+    if (!carousel.value) return
+
+    const scrollLeft = carousel.value.scrollLeft
+    const containerWidth = carousel.value.offsetWidth
+    const scrollRight = scrollLeft + containerWidth
+
+    // Load images for cards that are visible or about to be visible
+    games.value.forEach((game, index) => {
+      if (!loadedImages.value.has(game.id)) {
+        const cardWidth = window.innerWidth <= 768 ? 180 : 200
+        const gap = window.innerWidth <= 768 ? 15 : 15
+        const cardPosition = index * (cardWidth + gap)
+
+        // Load if card is within viewport + 200px buffer
+        if (cardPosition >= scrollLeft - 400 && cardPosition <= scrollRight + 400) {
+          preloadImage(game)
+        }
+      }
+    })
+  }
 
   // Fallback for broken images
   const onImageError = (event: Event) => {
@@ -93,11 +308,12 @@
         @click="scrollBack"
       /> -->
 
-    <div class="carousel-scroll-area">
+    <div ref="carousel" class="carousel-scroll-area">
       <div class="carousel-track">
         <div
           v-for="game in games"
           :key="game.id"
+          :data-game-id="game.id"
           class="game-card"
           :class="{
             'theme-cold': game.temperature === 'cold',
@@ -161,21 +377,44 @@
                 @error="onImageError"
               /> -->
               <div
+                class="game-image-container-with-filler absolute"
                 style="
                   width: 92%;
                   top: 20px;
                   height: 240px;
                   max-height: 260px;
                   padding-top: 20px;
-                  background-position: bottom;
-                  background-size: 100% 100%;
-                  background-repeat: no-repeat;
+                  background: linear-gradient(
+                    to bottom,
+                    rgba(0, 0, 0, 0.1) 0%,
+                    rgba(0, 0, 0, 0.05) 20%,
+                    transparent 30%,
+                    transparent 70%,
+                    rgba(0, 0, 0, 0.05) 80%,
+                    rgba(0, 0, 0, 0.1) 100%
+                  );
+                  border-radius: 15px;
+                  border-top-left-radius: 30px;
+                  border-top-right-radius: 30px;
+                  overflow: hidden;
                 "
-                :style="`background-image: url('https://images.cashflowcasino.com/${game.developer.toLowerCase()}/${game.name.toLowerCase()}.avif');`"
-                :alt="game.title"
-                class="game-image absolute"
-                @error="onImageError"
-              />
+              >
+                <div
+                  style="
+                    width: 100%;
+                    height: 100%;
+                    background-position: center center;
+                    background-repeat: no-repeat;
+                    transition:
+                      background-image 0.3s ease,
+                      background-size 0.3s ease;
+                  "
+                  :style="getBackgroundImageStyle(game)"
+                  :alt="game.title"
+                  class="game-image absolute"
+                  @error="onImageError"
+                />
+              </div>
               <!-- <SnowEffectOverlay
                 class="absolute bottom-20"
                 style="z-index: 2;  width: 30px; bottom: -30px; opacity: .8; height: 20%; "
@@ -230,6 +469,56 @@
 <style scoped>
   /* Your existing styles */
 
+  .carousel-container {
+    height: 42vh;
+    min-height: 300px;
+    max-height: 380px;
+    width: 100%;
+    max-width: 600px;
+    margin: 0 0;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  .carousel-scroll-area {
+    display: flex;
+    overflow-x: auto;
+    overflow-y: hidden;
+    height: 100%;
+    width: 100%;
+    scrollbar-width: none;
+    scroll-behavior: smooth;
+
+    &::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 4px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: linear-gradient(to right, #a855f7, #ec4899);
+      border-radius: 4px;
+      border: 1px solid rgba(0, 0, 0, 0.3);
+    }
+
+    &::-webkit-scrollbar-thumb:hover {
+      background: linear-gradient(to right, #9333ea, #f472b6);
+    }
+  }
+
+  .carousel-track {
+    display: flex;
+    gap: 12px;
+    height: 100%;
+    box-sizing: border-box;
+    /* Desktop: Center content with padding */
+    /* padding: 0 20px; */
+  }
   /* Ensure the image container is relatively positioned and has a z-index */
   .card-image-container {
     height: 100%;
@@ -250,35 +539,63 @@
     z-index: 1;
   }
 
-  /* Ensure the game image has a lower z-index than the effects */
-  .game-image {
-    z-index: 0; /* Set a lower z-index */
+  /* Game image container with filler */
+  .game-image-container-with-filler {
+    z-index: 0;
     display: block;
-    width: 92%;
-    height: 93%;
-    margin-top: 10%;
     margin-left: 8px;
     margin-right: 5px;
-    top: 0;
-    border-radius: 15px;
-    border-top-left-radius: 30px;
-    border-top-right-radius: 30px;
     border-color: white;
     border-width: 1.5px;
     border-left-style: solid;
     border-right-style: solid;
     border-bottom-style: solid;
     border-top-style: none;
-    object-fit: cover;
     transition: transform 0.3s ease;
+    position: absolute;
+  }
+
+  /* Ensure the game image has a lower z-index than the effects */
+  .game-image {
+    z-index: 0; /* Set a lower z-index */
+    display: block;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    object-fit: cover;
+    transition: background-image 0.3s ease;
     position: absolute; /* Ensure position is not static for z-index to work */
   }
 
-  /* The FireEffectOverlay and SnowEffectOverlay components' root divs (.overlay) */
-  /* should have a higher z-index than the image. */
-  /* We apply this directly in the template using inline styles for clarity */
-  /* or you could create specific classes if you prefer */
+  /* Placeholder styling for lazy loading */
+  .game-image[style*='logo.png'] {
+    background-size: contain !important;
+    background-position: center !important;
+    opacity: 0.7;
+    filter: grayscale(0.3);
+  }
 
+  /* Loading animation for placeholder */
+  .game-image[style*='logo.png']::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    animation: shimmer 1.5s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
   /* Other styles remain the same */
   .box {
     height: 40vh;
@@ -335,66 +652,13 @@
     initial-value: 0turn;
   }
 
-  .carousel-container {
-    height: 42vh;
-    min-height: 300px;
-    max-height: 380px;
-    width: 100%;
-    overflow-x: auto;
-    max-width: 600px;
-    margin: 0 auto;
-    margin-top: 10px;
-    overflow-y: hidden;
-    overflow-x: auto;
-    position: relative;
-    padding: 0 0px;
-    box-sizing: border-box;
-    margin-bottom: 10px;
-  }
-
-  .carousel-scroll-area {
-    display: flex;
-    overflow-x: auto;
-    overflow-y: hidden;
-    height: 100%;
-    max-width: 600px;
-    scrollbar-width: none;
-
-    &::-webkit-scrollbar {
-      height: 8px;
-    }
-
-    &::-webkit-scrollbar-track {
-      background: rgba(0, 0, 0, 0.2);
-      border-radius: 4px;
-    }
-
-    &::-webkit-scrollbar-thumb {
-      background: linear-gradient(to right, #a855f7, #ec4899);
-      border-radius: 4px;
-      border: 1px solid rgba(0, 0, 0, 0.3);
-    }
-
-    &::-webkit-scrollbar-thumb:hover {
-      background: linear-gradient(to right, #9333ea, #f472b6);
-    }
-  }
-
-  .carousel-track {
-    display: inline-flex;
-    gap: 15px;
-    padding: 0px 8px;
-    height: 100%;
-    box-sizing: border-box;
-  }
-
   .game-card {
     flex-shrink: 0;
+    /* Desktop sizing */
+    width: 200px;
     min-width: 200px;
-    max-width: 220px;
+    max-width: 200px;
     max-height: 350px;
-    width: calc(100vw - 220px);
-    margin-left: 10px;
     height: 100%;
     border-radius: 15px;
     position: relative;
@@ -531,8 +795,19 @@
 
   /* Responsive Adjustments */
   @media (max-width: 768px) {
+    .carousel-track {
+      /* Mobile: Calculate padding to center 2 cards */
+      /* Screen width - (2 cards * card width) - gap = remaining space */
+      /* Remaining space / 2 = padding on each side */
+      padding: 0 calc((100vw - (2 * 180px) - 15px) / 2);
+      gap: 15px;
+    }
+
     .game-card {
-      min-width: 150px;
+      /* Mobile: Fixed width for exactly 2 cards to fit */
+      width: 180px;
+      min-width: 180px;
+      max-width: 180px;
     }
 
     .top-banner {
@@ -546,16 +821,32 @@
   }
 
   @media (max-width: 480px) {
-    .game-card {
-      min-width: 130px;
+    .carousel-track {
+      /* Small mobile: Adjust for smaller screens */
+      padding: 0 calc((100vw - (2 * 160px) - 12px) / 2);
+      gap: 12px;
     }
 
+    .game-card {
+      /* Small mobile: Smaller cards */
+      width: 160px;
+      min-width: 160px;
+      max-width: 160px;
+    }
+  }
+
+  @media (max-width: 360px) {
     .carousel-track {
+      /* Very small mobile: Further adjustment */
+      padding: 0 calc((100vw - (2 * 140px) - 10px) / 2);
       gap: 10px;
     }
 
-    .carousel-container {
-      padding: 0 5px;
+    .game-card {
+      /* Very small mobile: Even smaller cards */
+      width: 140px;
+      min-width: 140px;
+      max-width: 140px;
     }
   }
 </style>

@@ -80,7 +80,7 @@ export interface DepositProduct {
   title: string
   description?: string | null
   priceInCents: number
-  currencyId: string | null
+  // currencyId: string | null
   iconUrl?: string | null
   // bonusOffer?: any; // Details about any bonus tied to this product
 }

@@ -1,5 +1,5 @@
 import z from 'zod/v4'
-import prisma from '../../prisma/index'
+import prisma from '../../prisma/'
 import { protectedProcedure, publicProcedure } from '../lib/orpc'
 import type { ExtendedPrismaClient } from '../../prisma'
 import {
@@ -24,8 +24,10 @@ import {
 } from 'shared/dist' // Ensure your shared types are correctly structured and exported
 import { Prisma } from '../../prisma/generated/client' // For Prisma.* types if needed
 import { GameCategory as PrismaGameCategoryEnum } from '../../prisma/generated/client'
-
-const _prisma: ExtendedPrismaClient = prisma
+import { RTGJackpotIntegration } from '@/integrations/rtg-jackpot.integration'
+// const prisma = new PrismaClient()
+// Use your actual ExtendedPrismaClient constructor or factory here
+// const prisma: ExtendedPrismaClient = new (require('../../prisma').ExtendedPrismaClient)()
 
 // --- Zod Schemas for Input Validation ---
 const GameIdSchema = z.object({
@@ -119,14 +121,38 @@ const mapPrismaGameToSharedGame = (game: GameWithProvider): SharedPrismaGame => 
         }
       : null,
     operatorId: game.operatorId,
+    tournamentDirectives: [],
     // Ensure other fields like gameSessions, gameLaunchLinks, operator, TournamentGame are handled
     // or explicitly excluded if not needed by the client for this DTO.
     // For simplicity, I'm omitting them here, but you might need them.
     gameSessions: [], // Placeholder or fetch if needed
     gameLaunchLinks: [], // Placeholder
+
     // operator: null, // Placeholder
-    TournamentGame: [], // Placeholder
-    goldsvetData: game.goldsvetData, // Make sure this is compatible
+    TournamentGames: [], // Placeholder
+    goldsvetData: game.goldsvetData,
+    // id: '',
+    // name: '',
+    // title: '',
+    // goldsvetData: null,
+    // description: null,
+    // supportedProviders: [],
+    // category: 'FISH',
+    // tags: [],
+    // isActive: false,
+    // thumbnailUrl: null,
+    // bannerUrl: null,
+    // meta: null,
+    // createdAt: undefined,
+    // updatedAt: undefined,
+    // featured: false,
+    // providerName: null,
+    // totalWagered: 0,
+    // gameProviderId: null,
+    // operatorId: null,
+    // tournamentDirectives: null,
+    status: true,
+    checked: true,
   }
 }
 
@@ -142,7 +168,7 @@ export const gameRouter = {
   getGameProviders: publicProcedure
     .output(z.array(z.custom<SharedGameProvider>())) // Assuming PrismaGameProvider is your shared type
     .handler(async (): Promise<SharedGameProvider[]> => {
-      const providers = await _prisma.gameProvider.findMany({
+      const providers = await prisma.gameProvider.findMany({
         where: { isActive: true },
         orderBy: { name: 'asc' },
       })
@@ -159,8 +185,8 @@ export const gameRouter = {
     .handler(async ({ input }): Promise<PaginatedResponse<SharedPrismaGame>> => {
       const { page = 1, limit = 200 } = input ?? {}
 
-      const totalGames = await _prisma.game.count({ where: { isActive: true } })
-      const gamesData = await _prisma.game.findMany({
+      const totalGames = await prisma.game.count({ where: { isActive: true } })
+      const gamesData = await prisma.game.findMany({
         where: { isActive: true },
         include: { gameProvider: true }, // Include provider info
         orderBy: [{ featured: 'desc' }, { name: 'asc' }],
@@ -168,8 +194,8 @@ export const gameRouter = {
         take: limit,
       })
       const x = gamesData.map(mapPrismaGameToSharedGame)
-      console.log(x[0])
-      console.log(x[1])
+      // console.log(x[0])
+      // console.log(x[1])
       return {
         items: gamesData,
         total: totalGames,
@@ -206,8 +232,8 @@ export const gameRouter = {
         whereClause.isActive = isActive
       }
 
-      const totalGames = await _prisma.game.count({ where: whereClause })
-      const gamesData = await _prisma.game.findMany({
+      const totalGames = await prisma.game.count({ where: whereClause })
+      const gamesData = await prisma.game.findMany({
         where: whereClause,
         include: { gameProvider: true }, // Include provider info
         orderBy: [{ featured: 'desc' }, { name: 'asc' }],
@@ -228,7 +254,7 @@ export const gameRouter = {
     .input(GameIdSchema) // Assuming you fetch by CUID
     .output(z.custom<SharedPrismaGame | null>())
     .handler(async ({ input }): Promise<SharedPrismaGame | null> => {
-      const game = await _prisma.game.findUnique({
+      const game = await prisma.game.findUnique({
         where: { id: input.id },
         include: { gameProvider: true },
       })
@@ -242,7 +268,7 @@ export const gameRouter = {
     .output(z.custom<LaunchGameResponseDto>())
     .handler(async ({ context, input }): Promise<LaunchGameResponseDto> => {
       const userId = context.session.user.id
-      const game = await _prisma.game.findUnique({ where: { id: input.id } }) // or other identifier
+      const game = await prisma.game.findUnique({ where: { id: input.id } }) // or other identifier
 
       if (!game) {
         throw new Error('Game not found')
@@ -257,7 +283,7 @@ export const gameRouter = {
       // 2. Calling a game aggregator API to get a session URL.
       // 3. Creating a GameSession record in your database.
       // 4. Returning the launch URL and session ID.
-      const gameSession = await _prisma.gameSession.create({
+      const gameSession = await prisma.gameSession.create({
         data: {
           userId: userId,
           gameId: game.id,
@@ -276,93 +302,114 @@ export const gameRouter = {
     }),
 
   // Placeholder for RTG specific settings - requires actual RTG integration
-  rtgSettings: protectedProcedure
-    .input(z.custom<RTGSettingsRequestDto>())
-    .output(z.custom<RTGSettingsResponseDto>())
-    .handler(async ({ input, context }): Promise<RTGSettingsResponseDto> => {
-      // 1. Authenticate user (context.session.user.id)
-      // 2. Prepare request for RTG /settings endpoint based on input
-      //    (map your userId to RTG's expected format, etc.)
-      // 3. Call the RTG provider's /settings API (proxy request)
-      //    This would involve an HTTP call from the server to RTG.
-      // 4. Create/update a GameSession in your DB with RTG session details.
-      // 5. Map RTG's response to ProviderSettingsResponseData.
-      // 6. Return RTGSettingsResponseDto.
+  // rtgSettings: protectedProcedure
+  //   .input(z.custom<RTGSettingsRequestDto>())
+  //   .output(z.custom<RTGSettingsResponseDto>())
+  //   .handler(async ({ input, context }): Promise<RTGSettingsResponseDto> => {
+  //     // 1. Authenticate user (context.session.user.id)
+  //     // 2. Prepare request for RTG /settings endpoint based on input
+  //     //    (map your userId to RTG's expected format, etc.)
+  //     // 3. Call the RTG provider's /settings API (proxy request)
+  //     //    This would involve an HTTP call from the server to RTG.
+  //     // 4. Create/update a GameSession in your DB with RTG session details.
+  //     // 5. Map RTG's response to ProviderSettingsResponseData.
+  //     // 6. Return RTGSettingsResponseDto.
 
-      console.log('RTG Settings Request:', input, 'User:', context.session.user.id)
-      // Mock response - Replace with actual RTG integration logic
-      const mockRtgSettingsData: ProviderSettingsResponseData = {
-        user: {
-          balance: { cash: '100.00' },
-          canGamble: true,
-          userId: context.session.user.id, // Or RTG's specific ID for the user
-          sessionId: `rtg-session-${Date.now()}`,
-          token: `rtg-token-${Date.now()}`,
-          serverTime: new Date().toISOString(),
-        },
-        game: { version: '1.0', gameType: 'slot' },
-      }
-      // Example: Create a game session (simplified)
-      await _prisma.gameSession.upsert({
-        where: { id: mockRtgSettingsData.user.sessionId }, // Or another unique constraint
-        update: {
-          isActive: true,
-          sessionData: mockRtgSettingsData as any,
-          rtgToken: mockRtgSettingsData.user.token,
-        },
-        create: {
-          id: mockRtgSettingsData.user.sessionId,
-          userId: context.session.user.id,
-          gameId: input.gameId, // Ensure this gameId exists in your DB
-          isActive: true,
-          sessionData: mockRtgSettingsData as any,
-          rtgToken: mockRtgSettingsData.user.token,
-        },
-      })
-      return { success: true, result: mockRtgSettingsData }
-    }),
+  //     // console.log('RTG Settings Request:', input, 'User:', context.session.user.id)
+  //     // Mock response - Replace with actual RTG integration logic
+  //     const mockRtgSettingsData: ProviderSettingsResponseData = {
+  //       user: {
+  //         balance: { cash: '100.00' },
+  //         canGamble: true,
+  //         userId: context.session.user.id, // Or RTG's specific ID for the user
+  //         sessionId: `rtg-session-${Date.now()}`,
+  //         token: `rtg-token-${Date.now()}`,
+  //         serverTime: new Date().toISOString(),
+  //       },
+  //       game: { version: '1.0', gameType: 'slot' },
+  //     }
+  //     // Example: Create a game session (simplified)
+  //     await prisma.gameSession.upsert({
+  //       where: { id: mockRtgSettingsData.user.sessionId }, // Or another unique constraint
+  //       update: {
+  //         isActive: true,
+  //         sessionData: mockRtgSettingsData as any,
+  //         rtgToken: mockRtgSettingsData.user.token,
+  //       },
+  //       create: {
+  //         id: mockRtgSettingsData.user.sessionId,
+  //         userId: context.session.user.id,
+  //         gameId: input.gameId, // Ensure this gameId exists in your DB
+  //         isActive: true,
+  //         sessionData: mockRtgSettingsData as any,
+  //         rtgToken: mockRtgSettingsData.user.token,
+  //       },
+  //     })
+  //     return { success: true, result: mockRtgSettingsData }
+  //   }),
 
-  // Placeholder for RTG specific spin - requires actual RTG integration
-  rtgSpin: protectedProcedure
-    .input(z.custom<RTGSpinRequestDto>())
-    .output(z.custom<RTGSpinResponseDto>())
-    .handler(async ({ input, context }): Promise<RTGSpinResponseDto> => {
-      // 1. Validate user session and RTG game session token (input.sessionId, input.token)
-      // 2. Debit user's balance for the stake (create a BET transaction)
-      // 3. Call RTG /spin API (proxy request)
-      // 4. Handle RTG's response:
-      //    - If win, credit user's balance (create a WIN transaction)
-      //    - Update GameSession with spin details, win/loss amounts.
-      //    - Create GameSpin record.
-      // 5. Map RTG's spin response to ProviderSpinResponseData.
-      // 6. Return RTGSpinResponseDto.
+  // // Placeholder for RTG specific spin - requires actual RTG integration
+  // rtgSpin: protectedProcedure
+  //   .input(z.custom<RTGSpinRequestDto>())
+  //   .output(z.custom<RTGSpinResponseDto>())
+  //   .handler(async ({ input, context }): Promise<RTGSpinResponseDto> => {
+  //     // 1. Validate user session and RTG game session token (input.sessionId, input.token)
+  //     // 2. Debit user's balance for the stake (create a BET transaction)
+  //     // 3. Call RTG /spin API (proxy request)
+  //     // 4. Handle RTG's response:
+  //     //    - If win, credit user's balance (create a WIN transaction)
+  //     //    - Update GameSession with spin details, win/loss amounts.
+  //     //    - Create GameSpin record.
+  //     // 5. Map RTG's spin response to ProviderSpinResponseData.
+  //     // 6. Return RTGSpinResponseDto.
 
-      console.log('RTG Spin Request:', input, 'User:', context.session.user.id)
-      // Mock response - Replace with actual RTG integration and platform game round handling logic
-      const mockRtgSpinData: ProviderSpinResponseData = {
-        transactions: { roundId: `round-${Date.now()}` },
-        user: {
-          balance: { cash: { atEnd: '99.00' } }, // Example: balance after R5 stake
-          userId: context.session.user.id,
-          sessionId: input.sessionId,
-          token: input.token,
-          serverTime: new Date().toISOString(),
-        },
-        game: {
-          win: { total: '0.00' }, // Example: no win
-          stake: input.stake.toString(),
-        },
-      }
-      // Example: Update game session (simplified)
-      await _prisma.gameSession.update({
-        where: { id: input.sessionId },
-        data: {
-          // Update sessionData, totalWagered, totalWon based on spin
-          // This is highly dependent on the full GamePlatformSpinResultDetails logic
-        },
-      })
-      return { success: true, result: mockRtgSpinData }
-    }),
+  //     console.log('RTG Spin Request:', input, 'User:', context.session.user.id)
+  //     // Mock response - Replace with actual RTG integration and platform game round handling logic
+  //     const mockRtgSpinData: ProviderSpinResponseData = {
+  //       transactions: { roundId: `round-${Date.now()}` },
+  //       user: {
+  //         balance: { cash: { atEnd: '99.00' } }, // Example: balance after R5 stake
+  //         userId: context.session.user.id,
+  //         sessionId: input.sessionId,
+  //         token: input.token,
+  //         serverTime: new Date().toISOString(),
+  //       },
+  //       game: {
+  //         win: { total: '0.00' }, // Example: no win
+  //         stake: input.stake.toString(),
+  //       },
+  //     }
+
+  //     // 1. Your existing RTG API call logic here
+  //     //   const originalRTGResponse = await callRTGSpinAPI(input)
+
+  //     //   // 2. Add jackpot processing
+  //     //   const rtgJackpotIntegration = new RTGJackpotIntegration(prisma)
+  //     //   const enhancedResponse = await rtgJackpotIntegration.processRTGSpinWithJackpots(
+  //     //     input,
+  //     //     context.session.user.id,
+  //     //     originalRTGResponse
+  //     //   )
+
+  //     //   return enhancedResponse
+  //     // })
+  //     // Example: Update game session (simplified)
+  //     await prisma.gameSession.update({
+  //       where: { id: input.sessionId },
+  //       data: {
+  //         // Update sessionData, totalWagered, totalWon based on spin
+  //         // This is highly dependent on the full GamePlatformSpinResultDetails logic
+  //       },
+  //     })
+  //     const rtgJackpotIntegration = new RTGJackpotIntegration()
+  //     const enhancedResponse = await rtgJackpotIntegration.processRTGSpinWithJackpots(
+  //       input,
+  //       context.session.user.id,
+  //       mockRtgSpinData
+  //     )
+  //     return enhancedResponse
+  //     return { success: true, result: mockRtgSpinData }
+  //   }),
 
   getGameHistory: protectedProcedure
     .input(GameHistoryQuerySchema)
@@ -374,10 +421,10 @@ export const gameRouter = {
       // This is a conceptual query. You'll need to decide what constitutes "game history".
       // It could be from GameSession, GameSpin, or Transaction records.
       // Assuming GameSpin records hold individual game round outcomes.
-      const totalSpins = await _prisma.gameSpin.count({
+      const totalSpins = await prisma.gameSpin.count({
         where: { gameSession: { userId: userId } },
       })
-      const spins = await _prisma.gameSpin.findMany({
+      const spins = await prisma.gameSpin.findMany({
         where: { gameSession: { userId: userId } },
         include: {
           gameSession: { include: { game: true } },
@@ -591,7 +638,7 @@ export const gameRouter = {
       const userId = context.session.user.id
       // You need a model to store user's favorite games, e.g., UserFavoriteGame
       // For example: model UserFavoriteGame { userId String, gameId String, @@id([userId, gameId]) }
-      // const favorites = await _prisma.userFavoriteGame.findMany({
+      // const favorites = await prisma.userFavoriteGame.findMany({
       //   where: { userId: userId },
       //   select: { gameId: true },
       // });
@@ -608,13 +655,13 @@ export const gameRouter = {
 
       // Again, depends on your UserFavoriteGame model
       // if (isFavorite) {
-      //   await _prisma.userFavoriteGame.upsert({
+      //   await prisma.userFavoriteGame.upsert({
       //     where: { userId_gameId: { userId, gameId } },
       //     create: { userId, gameId },
       //     update: {},
       //   });
       // } else {
-      //   await _prisma.userFavoriteGame.deleteMany({
+      //   await prisma.userFavoriteGame.deleteMany({
       //     where: { userId, gameId },
       //   });
       // }

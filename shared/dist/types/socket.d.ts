@@ -7,6 +7,17 @@ import type { HeadersInit, Server, ServerWebSocket } from 'bun';
 import { z, ZodObject, ZodLiteral, type ZodRawShape, type ZodTypeAny } from 'zod';
 import type { TournamentEndedPayload, TournamentParticipantJoinedPayload, TournamentStartedPayload } from './tournament';
 import { UserProfile } from '..';
+export declare const UserBalanceUpdatePayloadSchema: z.ZodObject<{
+    userId: z.ZodString;
+    newBalance: z.ZodNumber;
+}, "strip", z.ZodTypeAny, {
+    userId: string;
+    newBalance: number;
+}, {
+    userId: string;
+    newBalance: number;
+}>;
+export type UserBalanceUpdatePayloadType = z.infer<typeof UserBalanceUpdatePayloadSchema>;
 /**
  * Base schema for message metadata.
  * Provides common fields that are available on all messages.
@@ -65,13 +76,13 @@ export declare const NewMessage: PayloadMessageSchema<"NEW_MESSAGE", z.ZodObject
     text: z.ZodString;
     timestamp: z.ZodOptional<z.ZodNumber>;
 }, z.UnknownKeysParam, z.ZodTypeAny, {
-    roomId: string;
     userId: string;
+    roomId: string;
     text: string;
     timestamp?: number | undefined;
 }, {
-    roomId: string;
     userId: string;
+    roomId: string;
     text: string;
     timestamp?: number | undefined;
 }>>;
@@ -92,15 +103,25 @@ export declare const UserJoined: PayloadMessageSchema<"USER_JOINED", z.ZodObject
     roomId: string;
     userId?: string | undefined;
 }>>;
+export declare const UserBalanceUpdateMessageSchema: PayloadMessageSchema<"USER_BALANCE_UPDATE", z.ZodObject<{
+    userId: z.ZodString;
+    newBalance: z.ZodNumber;
+}, z.UnknownKeysParam, z.ZodTypeAny, {
+    userId: string;
+    newBalance: number;
+}, {
+    userId: string;
+    newBalance: number;
+}>>;
 export declare const UserLeft: PayloadMessageSchema<"USER_LEFT", z.ZodObject<{
     roomId: z.ZodString;
     userId: z.ZodString;
 }, z.UnknownKeysParam, z.ZodTypeAny, {
-    roomId: string;
     userId: string;
+    roomId: string;
 }, {
-    roomId: string;
     userId: string;
+    roomId: string;
 }>>;
 export declare const SendMessage: PayloadMessageSchema<"SEND_MESSAGE", z.ZodObject<{
     roomId: z.ZodString;
@@ -120,16 +141,10 @@ export declare const RoomList: PayloadMessageSchema<"ROOM_LIST", z.ZodObject<{
     roomId: string;
 }>>;
 export declare const Ping: PayloadMessageSchema<"PING", z.ZodObject<{
-    userId: z.ZodString;
-    content: z.ZodString;
     timestamp: z.ZodOptional<z.ZodNumber>;
 }, z.UnknownKeysParam, z.ZodTypeAny, {
-    userId: string;
-    content: string;
     timestamp?: number | undefined;
 }, {
-    userId: string;
-    content: string;
     timestamp?: number | undefined;
 }>>;
 export declare const Pong: PayloadMessageSchema<"PONG", z.ZodObject<{
@@ -159,11 +174,11 @@ export declare const SubscribeResponse: PayloadMessageSchema<"PONG", z.ZodObject
     userId: z.ZodString;
     status: z.ZodBoolean;
 }, z.UnknownKeysParam, z.ZodTypeAny, {
-    status: boolean;
     userId: string;
+    status: boolean;
 }, {
-    status: boolean;
     userId: string;
+    status: boolean;
 }>>;
 export declare const DatabaseUpdate: z.ZodObject<{
     table: z.ZodString;
@@ -172,12 +187,12 @@ export declare const DatabaseUpdate: z.ZodObject<{
     data: z.ZodNullable<z.ZodRecord<z.ZodString, z.ZodAny>>;
 }, "strip", z.ZodTypeAny, {
     table: string;
-    operation: "INSERT" | "UPDATE" | "DELETE";
+    operation: "UPDATE" | "INSERT" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }, {
     table: string;
-    operation: "INSERT" | "UPDATE" | "DELETE";
+    operation: "UPDATE" | "INSERT" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }>;
@@ -257,6 +272,22 @@ export declare function messageSchema<T extends string, P extends Record<string,
  * Creates a message schema with a ZodType payload and custom metadata
  */
 export declare function messageSchema<T extends string, P extends ZodTypeAny, M extends ZodRawShape>(messageType: T, payload: P, meta: ZodObject<M>): PayloadMessageSchemaWithCustomMeta<T, P, M>;
+export declare const UserBalanceUpdateEvent: z.ZodObject<{
+    table: z.ZodString;
+    operation: z.ZodEnum<["INSERT", "UPDATE", "DELETE"]>;
+    recordId: z.ZodOptional<z.ZodUnion<[z.ZodString, z.ZodNumber, z.ZodNull]>>;
+    data: z.ZodNullable<z.ZodRecord<z.ZodString, z.ZodAny>>;
+}, "strip", z.ZodTypeAny, {
+    table: string;
+    operation: "UPDATE" | "INSERT" | "DELETE";
+    data: Record<string, any> | null;
+    recordId?: string | number | null | undefined;
+}, {
+    table: string;
+    operation: "UPDATE" | "INSERT" | "DELETE";
+    data: Record<string, any> | null;
+    recordId?: string | number | null | undefined;
+}>;
 export declare const TournamentLeaderboardUpdateEvent: z.ZodObject<{
     table: z.ZodString;
     operation: z.ZodEnum<["INSERT", "UPDATE", "DELETE"]>;
@@ -264,12 +295,12 @@ export declare const TournamentLeaderboardUpdateEvent: z.ZodObject<{
     data: z.ZodNullable<z.ZodRecord<z.ZodString, z.ZodAny>>;
 }, "strip", z.ZodTypeAny, {
     table: string;
-    operation: "INSERT" | "UPDATE" | "DELETE";
+    operation: "UPDATE" | "INSERT" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }, {
     table: string;
-    operation: "INSERT" | "UPDATE" | "DELETE";
+    operation: "UPDATE" | "INSERT" | "DELETE";
     data: Record<string, any> | null;
     recordId?: string | number | null | undefined;
 }>;

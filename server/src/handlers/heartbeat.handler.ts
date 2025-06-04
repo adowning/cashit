@@ -8,7 +8,7 @@ export function handlePing(context: MessageHandlerContext<typeof Ping>) {
     console.warn('[WS PING] Received PING without userId.')
     return
   }
-  console.log(`[WS] Received PING from user ${userId}`)
+  // console.log(`[WS] Received PING from user ${userId}`)
   send(Pong, {
     userId,
     timestamp: Date.now(),

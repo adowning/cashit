@@ -74,9 +74,15 @@ export default class PgRealtimeClient {
    * Subscribe to the configured Postgres notification channel.
    */
   async listen() {
+    console.log('listening from update.service', 'spec_data_change')
+    // console.log('listening from update.service', this.channel)
+    // console.log('listening from update.service', 'user_profiles_change')
+    // console.log('listening from update.service', 'tcn')
     try {
       await this.subscriber.connect()
-      await this.subscriber.listenTo(this.channel)
+      await this.subscriber.listenTo('spec_data_change')
+      // await this.subscriber.listenTo('user_profiles_change')
+      // await this.subscriber.listenTo('tcn')
       console.log(`Realtime connnection succeeded`)
     } catch (err) {
       logger.error(`Realtime connection error: ${err}`)
@@ -101,14 +107,20 @@ export default class PgRealtimeClient {
   }
 
   _createSubscriber(): Subscriber {
+    console.log(this.connectionConfig)
     const subscriber = createSubscriber(this.connectionConfig)
 
     // Register error handler.
     subscriber.events.on('error', (err) => {
+      console.log(err)
       logger.error(`Realtime table event error: ${err}`)
       this._onError(err)
     })
-
+    subscriber.events.on('notification', (err) => {
+      // console.log(err)
+      logger.error(`Realtime table event error: ${err}`)
+      // this._onError(err)
+    })
     // Register event handler.
     subscriber.notifications.on(this.channel, (event) => event && this._onEvent(event))
 
@@ -133,6 +145,7 @@ export default class PgRealtimeClient {
   }
 
   _onEvent(event: PendingEvent) {
+    console.log('eeeeevent')
     let path = formatTablePath(event.schema, event.table)
     let tweakedTable = event.table
     if (tweakedTable.charAt(tweakedTable.length - 1) == 's')

@@ -1,4 +1,5 @@
 <script setup>
+  import { router } from '@/router'
   import { useAuthStore } from '@/stores/auth.store'
   import { useTransactionStore } from '@/stores/transaction.store'
 
@@ -19,7 +20,7 @@
 
 <template>
   <div
-    class="mobile-section grow-1 relative m-0 flex h-screen min-h-screen w-screen flex-col overflow-hidden p-0"
+    class="mobile-section grow-1 relative m-0 flex h-screen min-h-screen w-screen flex-col justify-start align-start items-start overflow-hidden p-0"
   >
     <ShowToasts />
 
@@ -36,6 +37,8 @@
     <FooterBarMobile
       v-if="
         isAuthenticated &&
+        !depositStore.shopOpen &&
+        !router.currentRoute.value.path.includes('/battles') &&
         !depositStore.shopOpen &&
         currentUser != undefined &&
         currentUser !== null

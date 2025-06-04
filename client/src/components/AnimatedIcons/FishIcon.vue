@@ -54,7 +54,7 @@
         style="transform: scale(0.6) translateY(-6px); z-index: 12"
       />
       <img
-        src="/images/bottom/menu0-1.png"
+        src="/images/bottom/menu2-1.png"
         width="50"
         height="30"
         style="

@@ -3,11 +3,6 @@
 import { Tournament, TournamentStatus, UserProfile } from 'prisma/generated'
 import type { ExtendedPrismaClient } from '../../prisma' // Import Prisma namespace for input types
 import {
-  PrismaUserProfile as PrismaUserProfileType,
-  UpdateUserInput as UpdateUserInputTypeShared, // Type from shared/dist for input structure
-  SetReferrerDto as SetReferrerDtoTypeShared, // Type from shared/dist
-  PaginatedResponse as PaginatedResponseType,
-  // TournamentStatus,
   TournamentCreatedPayload,
   TournamentEndedPayload,
   TournamentLeaderboardUpdatedPayload,
@@ -69,14 +64,6 @@ export async function createTournament(
       targetScore: input.targetScore,
       status: TournamentStatus.PENDING, // Use Prisma's enum
       createdByid: adminUser.id, // Link to the admin user who created it (schema field: createdByid)
-      eligibleGames: input.eligibleGames
-        ? {
-            create: input.eligibleGames.map((g) => ({
-              gameId: g.gameId,
-              pointMultiplier: g.pointMultiplier ?? 1.0,
-            })),
-          }
-        : undefined,
       rewards: input.rewards
         ? {
             create: input.rewards.map((r) => ({
@@ -87,8 +74,18 @@ export async function createTournament(
           }
         : undefined,
     },
-    include: { eligibleGames: { include: { game: true } }, rewards: true },
+    include: { rewards: true },
   })
+
+  // Create TournamentGames relationships if provided
+  if (input.eligibleGames && input.eligibleGames.length > 0) {
+    await db.tournamentGames.createMany({
+      data: input.eligibleGames.map((g) => ({
+        A: g.gameId,
+        B: tournament.id,
+      })),
+    })
+  }
 
   typedAppEventEmitter.emit(AppEvents.TOURNAMENT_CREATED, {
     tournamentId: tournament.id,
@@ -126,7 +123,7 @@ export async function updateTournament(
       targetScore: input.targetScore,
       status: input.status, // Uses Prisma's enum from input type
     },
-    include: { eligibleGames: { include: { game: true } }, rewards: true },
+    include: { rewards: true },
   })
   // Consider emitting a TOURNAMENT_UPDATED event
   return updatedTournament
@@ -140,12 +137,12 @@ export async function listTournaments(filters: {
   gameId?: string
   activeNow?: boolean
 }): Promise<Tournament[]> {
-  const where: Prisma.TournamentWhereInput = {}
+  const where: any = {}
   if (filters.status) {
     where.status = filters.status
   }
   if (filters.gameId) {
-    where.eligibleGames = { some: { gameId: filters.gameId } }
+    where.TournamentGames = { some: { A: filters.gameId } }
   }
   if (filters.activeNow) {
     const now = new Date()
@@ -157,7 +154,9 @@ export async function listTournaments(filters: {
   return db.tournament.findMany({
     where,
     include: {
-      eligibleGames: { include: { game: true } }, // Game relation needs select for minimal data if game is large
+      TournamentGames: {
+        include: { games: { select: { id: true, name: true, title: true, thumbnailUrl: true } } },
+      },
       participants: { select: { _count: true } }, // Correct way to get participant count via relation
       rewards: true,
     },
@@ -172,8 +171,8 @@ export async function getTournamentDetails(tournamentId: string): Promise<Tourna
   return db.tournament.findUnique({
     where: { id: tournamentId },
     include: {
-      eligibleGames: {
-        include: { game: { select: { id: true, name: true, title: true, thumbnailUrl: true } } },
+      TournamentGames: {
+        include: { games: { select: { id: true, name: true, title: true, thumbnailUrl: true } } },
       }, // Select specific game fields
       participants: {
         orderBy: { score: 'desc' },
@@ -193,7 +192,7 @@ export async function getTournamentDetails(tournamentId: string): Promise<Tourna
 export async function joinTournament(
   userId: string,
   tournamentId: string,
-  tx?: Prisma.TransactionClient // Optional transaction client
+  _tx?: Prisma.TransactionClient // Optional transaction client
 ): Promise<TournamentParticipantType> {
   const prismaClient = db
 
@@ -263,8 +262,11 @@ export async function recordTournamentPoints(
   gamePlayIdentifier: string, // e.g., gameSpinId, unique identifier for the game action
   tx: Prisma.TransactionClient, // Transaction client passed from the calling service
   _meta?: Prisma.InputJsonValue | null // Optional meta, not used here but matches signature from game.service
-): Promise<void> {
+): Promise<string[]> {
+  // Return tournament IDs that need leaderboard updates
   const now = new Date()
+  const tournamentIdsToUpdate: string[] = []
+
   // Use the provided transaction client (tx) for all database operations
   const activeParticipations = await tx.tournamentParticipant.findMany({
     where: {
@@ -273,27 +275,30 @@ export async function recordTournamentPoints(
         status: TournamentStatus.ACTIVE,
         startTime: { lte: now },
         OR: [{ endTime: { gte: now } }, { endTime: null }],
-        eligibleGames: { some: { gameId } },
-      },
+        TournamentGames: { some: { A: gameId } },
+      } as any,
     },
     include: {
       tournament: {
-        include: { eligibleGames: { where: { gameId } } },
+        include: {
+          TournamentGames: { include: { games: true } }, // Include TournamentGames so it is available below
+        },
       },
     },
   })
 
   if (activeParticipations.length === 0) {
-    return // No active tournament participation for this game
+    return [] // No active tournament participation for this game
   }
 
   for (const participation of activeParticipations) {
-    const tournamentGame = participation.tournament.eligibleGames.find((eg) => eg.gameId === gameId)
+    const tournamentGame = (participation as any).tournament.TournamentGames.find(
+      (tg: any) => tg.A === gameId
+    )
     if (!tournamentGame) continue
 
-    const pointsForTournament = Math.floor(
-      pointsEarnedInGame * (tournamentGame.pointMultiplier || 1.0)
-    )
+    // For now, use a default multiplier of 1.0 since TournamentGames doesn't have pointMultiplier
+    const pointsForTournament = Math.floor(pointsEarnedInGame * 1.0)
 
     if (pointsForTournament <= 0) continue
 
@@ -319,9 +324,14 @@ export async function recordTournamentPoints(
       },
     })
 
+    // Add tournament ID to update list
+    if (!tournamentIdsToUpdate.includes(participation.tournamentId)) {
+      tournamentIdsToUpdate.push(participation.tournamentId)
+    }
+
     if (
-      participation.tournament.targetScore &&
-      updatedParticipant.score >= participation.tournament.targetScore
+      (participation as any).tournament.targetScore &&
+      updatedParticipant.score >= (participation as any).tournament.targetScore
     ) {
       const currentTournament = await tx.tournament.findUnique({
         // Use tx
@@ -331,11 +341,9 @@ export async function recordTournamentPoints(
         await processTournamentEnd(participation.tournamentId, tx) // Pass the transaction client
       }
     }
-    // publishLeaderboardUpdate should ideally not be awaited if it involves external calls
-    // that could fail and roll back the transaction. Consider doing it outside the loop or after the main transaction.
-    // For now, keeping it as is but noting this. It should also use `tx` if it reads data that must be consistent with the transaction.
-    await publishLeaderboardUpdate(participation.tournamentId, tx)
   }
+
+  return tournamentIdsToUpdate
 }
 
 /**
@@ -362,7 +370,7 @@ export async function getTournamentLeaderboard(
 /**
  * Publishes leaderboard updates via WebSocket.
  */
-async function publishLeaderboardUpdate(tournamentId: string, tx?: Prisma.TransactionClient) {
+async function publishLeaderboardUpdate(tournamentId: string, _tx?: Prisma.TransactionClient) {
   // Pass tx to getTournamentLeaderboard to read within the same transaction if called from recordTournamentPoints
   const leaderboard = await getTournamentLeaderboard(tournamentId, 20)
   typedAppEventEmitter.emit(AppEvents.TOURNAMENT_LEADERBOARD_UPDATED, {
@@ -417,7 +425,7 @@ export async function processTournamentStart(
  */
 export async function processTournamentEnd(
   tournamentId: string,
-  tx?: Prisma.TransactionClient
+  _tx?: Prisma.TransactionClient
 ): Promise<void> {
   const prismaClient = db
 
@@ -486,7 +494,10 @@ export function initTournamentScheduler() {
     const now = new Date()
     try {
       const pendingTournaments = await db.tournament.findMany({
-        where: { status: TournamentStatus.PENDING, startTime: { lte: now } },
+        where: {
+          status: TournamentStatus.PENDING,
+          startTime: { lte: now },
+        } as any,
       })
       for (const t of pendingTournaments) {
         await processTournamentStart(t.id)
@@ -496,10 +507,7 @@ export function initTournamentScheduler() {
         where: {
           status: TournamentStatus.ACTIVE,
           endTime: { lte: now },
-          // This logic for targetScore might need refinement.
-          // If a targetScore ends a tournament, that's handled in recordTournamentPoints.
-          // This scheduler part primarily handles time-based endings.
-        },
+        } as any,
       })
       for (const t of activeTournamentsToEnd) {
         if (t.targetScore && t.status === TournamentStatus.ACTIVE) {
@@ -516,12 +524,11 @@ export function initTournamentScheduler() {
 }
 
 // Utility to fetch tournament by ID, useful for routes or other services
-export async function getTournamentById(tournamentId: string, tx?: Prisma.TransactionClient) {
+export async function getTournamentById(tournamentId: string, _tx?: Prisma.TransactionClient) {
   const prismaClient = db
   return prismaClient.tournament.findUnique({
     where: { id: tournamentId },
     include: {
-      eligibleGames: { include: { game: true } },
       participants: { include: { user: true } },
       rewards: true,
       // createdBy: true,

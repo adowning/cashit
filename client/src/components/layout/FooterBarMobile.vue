@@ -5,11 +5,13 @@
   import { useTransactionStore } from '@/stores/transaction.store'
   import { ref } from 'vue'
   import VaultJson from '@/assets/anim/vault.json'
+  import { router } from '@/router'
 
   import { useEventManager } from '@/composables/EventManager'
   const eventBus = useEventManager()
 
   const target = ref()
+  const showBottomBar = ref(true)
 
   const authStore = useAuthStore()
   // --- State & Getters from Sores (using storeToRefs for reactivity) ---
@@ -21,6 +23,10 @@
   const rightDrawer = ref(false)
   const bonusDrawer = ref(false)
   const wheelPageOpen = ref(false)
+
+  eventBus.on('hideBottomBar', () => {
+    showBottomBar.value = false
+  })
   function toggleChat() {
     rightDrawer.value = !rightDrawer.value
     appBarStore.setRightBarToggle(rightDrawer.value)
@@ -30,13 +36,15 @@
     appBarStore.setBonusDashboardDialogVisible(bonusDrawer.value)
   }
   function _toggleShopOpen() {
-    console.log('asdf')
-    depositStore.toggleShopOpen()
+    // console.log('asdf')
+    // depositStore.toggleShopOpen()
+    router.push('/rtggame')
   }
   function changeLeaderBoardOpen() {
-    console.log(leaderBoardOpen)
-    leaderBoardOpen.value = true
-    eventBus.emit('leaderBoardOpen', leaderBoardOpen.value)
+    // console.log(leaderBoardOpen)
+    // leaderBoardOpen.value = true
+    // eventBus.emit('leaderBoardOpen', leaderBoardOpen.value)
+    router.push('/battles')
   }
   function changeWheelPageOpen() {
     pressed.value = !pressed.value
@@ -46,7 +54,7 @@
 </script>
 
 <template>
-  <div ref="target" class="bbar flex onacona" style="width: 100%">
+  <div v-if="showBottomBar" ref="target" class="bbar flex onacona" style="width: 100%">
     <!-- <BaseLevel> -->
     <div
       class="flex flex-row justify-start gap-12 px-6"

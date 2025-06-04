@@ -46,6 +46,18 @@ const proxy: Record<string, string | any> = {
     // rewrite: (path: string) => path.replace(/^\/api/, ''),
     headers: { Connection: 'keep-alive' },
   },
+  '/rpc': {
+    target: 'http://localhost:3000',
+    secure: false,
+    // rewrite: (path: string) => path.replace(/^\/api/, ''),
+    headers: { Connection: 'keep-alive' },
+  },
+  '/rtg/games': {
+    target: 'http://localhost:3000',
+    secure: false,
+    // rewrite: (path: string) => path.replace(/^\/api/, ''),
+    headers: { Connection: 'keep-alive' },
+  },
 
   // '/auth': {
   //   target: 'http://localhost:6589',

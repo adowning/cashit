@@ -9,13 +9,9 @@ import {
   JoinTournamentResponse as JoinTournamentResponseShared,
   TournamentStatus,
   PrismaTournament,
-  PrismaTournamentGame,
   PrismaTournamentReward,
   PrismaTournamentParticipant,
 } from 'shared/dist'
-import { Prisma } from '../../prisma/generated/client'
-
-const _prisma: ExtendedPrismaClient = prisma
 
 // Zod Schemas for input validation, mirroring shared types
 const ListTournamentsQuerySchema = z
@@ -26,22 +22,15 @@ const ListTournamentsQuerySchema = z
   })
   .optional()
 
-const GetTournamentLeaderboardQuerySchema = z
-  .object({
-    limit: z.number().int().min(1).max(100).optional(),
-    offset: z.number().int().min(0).optional(),
-  })
-  .optional()
-
 const TournamentIdSchema = z.object({
-  tournamentId: z.string().cuid(),
+  tournamentId: z.string().min(1),
 })
 
 // Helper function to map Prisma Tournament to TournamentCore
 const mapPrismaTournamentToTournamentCore = (
   tournament: PrismaTournament & {
     participants?: PrismaTournamentParticipant[]
-    eligibleGames?: PrismaTournamentGame[]
+    TournamentGames?: any[]
     rewards?: PrismaTournamentReward[]
   }
 ): TournamentCore => {
@@ -68,12 +57,12 @@ export const tournamentRouter = {
   list: publicProcedure
     .input(ListTournamentsQuerySchema)
     .handler(async ({ input }): Promise<TournamentCore[]> => {
-      const whereClause: Prisma.TournamentWhereInput = {}
+      const whereClause: any = {}
       if (input?.status) {
         whereClause.status = input.status as TournamentStatus
       }
       if (input?.gameId) {
-        whereClause.eligibleGames = { some: { gameId: input.gameId } }
+        whereClause.TournamentGames = { some: { A: input.gameId } }
       }
       if (input?.activeNow) {
         const now = new Date()
@@ -82,11 +71,11 @@ export const tournamentRouter = {
         whereClause.status = TournamentStatus.ACTIVE
       }
 
-      const tournaments = await _prisma.tournament.findMany({
+      const tournaments = await prisma.tournament.findMany({
         where: whereClause,
         include: {
           participants: true, // For participantCount
-          eligibleGames: true,
+          TournamentGames: { include: { games: true } },
           rewards: true, // For prizeFund (example calculation)
         },
         orderBy: {
@@ -99,10 +88,10 @@ export const tournamentRouter = {
   getDetails: publicProcedure
     .input(TournamentIdSchema)
     .handler(async ({ input }): Promise<TournamentDetailed | null> => {
-      const tournament = await _prisma.tournament.findUnique({
+      const tournament = await prisma.tournament.findUnique({
         where: { id: input.tournamentId },
         include: {
-          eligibleGames: { include: { game: true } },
+          TournamentGames: { include: { games: true } },
           rewards: { include: { winner: true } },
           participants: {
             include: { user: true },
@@ -116,12 +105,14 @@ export const tournamentRouter = {
 
       return {
         ...mapPrismaTournamentToTournamentCore(tournament),
-        eligibleGames: tournament.eligibleGames.map((tg) => ({
-          gameId: tg.gameId,
-          name: tg.game?.name ?? 'Unknown Game',
-          pointMultiplier: tg.pointMultiplier,
-          thumbnailUrl: tg.game?.thumbnailUrl ?? undefined,
-        })),
+        eligibleGames: (tournament as any).TournamentGames.map(
+          (tg: { A: any; games: { name: any; thumbnailUrl: any } }) => ({
+            gameId: tg.A,
+            name: tg.games?.name ?? 'Unknown Game',
+            pointMultiplier: 1.0, // Default multiplier since TournamentGames doesn't have this field
+            thumbnailUrl: tg.games?.thumbnailUrl ?? undefined,
+          })
+        ),
         rewards: tournament.rewards.map((r) => ({
           id: r.id,
           rank: r.rank,
@@ -149,13 +140,13 @@ export const tournamentRouter = {
   getLeaderboard: publicProcedure
     .input(
       z.object({
-        tournamentId: z.string().cuid(),
+        tournamentId: z.string().min(1),
         limit: z.number().int().min(1).max(100).optional().default(10),
         offset: z.number().int().min(0).optional().default(0),
       })
     )
     .handler(async ({ input }): Promise<TournamentParticipantInfo[]> => {
-      const participants = await _prisma.tournamentParticipant.findMany({
+      const participants = await prisma.tournamentParticipant.findMany({
         where: { tournamentId: input.tournamentId },
         include: { user: true },
         orderBy: { score: 'desc' },
@@ -179,7 +170,7 @@ export const tournamentRouter = {
       const userId = context.session.user.id
       const { tournamentId } = input
 
-      const tournament = await _prisma.tournament.findUnique({
+      const tournament = await prisma.tournament.findUnique({
         where: { id: tournamentId },
       })
 
@@ -201,7 +192,7 @@ export const tournamentRouter = {
         throw new Error('Tournament is not active for joining.')
       }
 
-      const existingParticipant = await _prisma.tournamentParticipant.findUnique({
+      const existingParticipant = await prisma.tournamentParticipant.findUnique({
         where: { tournamentId_userId: { tournamentId, userId } },
       })
 
@@ -209,7 +200,7 @@ export const tournamentRouter = {
         throw new Error('User already joined this tournament.')
       }
 
-      const participant = await _prisma.tournamentParticipant.create({
+      const participant = await prisma.tournamentParticipant.create({
         data: {
           tournamentId,
           userId,

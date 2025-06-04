@@ -1,14 +1,26 @@
 <script lang="ts" setup>
   const display = ref(true)
   const shakeIt = ref(false)
+
+  // Define emits for carousel scrolling
+  const emit = defineEmits<{
+    scrollLeft: []
+    scrollRight: []
+  }>()
+
+  // Handle arrow clicks
+  const handleScrollLeft = () => {
+    emit('scrollLeft')
+  }
+
+  const handleScrollRight = () => {
+    emit('scrollRight')
+  }
 </script>
 
 <template>
   <!-- <div class="animate__animated animate__slideInUp"> -->
-  <div
-    class="flex flex-row justify-center mt-3"
-    style="max-width: fit-content; margin-inline: auto"
-  >
+  <div class="flex flex-row justify-center m-0" style="max-width: fit-content; margin-inline: auto">
     <div
       v-show="display"
       class="basis-1/2 animate__animated animate__slideInUp flex"
@@ -23,9 +35,10 @@
       "
     >
       <img
-        src="/images/filterbar/side-arrow-prev.avif "
-        class="mr-2 flex"
+        src="/images/filterbar/side-arrow-prev.avif"
+        class="mr-2 flex cursor-pointer"
         style="text-align: center"
+        @click="handleScrollLeft"
       />
       <div class="animate__animated animate__slideInUp bottomDropper ml-2 flex p-0">
         <AllIcon :shake="shakeIt" />
@@ -39,7 +52,12 @@
       <div
         class="animate__animated animate__slideInUp bottomDropper flex justify-center align-middle"
       />
-      <img src="/images/filterbar/side-arrow.avif" class="ml-2 flex" style="text-align: center" />
+      <img
+        src="/images/filterbar/side-arrow.avif"
+        class="ml-2 flex cursor-pointer"
+        style="text-align: center"
+        @click="handleScrollRight"
+      />
     </div>
   </div>
 </template>

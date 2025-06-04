@@ -1,263 +1,313 @@
 <template>
   <div
-    class="bg-gray-800 border border-gray-700 rounded-lg shadow-lg p-5 hover:shadow-blue-500/30 transition-shadow duration-300 flex flex-col justify-between"
+    :class="[
+      'rounded-xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-purple-500/30',
+      cardBgClass,
+    ]"
   >
-    <div>
-      <div class="flex justify-between items-start mb-3">
-        <h3 class="text-xl font-bold text-white truncate" :title="tournament.name">
-          {{ tournament.name }}
-        </h3>
-        <span
-          :class="statusClasses"
-          class="text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap"
+    <div class="p-2">
+      <div class="flex items-start justify-between mb-3">
+        <div class="race-header flex gap-2 h-[71px]" data-v-3202436b="" data-v-6814e224="">
+          <div class="flex flex-col justify-start">
+            <img
+              src="https://funrize.com/cdn-cgi/image/quality=70,format=auto,onerror=redirect/uploads-funrize/tournaments/0.47714800%201744703907-iconPath-67fe11a3747e0-679fd6806ad6b.png"
+              onerror="this.setAttribute('data-error', 1)"
+              width="88"
+              height="71"
+              alt="Wilderness Warriors"
+              class="col-img-mob"
+            />
+            <!-- <div class="toledo prize-title text-cannes text-xs" style="">
+                <div class="text-gray-400">
+                  Time left: <span class="text-white font-medium">{{ timeLeft }}</span>
+                </div>
+              </div> -->
+          </div>
+
+          <div class="race-title-mob font-bold">
+            <div class="tunis bold title text-cannes" style="">
+              {{ tournament.name }}
+            </div>
+            <div class="race-prize-mob">
+              <div class="toledo prize-title text-cannes text-xs" style="">
+                <!--[-->Split the grand prize<!--]-->
+              </div>
+              <!--[-->
+              <div class="prize coins flex" style="color: gold">
+                <img
+                  src="../../assets/img/icons/coin.svg"
+                  onerror="this.setAttribute('data-error', 1)"
+                  alt="coins"
+                /><span class="toledo bold" style="font-weight: 700">350,000</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- <div class="flex items-center">
+          <img
+            :src="
+              tournament.image ||
+              `https://placehold.co/80x80/${bgColorForImage(tournament.status)}/white?text=${tournament.name.substring(0, 1)}&font=Inter`
+            "
+            alt="Tournament Icon"
+            class="w-16 h-16 rounded-lg mr-4 object-cover shadow-md"
+            @error="imgError"
+          />
+          <div>
+            <span
+              v-if="tournament.isTeamRace || tournament.name?.toLowerCase().includes('team race')"
+              class="text-xs uppercase font-semibold text-purple-400 tracking-wider mb-1 block"
+              >TEAM RACE</span
+            >
+            <h3 class="text-xl font-bold text-white">{{ tournament.name }}</h3>
+            <p class="text-sm text-gray-300">
+              {{ tournament.description || 'Split the grand prize' }}
+            </p>
+          </div>
+        </div> -->
+        <button
+          v-if="!isFinished && (isActiveSection || tournament.status === 'PENDING')"
+          @click.stop="toggleExpand"
+          class="text-gray-400 hover:text-white p-1"
         >
-          {{ formattedStatus }}
-        </span>
+          <ChevronDownIcon
+            :class="['w-6 h-6 transition-transform duration-300', isExpanded ? 'rotate-180' : '']"
+          />
+        </button>
       </div>
 
-      <p
-        v-if="tournament.description"
-        class="text-gray-400 text-sm mb-3 h-10 overflow-hidden text-ellipsis"
+      <!-- <div class="mb-3 flex items-center">
+        <span class="text-yellow-400 text-2xl font-bold mr-2"
+          >💰 {{ formatPrize(tournament.prizeFund || tournament.targetScore || 0) }}</span
+        >
+        <span v-if="isFinished" class="text-sm text-gray-400"
+          >Finished {{ formatFinishTime(tournament.endTime) }}</span
+        > 
+      </div> -->
+
+      <div v-if="isActiveSection && !isFinished" class="space-y-3 mb-4 justify-center">
+        <div class="grid w-[100%] grid-cols-2 gap-x-4 gap-y-2 text-sm mx-2">
+          <div class="text-gray-400">
+            Time left: <span class="text-white font-medium">{{ timeLeft }}</span>
+          </div>
+          <!-- <div class="text-gray-400">
+            Plays: <span class="text-white font-medium">{{ tournament.plays || 1000 }}</span>
+          </div> -->
+          <div class="text-gray-400 justify-self-end mr-4">
+            Min play level:
+            <span class="text-white font-medium">{{ tournament.minPlayLevel || 100 }}</span>
+          </div>
+          <!-- <div class="text-gray-400">
+            Duration:
+            <span class="text-white font-medium">{{ tournament.duration || '23h 58m' }}</span>
+          </div> -->
+        </div>
+        <div class="w-full bg-slate-700 rounded-full h-2.5">
+          <div
+            class="bg-purple-600 h-2.5 rounded-full"
+            :style="{ width: (tournament.progress || 0) + '%' }"
+          ></div>
+        </div>
+        <div class="flex justify-between items-center text-sm bg-slate-800/50 p-3 rounded-lg">
+          <div>
+            My Rank: <span class="font-bold text-purple-400">{{ tournament.myRank || 0 }}</span>
+          </div>
+          <div>
+            My Points: <span class="font-bold text-purple-400">{{ tournament.myPoints || 0 }}</span>
+          </div>
+          <div>
+            Free play:
+            <span class="font-bold text-purple-400"
+              >{{ tournament.freePlayUsed || 0 }}/{{ tournament.freePlayTotal || 1000 }}</span
+            >
+          </div>
+        </div>
+      </div>
+
+      <div
+        v-if="!isActiveSection && !isFinished && tournament.status === 'PENDING'"
+        class="text-sm text-gray-300 mb-3"
       >
-        {{ tournament.description }}
-      </p>
-      <div v-else class="text-gray-500 text-sm mb-3 h-10 italic">No description available.</div>
+        <p>
+          Starts:
+          <span class="text-white font-medium">{{ formatStartTime(tournament.startTime) }}</span>
+        </p>
+        <p>
+          Min play level:
+          <span class="text-white font-medium">{{ tournament.minPlayLevel || 20 }}</span>
+        </p>
+      </div>
 
-      <div class="space-y-2 text-sm mb-4">
-        <div class="flex items-center text-gray-300">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4 mr-2 text-blue-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span>Starts: {{ formattedStartTime }}</span>
-        </div>
-        <div v-if="tournament.endTime" class="flex items-center text-gray-300">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4 mr-2 text-red-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-            />
-          </svg>
-          <span>Ends: {{ formattedEndTime }}</span>
-        </div>
-        <div v-else-if="tournament.targetScore" class="flex items-center text-gray-300">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4 mr-2 text-green-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M5 13l4 4L19 7"
-            />
-          </svg>
-          <span>Target Score: {{ tournament.targetScore?.toLocaleString() }}</span>
-        </div>
-
-        <div v-if="tournament.prizeFund" class="flex items-center text-yellow-400">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-            />
-          </svg>
-          <span>Prize Pool: {{ tournament.prizeFund?.toLocaleString() }}</span>
-        </div>
+      <div v-if="isFinished" class="space-y-2 mb-3">
         <div
-          v-if="tournament.participantCount !== undefined"
-          class="flex items-center text-gray-300"
+          v-for="(winner, index) in (tournament.participants || []).slice(0, 3)"
+          :key="winner.userId"
+          class="flex items-center text-sm"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            class="h-4 w-4 mr-2 text-purple-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+          <span class="mr-2 text-yellow-400 font-semibold">{{ index + 1 }}.</span>
+          <img
+            :src="
+              winner.avatarUrl ||
+              'https://placehold.co/24x24/7f7f7f/white?text=' +
+                winner.username?.substring(0, 1).toUpperCase()
+            "
+            alt="avatar"
+            class="w-6 h-6 rounded-full mr-2"
+          />
+          <span class="text-white flex-grow">{{ winner.username }}</span>
+          <span class="text-yellow-400 mr-2"
+            >💰
+            {{
+              formatPrize(winner.prizeAmount || getPrizeForRank(index + 1, tournament.rewards) || 0)
+            }}</span
           >
-            <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-            />
-          </svg>
-          <span>Participants: {{ tournament.participantCount }}</span>
+          <span class="text-gray-400 w-12 text-right">{{ winner.score }}</span>
         </div>
       </div>
-    </div>
 
-    <div class="mt-auto pt-4 border-t border-gray-700 flex space-x-2">
+      <div
+        v-show="isExpanded && !isFinished"
+        class="mt-4 pt-4 border-t border-slate-700/50 space-y-3"
+      >
+        <p class="text-sm text-gray-300">
+          Eligible Games:
+          <span class="text-white">{{
+            tournament.eligibleGames?.map((g) => g.name).join(', ') ||
+            'All slot games (excluding Fishing)'
+          }}</span>
+        </p>
+        <p class="text-sm text-gray-300">
+          Points System:
+          <span class="text-white"
+            >Based on win multipliers. Higher multipliers earn more points.</span
+          >
+        </p>
+      </div>
+
+      <div class="mt-4 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-3">
+        <button
+          v-if="!isFinished"
+          @click.stop="$emit('show-leaderboard')"
+          class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
+        >
+          Show Leaderboard
+        </button>
+        <button
+          v-if="isActiveSection && !isFinished"
+          @click.stop="$emit('join-tournament')"
+          class="flex-1 bg-pink-600 hover:bg-pink-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
+        >
+          {{ tournament.isJoined ? 'CONTINUE RACING' : 'JOIN NOW' }}
+        </button>
+        <button
+          v-if="!isActiveSection && !isFinished && tournament.status === 'PENDING'"
+          @click.stop="$emit('join-tournament')"
+          class="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2.5 px-4 rounded-lg text-sm transition-colors"
+        >
+          JOIN RACE
+        </button>
+      </div>
       <button
-        @click="handleViewDetails"
-        class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition duration-150 ease-in-out text-sm"
+        v-if="!isFinished && isExpanded"
+        @click.stop="$emit('show-how-it-works')"
+        class="w-full mt-3 text-center text-purple-400 hover:text-purple-300 text-sm font-medium"
       >
-        View Details
+        How It Works
       </button>
-      <button
-        v-if="canJoin"
-        @click="handleJoinTournament"
-        :disabled="isJoining"
-        class="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-md transition duration-150 ease-in-out text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-      >
-        {{ isJoining ? 'Joining...' : 'Join Tournament' }}
-      </button>
-      <p v-else-if="isJoined" class="flex-1 text-center text-green-400 py-2 text-sm font-semibold">
-        Joined
-      </p>
-      <p
-        v-else-if="!isUpcomingOrActive"
-        class="flex-1 text-center text-gray-500 py-2 text-sm font-semibold"
-      >
-        Not Joinable
-      </p>
     </div>
   </div>
 </template>
 
-<script setup lang="ts">
-  import { computed, type PropType } from 'vue'
-  import { useRouter } from 'vue-router'
-  import type { TournamentCore } from 'shared/dist.vue'
-  import { TournamentStatus } from 'shared/dist' // Assuming TournamentStatus enum is exported
-  import { useTournamentStore } from '@/stores/tournament.store'
-  import { useAuthStore } from '@/stores/auth.store' // To check if user is part of it
+<script setup>
+  import { defineProps, defineEmits, ref, computed } from 'vue'
+  import { ChevronDownIcon } from 'lucide-vue-next'
+  import { formatDistanceToNowStrict, format } from 'date-fns'
 
   const props = defineProps({
-    tournament: {
-      type: Object as PropType<TournamentCore>,
-      required: true,
-    },
+    tournament: Object,
+    isActiveSection: Boolean, // True if in "RIGHT NOW" section
+    isFinished: Boolean, // True if in "FINISHED" section
   })
 
-  const router = useRouter()
-  const tournamentStore = useTournamentStore()
-  const authStore = useAuthStore()
+  const emit = defineEmits(['show-leaderboard', 'show-how-it-works', 'join-tournament'])
 
-  const isJoining = computed(
-    () => tournamentStore.isJoining //&& tournamentStore.joinTournament === props.tournament.id
-  ) // Assuming store tracks joining ID
+  const isExpanded = ref(props.isActiveSection) // Auto-expand if in "RIGHT NOW"
 
-  const formattedStartTime = computed(() => {
-    return new Date(props.tournament.startTime).toLocaleString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  })
-
-  const formattedEndTime = computed(() => {
-    if (!props.tournament.endTime) return 'N/A (Score Target)'
-    return new Date(props.tournament.endTime).toLocaleString(undefined, {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  })
-
-  const formattedStatus = computed(() => {
-    switch (props.tournament.status) {
-      case TournamentStatus.ACTIVE:
-        return 'Active'
-      case TournamentStatus.PENDING:
-        return 'Upcoming'
-      case TournamentStatus.COMPLETED:
-        return 'Ended'
-      case TournamentStatus.CANCELLED:
-        return 'Cancelled'
-      default:
-        return props.tournament.status
-    }
-  })
-
-  const statusClasses = computed(() => {
-    switch (props.tournament.status) {
-      case TournamentStatus.ACTIVE:
-        return 'bg-green-500 text-green-900'
-      case TournamentStatus.PENDING:
-        return 'bg-yellow-400 text-yellow-900'
-      case TournamentStatus.COMPLETED:
-        return 'bg-gray-500 text-gray-100'
-      case TournamentStatus.CANCELLED:
-        return 'bg-red-500 text-red-100'
-      default:
-        return 'bg-gray-600 text-gray-200'
-    }
-  })
-
-  const isUpcomingOrActive = computed(() => {
-    return (
-      props.tournament.status === TournamentStatus.PENDING ||
-      props.tournament.status === TournamentStatus.ACTIVE
-    )
-  })
-
-  // A more robust check would involve checking if the user ID is in the tournament's participant list.
-  // This requires more data on the TournamentCore or a separate check.
-  // For now, we assume `userTournamentIds` in the store holds IDs of tournaments the user has joined.
-  const isJoined = computed(() => {
-    return tournamentStore.userTournamentIds.includes(props.tournament.id)
-  })
-
-  const canJoin = computed(() => {
-    return isUpcomingOrActive.value && !isJoined.value && authStore.isAuthenticated // Must be authenticated
-  })
-
-  const handleViewDetails = () => {
-    router.push({ name: 'TournamentDetails', params: { id: props.tournament.id } })
-    // Ensure you have a route named 'TournamentDetails' that accepts an 'id' param
+  const toggleExpand = () => {
+    isExpanded.value = !isExpanded.value
   }
 
-  const handleJoinTournament = async () => {
-    // if (!props.tournament.id) return
-    // // To provide feedback for specific card being joined:
-    // if (tournamentStore.isJoining && tournamentStore.joiningTournament !== props.tournament.id) {
-    //   // Already joining another tournament, prevent concurrent joins from UI on this card
-    //   return
-    // }
-    // tournamentStore.setJoiningTournamentId(props.tournament.id) // Action to set which one is being joined
-    // await tournamentStore.joinTournament(props.tournament.id)
-    // tournamentStore.clearJoiningTournamentId() // Action to clear
+  const formatPrize = (amount) => {
+    if (typeof amount === 'string') return amount // Already formatted
+    return new Intl.NumberFormat().format(amount)
+  }
+
+  const timeLeft = computed(() => {
+    if (!props.tournament.endTime) return 'N/A'
+    try {
+      const endDate = new Date(props.tournament.endTime)
+      if (endDate < new Date()) return 'Ended'
+      return formatDistanceToNowStrict(endDate, { addSuffix: false }) // e.g. "7h 11m"
+    } catch (e) {
+      return 'N/A'
+    }
+  })
+
+  const formatFinishTime = (isoString) => {
+    if (!isoString) return 'N/A'
+    try {
+      return format(new Date(isoString), 'h:mm a')
+    } catch (e) {
+      return 'N/A'
+    }
+  }
+
+  const formatStartTime = (isoString) => {
+    if (!isoString) return 'N/A'
+    try {
+      // Check if it's today, tomorrow, or a specific date
+      const date = new Date(isoString)
+      const today = new Date()
+      const tomorrow = new Date(today)
+      tomorrow.setDate(tomorrow.getDate() + 1)
+
+      if (date.toDateString() === today.toDateString()) {
+        return `Today, ${format(date, 'h:mm a')}`
+      } else if (date.toDateString() === tomorrow.toDateString()) {
+        return `Tomorrow, ${format(date, 'h:mm a')}`
+      } else {
+        return format(date, 'dd MMM yyyy, h:mm a')
+      }
+    } catch (e) {
+      return 'N/A'
+    }
+  }
+
+  const getPrizeForRank = (rank, rewards) => {
+    const reward = rewards?.find((r) => r.rank === rank)
+    if (reward && reward.description) {
+      const match = reward.description.match(/(\d{1,3}(,\d{3})*(\.\d+)?)/) // Extracts number
+      return match ? match[0] : 'N/A'
+    }
+    return 0
+  }
+
+  const cardBgClass = computed(() => {
+    if (props.isFinished) return 'bg-slate-800'
+    if (props.tournament.isTeamRace || props.tournament.name?.toLowerCase().includes('team race'))
+      return 'bg-gradient-to-br from-sky-600 to-cyan-700'
+    return 'bg-gradient-to-br from-[#7133f7] to-[#0e0449] backdrop-blur-sm'
+  })
+
+  const bgColorForImage = (status) => {
+    if (props.isFinished || status === 'COMPLETED' || status === 'CANCELLED')
+      return 'maz-bg-color-dark' // slate
+    if (status === 'ACTIVE') return '16a34a' // green
+    if (status === 'PENDING') return 'f59e0b' // amber
+    return '7c3aed' // purple (default)
+  }
+
+  const imgError = (event) => {
+    event.target.src = `https://placehold.co/80x80/${bgColorForImage(props.tournament.status)}/white?text=${props.tournament.name?.substring(0, 1)}&font=Inter`
   }
 </script>
-
-<style scoped>
-  /* Add any component-specific styles here if needed, though Tailwind aims to minimize this. */
-  .h-10 {
-    height: 2.5rem; /* 40px */
-  }
-  /* For text-ellipsis, ensure parent has overflow-hidden and a defined width/height */
-</style>

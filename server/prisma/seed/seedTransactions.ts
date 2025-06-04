@@ -32,9 +32,9 @@ export async function seedWalletsAndTransactions(
 
     let wallet = await prisma.wallet.findUnique({
       where: {
-        userId_paymentMethod: {
+        userOperator: {
           userId: profile.userId,
-          paymentMethod: userPaymentMethod,
+          operatorId: operatorId,
         },
       },
     })
@@ -93,7 +93,7 @@ export async function seedWalletsAndTransactions(
       let bonusAmountTrx = 0
       const balanceBefore = currentBalance
       const bonusBalanceBefore = currentBonusBalance
-      let currentProductId = null
+      let currentProductId: string | null = null
 
       switch (transactionType) {
         case TransactionType.DEPOSIT:

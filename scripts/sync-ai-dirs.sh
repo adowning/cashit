@@ -15,9 +15,12 @@ rsync -av \
   --exclude=scripts/ \
   --exclude=tasks/ \
   --exclude=client/public/ \
+  --exclude=server/public/ \
+  --exclude=server/src/services/pragmatic/engine/ \
   --exclude=client/src/assets/ \
   --exclude=.*/ \
   --exclude=server/prisma/generated/ \
+  --exclude=server/prisma/migrations/ \
   --exclude=admin/ \
   --exclude=server/prisma/schema/ \
   . /tmp/ai/ai/
@@ -40,5 +43,13 @@ find /tmp/ai/ai -type f -name "*.vue" | while read -r file; do
   cp "$file" "${dir}/${base}.vue.txt"
   rm "$file"
 done
+
+mkdir -p /tmp/ai/ai/client/public
+cp "client/public/rtg_loader_template.html" "/tmp/ai/ai/client/public/rtg_loader_template.html"
+cp "client/public/rtg.bridge.js" "/tmp/ai/ai/client/public/rtg.bridge.js"
+
+
+
+
 
 echo "Directory sync completed successfully"

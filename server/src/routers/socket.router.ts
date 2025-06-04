@@ -53,6 +53,7 @@ import { nolimitProxyMessageHandler, NoLimitProxyWsData } from '@/handlers/nolim
 // }
 
 // --- Tournament Topic Subscription Handlers ---
+import { UserBalanceUpdateMessageSchema } from 'shared' // From shared types
 
 function handleSubscribeToTournamentTopic(
   context: MessageHandlerContext<typeof SubscribeToTournamentTopic, AppWsData>

@@ -35,7 +35,6 @@
         backgroundSize: 'contain',
         backgroundRepeat: 'no-repeat',
         zIndex: '13',
-        width: '90px',
         height: '70px',
         display: 'flex',
         alignItems: 'center',
@@ -50,9 +49,9 @@
         :fps="20"
         :autoplay="true"
         :loop="true"
-        :width="actualFrameWidth"
+        :width="actualFrameWidth - 10"
         :height="actualFrameHeight"
-        style="transform: scale(0.8) translateX(-10px) translateY(-10px)"
+        style="transform: scale(0.7) translateX(-10px) translateY(-10px)"
       />
       <img
         src="/images/bottom/menu0-1.png"

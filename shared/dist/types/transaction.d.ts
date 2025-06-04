@@ -39,7 +39,6 @@ export interface DepositProduct {
     title: string;
     description?: string | null;
     priceInCents: number;
-    currencyId: string | null;
     iconUrl?: string | null;
 }
 export interface DepositPaymentMethod {

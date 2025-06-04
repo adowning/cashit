@@ -17,6 +17,7 @@ import {
   TournamentEndedPayload,
   TournamentParticipantJoinedPayload,
   TournamentLeaderboardUpdatedPayload,
+  UserBalanceUpdatePayload,
 } from 'shared'
 
 // --------------- Event Emitter Instance ---------------
@@ -98,6 +99,7 @@ export enum AppEvents {
  */
 export interface EventPayloads {
   [AppEvents.USER_CREATED]: UserCreatedPayload
+  [AppEvents.USER_BALANCE_UPDATED]: UserBalanceUpdatePayload
   [AppEvents.USER_UPDATED]: UserProfileUpdatedPayload
   [AppEvents.USER_EMAIL_VERIFIED]: UserEventPayload
   [AppEvents.USER_PASSWORD_RESET_REQUESTED]: UserEventPayload & { email: string }

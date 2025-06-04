@@ -1,10 +1,27 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.GenericWsResponse = exports.GenericWsResponsePayload = exports.UnsubscribeFromGeneralTournaments = exports.SubscribeToGeneralTournaments = exports.UnsubscribeFromTournamentTopic = exports.UnsubscribeFromTournamentTopicPayload = exports.SubscribeToTournamentTopic = exports.SubscribeToTournamentTopicPayload = exports.TournamentNotificationEvent = exports.TournamentParticipantJoinedEvent = exports.TournamentEndedEvent = exports.TournamentStartedEvent = exports.TournamentLeaderboardUpdateEvent = exports.ErrorMessage = exports.ErrorCode = exports.DatabaseUpdate = exports.SubscribeResponse = exports.Subscribe = exports.Pong = exports.Ping = exports.RoomList = exports.SendMessage = exports.UserLeft = exports.UserJoined = exports.JoinRoom = exports.NewMessage = exports.MessageSchema = exports.MessageMetadataSchema = void 0;
+exports.GenericWsResponse = exports.GenericWsResponsePayload = exports.UnsubscribeFromGeneralTournaments = exports.SubscribeToGeneralTournaments = exports.UnsubscribeFromTournamentTopic = exports.UnsubscribeFromTournamentTopicPayload = exports.SubscribeToTournamentTopic = exports.SubscribeToTournamentTopicPayload = exports.TournamentNotificationEvent = exports.TournamentParticipantJoinedEvent = exports.TournamentEndedEvent = exports.TournamentStartedEvent = exports.TournamentLeaderboardUpdateEvent = exports.UserBalanceUpdateEvent = exports.ErrorMessage = exports.ErrorCode = exports.DatabaseUpdate = exports.SubscribeResponse = exports.Subscribe = exports.Pong = exports.Ping = exports.RoomList = exports.SendMessage = exports.UserLeft = exports.UserBalanceUpdateMessageSchema = exports.UserJoined = exports.JoinRoom = exports.NewMessage = exports.MessageSchema = exports.MessageMetadataSchema = exports.UserBalanceUpdatePayloadSchema = void 0;
 exports.messageSchema = messageSchema;
 const zod_1 = require("zod");
 /* SPDX-FileCopyrightText: 2025-present Kriasoft */
 /* SPDX-License-Identifier: MIT */
+exports.UserBalanceUpdatePayloadSchema = zod_1.z.object({
+    userId: zod_1.z.string().min(1), // User ID is essential
+    newBalance: zod_1.z.number(), // Using number for balance; can be string if backend consistently uses strings
+    // currency: z.string().optional(), // e.g., 'USD', 'FUN', or your game's currency symbol
+});
+// /**
+//  * WebSocket message schema for user balance updates.
+//  * This message should be sent by the server whenever a user's balance changes.
+//  */
+// export const UserBalanceUpdateMessageSchema = messageSchema(
+//   'USER_BALANCE_UPDATE',
+//   // UserBalanceUpdatePayloadSchema
+//   {
+//     type: z.string(),
+//     meta: {},
+//   }
+// )
 // import type { messageSchema } from './router'
 /**
  * Base schema for message metadata.
@@ -37,6 +54,10 @@ exports.UserJoined = messageSchema('USER_JOINED', {
     roomId: zod_1.z.string(),
     userId: zod_1.z.string().optional(),
 });
+exports.UserBalanceUpdateMessageSchema = messageSchema('USER_BALANCE_UPDATE', {
+    userId: zod_1.z.string().min(1), // User ID is essential
+    newBalance: zod_1.z.number(),
+});
 exports.UserLeft = messageSchema('USER_LEFT', {
     roomId: zod_1.z.string(),
     userId: zod_1.z.string(),
@@ -49,8 +70,6 @@ exports.RoomList = messageSchema('ROOM_LIST', {
     roomId: zod_1.z.string(),
 });
 exports.Ping = messageSchema('PING', {
-    userId: zod_1.z.string(),
-    content: zod_1.z.string(),
     timestamp: zod_1.z.number().optional(),
 });
 exports.Pong = messageSchema('PONG', {
@@ -127,6 +146,12 @@ function messageSchema(messageType, payload, meta) {
     });
     return finalSchema;
 }
+exports.UserBalanceUpdateEvent = zod_1.z.object({
+    table: zod_1.z.string(),
+    operation: zod_1.z.enum(['INSERT', 'UPDATE', 'DELETE']),
+    recordId: zod_1.z.union([zod_1.z.string(), zod_1.z.number(), zod_1.z.null()]).optional(), // Allow string/number/null IDs
+    data: zod_1.z.record(zod_1.z.any()).nullable(), // The row data (can be null on DELETE))
+});
 exports.TournamentLeaderboardUpdateEvent = zod_1.z.object({
     table: zod_1.z.string(),
     operation: zod_1.z.enum(['INSERT', 'UPDATE', 'DELETE']),

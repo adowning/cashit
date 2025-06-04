@@ -30,10 +30,10 @@
     isAuthenticated, // Auth store's authentication status
   } = storeToRefs(authStore)
   const formData = reactive({
-    email: '',
-    password: '',
-    confirmPassword: '', // For sign-up
-    username: '', // For sign-up
+    email: 'asdf7@cashflow.com',
+    password: 'asdfasdf',
+    confirmPassword: 'asdfasdf', // For sign-up
+    username: 'asdf7', // For sign-up
   })
   const showError = ref<boolean>(false)
   const { signInWithPassword, signUpNewUser, signInWithGoogleIdToken } = authStore

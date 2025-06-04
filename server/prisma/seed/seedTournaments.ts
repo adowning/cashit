@@ -10,11 +10,11 @@ import {
 } from '../generated/' // Adjust path to your Prisma client if needed
 import { faker } from '@faker-js/faker'
 
-// Helper to get a random item from an array
-function getRandomItem<T>(arr: T[]): T | undefined {
-  if (arr.length === 0) return undefined
-  return arr[Math.floor(Math.random() * arr.length)]
-}
+// Helper to get a random item from an array (currently unused but kept for future use)
+// function getRandomItem<T>(arr: T[]): T | undefined {
+//   if (arr.length === 0) return undefined
+//   return arr[Math.floor(Math.random() * arr.length)]
+// }
 
 // Helper function to get the start of a day
 function getStartOfDay(date: Date): Date {
@@ -99,12 +99,6 @@ export async function seedTournaments(
       status,
       targetScore,
       user: { connect: { id: adminProfile.id } }, // Connects Tournament.userId to adminProfile.id
-      eligibleGames: {
-        create: selectedGamesForTournament.map((game) => ({
-          gameId: game.id,
-          pointMultiplier: faker.helpers.arrayElement([1.0, 1.25, 1.5, 1.75, 2.0]),
-        })),
-      },
       rewards: {
         create: [
           {
@@ -119,11 +113,20 @@ export async function seedTournaments(
 
     try {
       const tournament = await prisma.tournament.create({ data: tournamentInput })
+
+      // Create TournamentGames relationships
+      await prisma.tournamentGames.createMany({
+        data: selectedGamesForTournament.map((game) => ({
+          A: game.id, // gameId
+          B: tournament.id, // tournamentId
+        })),
+      })
+
       createdTournaments.push(tournament)
       console.log(
         `🏆 Created tournament: ${tournament.name} (Status: ${tournament.status}, Start: ${tournament.startTime.toISOString()}, End: ${
           tournament.endTime ? tournament.endTime.toISOString() : 'N/A (Open-ended or not set)'
-        })`
+        }) with ${selectedGamesForTournament.length} eligible games`
       )
       if (
         (status === TournamentStatus.ACTIVE || status === TournamentStatus.COMPLETED) &&

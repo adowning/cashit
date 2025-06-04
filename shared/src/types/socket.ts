@@ -4,7 +4,7 @@ export interface GetUserBalanceSocket {
   mt: number
 }
 import type { HeadersInit, Server, ServerWebSocket } from 'bun'
-import { z, ZodObject, ZodType, ZodLiteral, type ZodRawShape, type ZodTypeAny } from 'zod'
+import { z, ZodObject, ZodLiteral, type ZodRawShape, type ZodTypeAny } from 'zod'
 import type {
   TournamentEndedPayload,
   TournamentParticipantJoinedPayload,
@@ -13,7 +13,25 @@ import type {
 import { UserProfile } from '..'
 /* SPDX-FileCopyrightText: 2025-present Kriasoft */
 /* SPDX-License-Identifier: MIT */
+export const UserBalanceUpdatePayloadSchema = z.object({
+  userId: z.string().min(1), // User ID is essential
+  newBalance: z.number(), // Using number for balance; can be string if backend consistently uses strings
+  // currency: z.string().optional(), // e.g., 'USD', 'FUN', or your game's currency symbol
+})
+export type UserBalanceUpdatePayloadType = z.infer<typeof UserBalanceUpdatePayloadSchema>
 
+// /**
+//  * WebSocket message schema for user balance updates.
+//  * This message should be sent by the server whenever a user's balance changes.
+//  */
+// export const UserBalanceUpdateMessageSchema = messageSchema(
+//   'USER_BALANCE_UPDATE',
+//   // UserBalanceUpdatePayloadSchema
+//   {
+//     type: z.string(),
+//     meta: {},
+//   }
+// )
 // import type { messageSchema } from './router'
 /**
  * Base schema for message metadata.
@@ -45,6 +63,10 @@ export const JoinRoom = messageSchema('JOIN_ROOM', {
 export const UserJoined = messageSchema('USER_JOINED', {
   roomId: z.string(),
   userId: z.string().optional(),
+})
+export const UserBalanceUpdateMessageSchema = messageSchema('USER_BALANCE_UPDATE', {
+  userId: z.string().min(1), // User ID is essential
+  newBalance: z.number(),
 })
 export const UserLeft = messageSchema('USER_LEFT', {
   roomId: z.string(),
@@ -258,7 +280,12 @@ export function messageSchema<
 
   return finalSchema as any
 }
-
+export const UserBalanceUpdateEvent = z.object({
+  table: z.string(),
+  operation: z.enum(['INSERT', 'UPDATE', 'DELETE']),
+  recordId: z.union([z.string(), z.number(), z.null()]).optional(), // Allow string/number/null IDs
+  data: z.record(z.any()).nullable(), // The row data (can be null on DELETE))
+})
 export const TournamentLeaderboardUpdateEvent = z.object({
   table: z.string(),
   operation: z.enum(['INSERT', 'UPDATE', 'DELETE']),

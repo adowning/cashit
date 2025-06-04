@@ -9,6 +9,7 @@
       <div
         v-for="notification in notifications"
         :key="notification.id"
+        class="mt-12"
         :class="['toast', `toast-${notification.type}`]"
       >
         <span class="toast-message">{{ notification.message }}</span>

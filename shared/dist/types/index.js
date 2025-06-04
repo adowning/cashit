@@ -27,6 +27,7 @@ __exportStar(require("./deposit"), exports);
 __exportStar(require("./event"), exports);
 __exportStar(require("./game"), exports);
 __exportStar(require("./invite"), exports);
+__exportStar(require("./jackpot"), exports);
 __exportStar(require("./mail"), exports);
 __exportStar(require("./prisma"), exports);
 __exportStar(require("./promo"), exports);

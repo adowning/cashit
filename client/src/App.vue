@@ -43,9 +43,9 @@
   <OverlayLayer v-if="depositStore.shopOpen" :model-value="depositStore.shopOpen">
     <ShopView v-if="depositStore.shopOpen" />
   </OverlayLayer>
-  <OverlayLayer v-if="tournamentStore.isBattlesOpen" :model-value="tournamentStore.isBattlesOpen">
+  <!-- <OverlayLayer v-if="tournamentStore.isBattlesOpen" :model-value="tournamentStore.isBattlesOpen">
     <FunRizeRaces v-if="tournamentStore.isBattlesOpen" />
-  </OverlayLayer>
+  </OverlayLayer> -->
 </template>
 
 <script setup lang="ts">
@@ -53,7 +53,7 @@
   import { storeToRefs } from 'pinia'
   import { useRouter } from 'vue-router'
   import LoginView from '@/views/auth/LoginView.vue' // Explicit import for view
-  import FunRizeRaces from '@/components/battles/FunRizeRaces.vue' // Explicit import for view
+  import FunRizeRaces from '@/components/races/FunRizeRaces.vue' // Explicit import for view
 
   // Pinia Stores
   import { useAuthStore } from '@/stores/auth.store'

@@ -19,6 +19,8 @@ model Game {
   gameProviderId       String?
   operatorId           String?
   tournamentDirectives Json?
+  status               Boolean            @default(true)
+  checked              Boolean            @default(false)
   TournamentGames      TournamentGames[]
   gameLaunchLinks      GameLaunchLink[]
   gameSessions         GameSession[]
@@ -70,6 +72,10 @@ model GameSpin {
   sessionId      String
   timeStamp      DateTime
   gameSession    GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+
+  // Jackpot relations
+  jackpotContributions JackpotContribution[]
+  jackpotWin           JackpotWin?
 
   @@map("game_spins")
 }

@@ -168,8 +168,8 @@
     depositItems.value = transactionStore.depositHistoryItem.data
     // console.log(depositItems.value)
 
-    if (depositItems.value !== undefined && depositItems.value.record.length > 0) {
-      depositItems.value.record.forEach((item) => {
+    if (depositItems.value !== undefined && depositItems.value.length > 0) {
+      depositItems.value.forEach((item) => {
         // console.log(item.status);
         if (item.status === 'PENDING') {
           countdownTimer(new Date(item.createdAt))
@@ -242,7 +242,7 @@
             class="glow mt--2 flex justify-center"
             style="line-height: 0.6; text-align: center; letter-spacing: 0px; font-weight: 800"
           >
-            {{ currentUser?.profile?.balance }}
+            {{ currentUser?.balance }}
           </div>
         </div>
       </div>

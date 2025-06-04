@@ -36,6 +36,8 @@ export type PrismaProviderAuthType =
   | "CUSTOM"
   | "NONE";
 
+export type PrismaJackpotType = "MINOR" | "MAJOR" | "GRAND";
+
 export type PrismaPaymentMethod = "INSTORE_CASH" | "INSTORE_CARD" | "CASH_APP";
 
 export type PrismaRole =
@@ -96,7 +98,9 @@ export type PrismaTransactionType =
   | "ADJUSTMENT_SUB"
   | "INTERNAL_TRANSFER"
   | "PRODUCT_PURCHASE"
-  | "REBATE_PAYOUT";
+  | "REBATE_PAYOUT"
+  | "JACKPOT_WIN"
+  | "JACKPOT_CONTRIBUTION";
 
 export type PrismaTransactionStatus =
   | "PENDING"
@@ -189,7 +193,10 @@ export type PrismaGame = {
   totalWagered: number;
   gameProviderId: string | null;
   operatorId: string | null;
-  TournamentGame?: PrismaTournamentGame[];
+  tournamentDirectives: JsonValue | null;
+  status: boolean;
+  checked: boolean;
+  TournamentGames?: PrismaTournamentGames[];
   gameLaunchLinks?: PrismaGameLaunchLink[];
   gameSessions?: PrismaGameSession[];
   gameProvider?: PrismaGameProvider | null;
@@ -236,6 +243,8 @@ export type PrismaGameSpin = {
   sessionId: string;
   timeStamp: Date;
   gameSession?: PrismaGameSession;
+  jackpotContributions?: PrismaJackpotContribution[];
+  jackpotWin?: PrismaJackpotWin | null;
 };
 
 export type PrismaGameProvider = {
@@ -284,6 +293,56 @@ export type PrismaGameLaunchLink = {
   game?: PrismaGame;
   operator?: PrismaOperator;
   UserProfile?: PrismaUserProfile | null;
+};
+
+export type PrismaTournamentGames = {
+  A: string;
+  B: string;
+  games?: PrismaGame;
+  Tournament?: PrismaTournament;
+};
+
+export type PrismaJackpot = {
+  id: string;
+  type: PrismaJackpotType;
+  currentAmountCoins: number;
+  seedAmountCoins: number;
+  minimumBetCoins: number;
+  contributionRateBasisPoints: number;
+  probabilityPerMillion: number;
+  minimumTimeBetweenWinsMinutes: number;
+  lastWonAt: Date | null;
+  lastWonBy: string | null;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  contributions?: PrismaJackpotContribution[];
+  wins?: PrismaJackpotWin[];
+  lastWinner?: PrismaUserProfile | null;
+};
+
+export type PrismaJackpotContribution = {
+  id: string;
+  jackpotId: string;
+  gameSpinId: string;
+  contributionAmountCoins: number;
+  createdAt: Date;
+  jackpot?: PrismaJackpot;
+  gameSpin?: PrismaGameSpin;
+};
+
+export type PrismaJackpotWin = {
+  id: string;
+  jackpotId: string;
+  winnerId: string;
+  winAmountCoins: number;
+  gameSpinId: string;
+  transactionId: string | null;
+  createdAt: Date;
+  jackpot?: PrismaJackpot;
+  winner?: PrismaUserProfile;
+  gameSpin?: PrismaGameSpin;
+  transaction?: PrismaTransaction | null;
 };
 
 export type PrismaOperator = {
@@ -368,18 +427,9 @@ export type PrismaTournament = {
   createdByid: string | null;
   userId: string | null;
   user?: PrismaUserProfile | null;
-  eligibleGames?: PrismaTournamentGame[];
   participants?: PrismaTournamentParticipant[];
   rewards?: PrismaTournamentReward[];
-};
-
-export type PrismaTournamentGame = {
-  id: string;
-  tournamentId: string;
-  gameId: string;
-  pointMultiplier: number;
-  game?: PrismaGame;
-  tournament?: PrismaTournament;
+  TournamentGames?: PrismaTournamentGames[];
 };
 
 export type PrismaTournamentParticipant = {
@@ -445,6 +495,7 @@ export type PrismaTransaction = {
   operatorId: string | null;
   products?: PrismaProduct[];
   rebateGenerated?: PrismaRebateTransaction | null;
+  jackpotWins?: PrismaJackpotWin[];
   Operator?: PrismaOperator | null;
   product?: PrismaProduct | null;
   UserProfile?: PrismaUserProfile | null;
@@ -510,6 +561,8 @@ export type PrismaUserProfile = {
   operatorInvitations?: PrismaOperatorInvitation[];
   rebateTransactions?: PrismaRebateTransaction[];
   transactions?: PrismaTransaction[];
+  jackpotWins?: PrismaJackpotWin[];
+  lastJackpotWon?: PrismaJackpot[];
   currentGameSession?: PrismaGameSession | null;
   vipInfo?: PrismaVipInfo;
   wallets?: PrismaWallet[];

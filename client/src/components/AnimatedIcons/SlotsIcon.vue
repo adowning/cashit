@@ -53,15 +53,15 @@
         style="transform: scale(0.6) translateY(1px) translateX(-15px); z-index: 12"
       />
       <img
-        src="/images/bottom/menu0-1.png"
+        src="/images/bottom/menu1-1.png"
         width="50"
-        height="40"
+        height="30"
         style="
           position: absolute;
           top: 22px;
-          left: 22px;
+          left: 12px;
           top: 50%;
-          left: 50%;
+          left: 40%;
           transform: translate(-50%, -20%) translateY(calc(15px / 0.6));
           z-index: 13;
           pointer-events: none;

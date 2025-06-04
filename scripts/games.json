@@ -1,0 +1,112 @@
+[
+  {
+    "id": "clj1a2b3c4d5e6f7g8h9i0j1k2l3m4n5",
+    "name": "vs243mwarrior",
+    "bannerUrl": "https://solawins-sg0.pragmaticplay.net/game_pic/rec/325/vs243mwarrior.png",
+    "title": "Monkey Warrior",
+
+    "status": true,
+    "checked": false,
+    "createdAt": "2021-02-02T01:33:32",
+    "updatedAt": "2022-07-29T17:20:41"
+  },
+  {
+    "id": "clj1b2c3d4e5f6g7h8i9j0k1l2m3n4o5",
+    "name": "vs20doghouse",
+    "bannerUrl": "https://solawins-sg0.pragmaticplay.net/game_pic/rec/325/vs20doghouse.png",
+    "title": "The Dog House",
+
+    "status": true,
+    "checked": false,
+    "createdAt": "2021-02-02T01:33:32",
+    "updatedAt": "2022-07-29T17:20:41"
+  },
+  {
+    "id": "clj1c2d3e4f5g6h7i8j9k0l1m2n3o4p5",
+    "name": "vs40pirate",
+    "bannerUrl": "https://solawins-sg0.pragmaticplay.net/game_pic/rec/325/vs40pirate.png",
+    "title": "Pirate Gold",
+
+    "status": true,
+    "checked": false,
+    "createdAt": "2021-02-02T01:33:32",
+    "updatedAt": "2022-07-29T17:20:41"
+  },
+  {
+    "id": "clj1d2e3f4g5h6i7j8k9l0m1n2o3p4q5",
+    "name": "vs20rhino",
+    "bannerUrl": "https://solawins-sg0.pragmaticplay.net/game_pic/rec/325/vs20rhino.png",
+    "title": "Great Rhino",
+
+    "status": true,
+    "checked": false,
+    "createdAt": "2021-02-02T01:33:32",
+    "updatedAt": "2022-07-29T17:20:41"
+  },
+  {
+    "id": "clj1e2f3g4h5i6j7k8l9m0n1o2p3q4r5",
+    "name": "vs25pandagold",
+    "bannerUrl": "https://solawins-sg0.pragmaticplay.net/game_pic/rec/325/vs25pandagold.png",
+    "title": "Panda Fortune",
+
+    "status": true,
+    "checked": false,
+    "createdAt": "2021-02-02T01:33:32",
+    "updatedAt": "2022-07-29T17:20:41"
+  },
+  {
+    "id": "clj1f2g3h4i5j6k7l8m9n0o1p2q3r4s5",
+    "name": "vs4096bufking",
+    "bannerUrl": "https://solawins-sg0.pragmaticplay.net/game_pic/rec/325/vs4096bufking.png",
+    "title": "Buffalo King",
+
+    "status": true,
+    "checked": false,
+    "createdAt": "2021-02-02T01:33:32",
+    "updatedAt": "2022-07-29T17:20:41"
+  },
+  {
+    "id": "clj1g2h3i4j5k6l7m8n9o0p1q2r3s4t5",
+    "name": "vs25pyramid",
+    "bannerUrl": "https://solawins-sg0.pragmaticplay.net/game_pic/rec/325/vs25pyramid.png",
+    "title": "Pyramid King",
+
+    "status": true,
+    "checked": false,
+    "createdAt": "2021-02-02T01:33:32",
+    "updatedAt": "2022-07-29T17:20:41"
+  },
+  {
+    "id": "clj1h2i3j4k5l6m7n8o9p0q1r2s3t4u5",
+    "name": "vs5ultrab",
+    "bannerUrl": "https://solawins-sg0.pragmaticplay.net/game_pic/rec/325/vs5ultrab.png",
+    "title": "Ultra Burn",
+
+    "status": true,
+    "checked": false,
+    "createdAt": "2021-08-23T20:51:41",
+    "updatedAt": "2022-07-29T17:20:41"
+  },
+  {
+    "id": "clj1i2j3k4l5m6n7o8p9q0r1s2t3u4v5",
+    "name": "vs5ultra",
+    "bannerUrl": "https://solawins-sg0.pragmaticplay.net/game_pic/rec/325/vs5ultra.png",
+    "title": "Ultra Hold and Spin",
+
+    "status": true,
+    "checked": false,
+    "createdAt": "2021-08-23T20:52:49",
+    "updatedAt": "2022-07-29T17:20:41"
+  },
+  {
+    "id": "clj1j2k3l4m5n6o7p8q9r0s1t2u3v4w5",
+    "name": "vs25jokerking",
+    "bannerUrl": "https://solawins-sg0.pragmaticplay.net/game_pic/rec/325/vs25jokerking.png",
+    "title": "Joker King",
+
+    "status": true,
+    "checked": false,
+    "createdAt": "2021-08-23T20:51:41",
+    "updatedAt": "2022-07-29T17:20:41"
+  }
+]

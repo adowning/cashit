@@ -24,6 +24,8 @@ model UserProfile {
   operatorInvitations   OperatorInvitation[]    @relation("ReceivedInvitations")
   rebateTransactions    RebateTransaction[]
   transactions          Transaction[]
+  jackpotWins           JackpotWin[]
+  lastJackpotWon        Jackpot[]               @relation("JackpotLastWinner")
   currentGameSession    GameSession?            @relation(fields: [currentGameSessionid], references: [id])
   vipInfo               VipInfo                 @relation(fields: [vipInfoId], references: [id])
   wallets               Wallet[]

@@ -34,6 +34,12 @@ export const routes: RouteRecordRaw[] = [
     // props: false, // Passes route params as props to the component
   },
   {
+    path: '/battles',
+    name: 'Battles',
+    component: () => import('@/components/races/FunRizeRaces.vue'), // A
+    // props: false, // Passes route params as props to the component
+  },
+  {
     path: '/rtggame',
     name: 'RtgGame',
     component: () => import('@/views/RtgGame.vue'), // A

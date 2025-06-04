@@ -4,7 +4,9 @@ import { userRouter } from './user.router'
 import { vipRouter } from './vip.router'
 import { gameRouter } from './game.router'
 import { transactionRouter } from './transaction'
-import { tournamentRouter } from './tournament.router' // Added import
+import { tournamentRouter } from './tournament.router'
+import { jackpotRouter } from './jackpot.router'
+import { pragmaticRouter } from '../services/pragmatic/pragmatic-game.routes'
 
 export { WebSocketRouter } from './socket.router'
 
@@ -21,8 +23,10 @@ export const appRouter = {
   user: userRouter,
   vip: vipRouter,
   transaction: transactionRouter,
-  tournament: tournamentRouter, // Added tournament router
-  game: gameRouter, // Added tournament router
+  tournament: tournamentRouter,
+  game: gameRouter,
+  jackpot: jackpotRouter,
+  pragmatic: pragmaticRouter,
 }
 export type AppRouter = typeof appRouter
 
@@ -40,7 +44,8 @@ export const socketRouter = {
   user: userRouter,
   vip: vipRouter,
   transaction: transactionRouter,
-  tournament: tournamentRouter, // Added tournament router
-  game: gameRouter, // Added tournament router
+  tournament: tournamentRouter,
+  game: gameRouter,
+  jackpot: jackpotRouter,
 }
 export type SocketRouter = typeof appRouter

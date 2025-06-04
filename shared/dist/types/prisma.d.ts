@@ -1,12 +1,13 @@
 export type PrismaGameCategory = "FISH" | "POKER" | "SLOTS" | "TABLE_GAMES" | "LIVE_CASINO" | "SPORTSBOOK" | "VIRTUAL_SPORTS" | "LOTTERY" | "CRASH" | "OTHER";
 export type PrismaGameProviderName = "PRAGMATICPLAY" | "EVOPLAY" | "NETENT" | "PLAYNGO" | "RELAXGAMING" | "HACKSAW" | "BGAMING" | "SPRIBE" | "INTERNAL" | "REDTIGER" | "NETGAME" | "BIGFISHGAMES" | "CQNINE" | "NOLIMIT" | "KICKASS";
 export type PrismaProviderAuthType = "API_KEY" | "OAUTH2" | "JWT_SIGN" | "CUSTOM" | "NONE";
+export type PrismaJackpotType = "MINOR" | "MAJOR" | "GRAND";
 export type PrismaPaymentMethod = "INSTORE_CASH" | "INSTORE_CARD" | "CASH_APP";
 export type PrismaRole = "USER" | "ADMIN" | "VIP" | "MODERATOR" | "SYSTEM" | "OWNER" | "MEMBER" | "OPERATOR" | "SUPPORT_AGENT";
 export type PrismaKeyMode = "read" | "write" | "upload" | "manage_users" | "manage_settings" | "launch_game";
 export type PrismaInvitationStatus = "PENDING" | "ACCEPTED" | "DECLINED" | "INACTIVE";
 export type PrismaTournamentStatus = "PENDING" | "ACTIVE" | "COMPLETED" | "CANCELLED";
-export type PrismaTransactionType = "DEPOSIT" | "WITHDRAWAL" | "BET" | "WIN" | "TRANSFER_SENT" | "TRANSFER_RECEIVED" | "SYSTEM_ADJUSTMENT_CREDIT" | "SYSTEM_ADJUSTMENT_DEBIT" | "TOURNAMENT_BUYIN" | "TOURNAMENT_PRIZE" | "AFFILIATE_COMMISSION" | "REFUND" | "FEE" | "BONUS_AWARD" | "BET_PLACE" | "BET_WIN" | "BET_LOSE" | "BET_REFUND" | "BONUS_WAGER" | "BONUS_CONVERT" | "BONUS_EXPIRED" | "XP_AWARD" | "ADJUSTMENT_ADD" | "ADJUSTMENT_SUB" | "INTERNAL_TRANSFER" | "PRODUCT_PURCHASE" | "REBATE_PAYOUT";
+export type PrismaTransactionType = "DEPOSIT" | "WITHDRAWAL" | "BET" | "WIN" | "TRANSFER_SENT" | "TRANSFER_RECEIVED" | "SYSTEM_ADJUSTMENT_CREDIT" | "SYSTEM_ADJUSTMENT_DEBIT" | "TOURNAMENT_BUYIN" | "TOURNAMENT_PRIZE" | "AFFILIATE_COMMISSION" | "REFUND" | "FEE" | "BONUS_AWARD" | "BET_PLACE" | "BET_WIN" | "BET_LOSE" | "BET_REFUND" | "BONUS_WAGER" | "BONUS_CONVERT" | "BONUS_EXPIRED" | "XP_AWARD" | "ADJUSTMENT_ADD" | "ADJUSTMENT_SUB" | "INTERNAL_TRANSFER" | "PRODUCT_PURCHASE" | "REBATE_PAYOUT" | "JACKPOT_WIN" | "JACKPOT_CONTRIBUTION";
 export type PrismaTransactionStatus = "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "CANCELLED" | "REFUNDED" | "EXPIRED" | "REJECTED" | "REQUIRES_ACTION" | "ON_HOLD";
 export type PrismaRewardStatus = "AVAILABLE" | "CLAIMED" | "EXPIRED" | "PENDING" | "VOIDED";
 export type PrismaUser = {
@@ -77,7 +78,10 @@ export type PrismaGame = {
     totalWagered: number;
     gameProviderId: string | null;
     operatorId: string | null;
-    TournamentGame?: PrismaTournamentGame[];
+    tournamentDirectives: JsonValue | null;
+    status: boolean;
+    checked: boolean;
+    TournamentGames?: PrismaTournamentGames[];
     gameLaunchLinks?: PrismaGameLaunchLink[];
     gameSessions?: PrismaGameSession[];
     gameProvider?: PrismaGameProvider | null;
@@ -122,6 +126,8 @@ export type PrismaGameSpin = {
     sessionId: string;
     timeStamp: Date;
     gameSession?: PrismaGameSession;
+    jackpotContributions?: PrismaJackpotContribution[];
+    jackpotWin?: PrismaJackpotWin | null;
 };
 export type PrismaGameProvider = {
     id: string;
@@ -168,6 +174,52 @@ export type PrismaGameLaunchLink = {
     game?: PrismaGame;
     operator?: PrismaOperator;
     UserProfile?: PrismaUserProfile | null;
+};
+export type PrismaTournamentGames = {
+    A: string;
+    B: string;
+    games?: PrismaGame;
+    Tournament?: PrismaTournament;
+};
+export type PrismaJackpot = {
+    id: string;
+    type: PrismaJackpotType;
+    currentAmountCoins: number;
+    seedAmountCoins: number;
+    minimumBetCoins: number;
+    contributionRateBasisPoints: number;
+    probabilityPerMillion: number;
+    minimumTimeBetweenWinsMinutes: number;
+    lastWonAt: Date | null;
+    lastWonBy: string | null;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+    contributions?: PrismaJackpotContribution[];
+    wins?: PrismaJackpotWin[];
+    lastWinner?: PrismaUserProfile | null;
+};
+export type PrismaJackpotContribution = {
+    id: string;
+    jackpotId: string;
+    gameSpinId: string;
+    contributionAmountCoins: number;
+    createdAt: Date;
+    jackpot?: PrismaJackpot;
+    gameSpin?: PrismaGameSpin;
+};
+export type PrismaJackpotWin = {
+    id: string;
+    jackpotId: string;
+    winnerId: string;
+    winAmountCoins: number;
+    gameSpinId: string;
+    transactionId: string | null;
+    createdAt: Date;
+    jackpot?: PrismaJackpot;
+    winner?: PrismaUserProfile;
+    gameSpin?: PrismaGameSpin;
+    transaction?: PrismaTransaction | null;
 };
 export type PrismaOperator = {
     id: string;
@@ -247,17 +299,9 @@ export type PrismaTournament = {
     createdByid: string | null;
     userId: string | null;
     user?: PrismaUserProfile | null;
-    eligibleGames?: PrismaTournamentGame[];
     participants?: PrismaTournamentParticipant[];
     rewards?: PrismaTournamentReward[];
-};
-export type PrismaTournamentGame = {
-    id: string;
-    tournamentId: string;
-    gameId: string;
-    pointMultiplier: number;
-    game?: PrismaGame;
-    tournament?: PrismaTournament;
+    TournamentGames?: PrismaTournamentGames[];
 };
 export type PrismaTournamentParticipant = {
     id: string;
@@ -319,6 +363,7 @@ export type PrismaTransaction = {
     operatorId: string | null;
     products?: PrismaProduct[];
     rebateGenerated?: PrismaRebateTransaction | null;
+    jackpotWins?: PrismaJackpotWin[];
     Operator?: PrismaOperator | null;
     product?: PrismaProduct | null;
     UserProfile?: PrismaUserProfile | null;
@@ -381,6 +426,8 @@ export type PrismaUserProfile = {
     operatorInvitations?: PrismaOperatorInvitation[];
     rebateTransactions?: PrismaRebateTransaction[];
     transactions?: PrismaTransaction[];
+    jackpotWins?: PrismaJackpotWin[];
+    lastJackpotWon?: PrismaJackpot[];
     currentGameSession?: PrismaGameSession | null;
     vipInfo?: PrismaVipInfo;
     wallets?: PrismaWallet[];

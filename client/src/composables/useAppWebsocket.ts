@@ -287,9 +287,17 @@ export const useAppWebSocket = createGlobalState(() => {
       if (messageData) {
         try {
           const parsedMessage: WsMessage = destr(messageData) // Safely parse JSON
-          console.log('WebSocket: Message received <-', parsedMessage)
+          // console.log('WebSocket: Message received <-', parsedMessage)
           animationController.handleWebSocketMessage(parsedMessage)
           eventManager.emit('wsMessage', parsedMessage) // Broadcast the parsed message
+          // console.log(parsedMessage)
+          if (parsedMessage.type === 'USER_BALANCE_UPDATE' && parsedMessage.payload) {
+            const authStore = useAuthStore() // Get the auth store instance
+            // Assuming payload is { newBalance: number, currency?: string }
+            // You might need to adjust how you update the balance based on your authStore's structure
+            authStore.updateUserBalance(parsedMessage.payload.balance)
+            console.log('WebSocket: User balance updated to ->', parsedMessage.payload.balance)
+          }
         } catch (error) {
           console.error(
             'WebSocket: Error parsing incoming message:',

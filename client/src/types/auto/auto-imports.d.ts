@@ -362,9 +362,6 @@ declare global {
   export type { IEventManagerService, eventobject } from '../../composables/EventManager'
   import('../../composables/EventManager')
   // @ts-ignore
-  export type { ProviderSettingsResponseData, RTGSettingsResponseDto, ProviderSpinResponseData, RtgSpinResult, RTGSpinResponseDto, RTGSettingsRequestDto, RTGSpinRequestDto, GamePlatformSpinResultDetails, GameCategoryName, GameListResponse, Game, LaunchGameResponseDto, Autoplay, Options, RtgSpins, StopOnFeature, StopOnLossLimits, StopOnWin, RtgSettingsBalance, Currency, Limits, TotalStake, Stakes, Search, GameItem, GameEnterBody, GameUserBody, GameEnterResponse, GameHistoryItem, GameBigWinItem, GameBigWinData, GameHistoryResponse, GameSearchResponse, GetGameFavoriteListResponse, GetGameBigWinResponse, Category, GetGameCategoriesResponse, GetGameSearchResponse, GetGameEnterResponse, GetGameHistoryResponse, GameProvider, GameType, GameSpin, RawGameSpinBody, RtgGame, Action, Data, FatTile, InstantWin, Win, Transactions } from '../../composables/game'
-  import('../../composables/game')
-  // @ts-ignore
   export type { ApiError } from '../../composables/useApiClient'
   import('../../composables/useApiClient')
   // @ts-ignore

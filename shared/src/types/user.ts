@@ -4,6 +4,7 @@
 // import type { UserProfile } from '../index';
 // import type { UserProfile } from '../prisma/types/user' // Adjust path if needed, e.g., to "../prisma/interfaces"
 import type { PrismaUserProfile, PrismaTournamentReward } from './prisma'
+import { PrismaTransactionType } from './prisma'
 
 // import type { PrismaUserReward } from './vip'
 // export { UserReward } from '../prisma/types'
@@ -163,7 +164,15 @@ export interface UserBalanceDetails {
   real_balance: string // Using string for precision
   bonus_balance: string // Using string for precision
 }
-
+export interface UserBalanceUpdatePayload {
+  userId: string
+  newBalance: number
+  table: string
+  // currencyId,
+  changeAmount: number
+  transactionType: PrismaTransactionType
+  relatedTransactionId: string
+}
 // --- VIP Related User Types ---
 /**
  * DTO representing the user's detailed VIP status and benefits.

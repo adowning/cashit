@@ -1,0 +1,282 @@
+[
+  {
+    "success": true,
+    "result": {
+      "transactions": {
+        "roundId": 202900066
+      },
+      "user": {
+        "balance": {
+          "cash": {
+            "atStart": "114.00",
+            "afterBet": "112.00",
+            "atEnd": "112.00"
+          },
+          "freeBets": {
+            "atStart": "0.00",
+            "afterBet": "0.00",
+            "atEnd": "0.00"
+          },
+          "bonus": {
+            "atStart": "0.00",
+            "afterBet": "0.00",
+            "atEnd": "0.00"
+          },
+          "sessionCash": {
+            "atStart": "0.00",
+            "afterBet": "0.00",
+            "atEnd": "0.00"
+          },
+          "sessionFreeBets": {
+            "atStart": "0.00",
+            "afterBet": "0.00",
+            "atEnd": "0.00"
+          }
+        },
+        "canGamble": false,
+        "userId": 7427503,
+        "sessionId": "0",
+        "sessionNetPosition": "12.00",
+        "token": "db23b6e00877ad73f7a8214dfc5796f01b7afffbb1747e4931bf44d57532f3f61386735ffafd94652b352aa9d5c4d6cdc9befeae79657a1b10065b48e1b71f1a",
+        "bonuses": [],
+        "tournaments": [],
+        "vouchers": [],
+        "messages": [],
+        "limits": {
+          "betThresholdTime": 925
+        },
+        "serverTime": "2025-02-20 14:46:16"
+      },
+      "game": {
+        "win": {
+          "lines": "0.00",
+          "total": "0.00"
+        },
+        "winsMultipliers": {
+          "lines": "0.00",
+          "total": "0.00"
+        },
+        "stake": "2.00",
+        "multiplier": 1,
+        "winLines": [],
+        "spinMode": "Normal",
+        "fatTiles": [
+          {
+            "tileId": 10,
+            "reel": 3,
+            "index": 2,
+            "width": 1,
+            "height": 1,
+            "multiplier": 2,
+            "amount": "4.00"
+          },
+          {
+            "tileId": 10,
+            "reel": 3,
+            "index": 4,
+            "width": 1,
+            "height": 1,
+            "multiplier": 2,
+            "amount": "4.00"
+          },
+          {
+            "tileId": 10,
+            "reel": 3,
+            "index": 6,
+            "width": 1,
+            "height": 1,
+            "multiplier": 2,
+            "amount": "4.00"
+          },
+          {
+            "tileId": 10,
+            "reel": 4,
+            "index": 0,
+            "width": 1,
+            "height": 1,
+            "multiplier": 5,
+            "amount": "10.00"
+          },
+          {
+            "tileId": 10,
+            "reel": 3,
+            "index": 0,
+            "width": 1,
+            "height": 1,
+            "multiplier": 5,
+            "amount": "10.00"
+          }
+        ],
+        "scatters": [],
+        "reelsBuffer": [
+          [
+            [7, 7, 2],
+            [3, 8, 4, 2],
+            [2, 14, 2]
+          ],
+          [
+            [7, 5, 5],
+            [1, 4, 2, 4],
+            [4, 5, 9]
+          ],
+          [
+            [3, 3, 1],
+            [2, 9, 6, 8],
+            [3, 8, 3]
+          ],
+          [
+            [5, 7, 5],
+            [10, 1, 10, 8],
+            [10, 14, 10]
+          ],
+          [
+            [3, 3, 6],
+            [10, 9, 7, 3],
+            [2, 4, 2]
+          ]
+        ],
+        "features": [],
+        "hasState": false
+      },
+      "jackpots": null,
+      "bonusChance": null
+    }
+  },
+  {
+    "token": "db23b6e00877ad73f7a8214dfc5796f01b7afffbb1747e4931bf44d57532f3f61386735ffafd94652b352aa9d5c4d6cdc9befeae79657a1b10065b48e1b71f1a",
+    "sessionId": "0",
+    "playMode": "demo",
+    "gameId": "BassBoss",
+    "userData": {
+      "userId": 7427503,
+      "affiliate": "",
+      "lang": "en",
+      "channel": "I",
+      "userType": "U",
+      "fingerprint": "14b172bd-596f-476f-8a5b-b2a7d903cc43"
+    },
+    "custom": {
+      "siteId": "",
+      "extras": ""
+    },
+    "stake": 2,
+    "bonusId": null,
+    "extras": null
+  },
+  {
+    "success": true,
+    "result": {
+      "transactions": {
+        "roundId": 202900143
+      },
+      "user": {
+        "balance": {
+          "cash": {
+            "atStart": "112.00",
+            "afterBet": "110.00",
+            "atEnd": "110.00"
+          },
+          "freeBets": {
+            "atStart": "0.00",
+            "afterBet": "0.00",
+            "atEnd": "0.00"
+          },
+          "bonus": {
+            "atStart": "0.00",
+            "afterBet": "0.00",
+            "atEnd": "0.00"
+          },
+          "sessionCash": {
+            "atStart": "0.00",
+            "afterBet": "0.00",
+            "atEnd": "0.00"
+          },
+          "sessionFreeBets": {
+            "atStart": "0.00",
+            "afterBet": "0.00",
+            "atEnd": "0.00"
+          }
+        },
+        "canGamble": false,
+        "userId": 7427503,
+        "sessionId": "0",
+        "sessionNetPosition": "10.00",
+        "token": "db23b6e00877ad73f7a8214dfc5796f01b7afffbb1747e4931bf44d57532f3f61386735ffafd94652b352aa9d5c4d6cdc9befeae79657a1b10065b48e1b71f1a",
+        "bonuses": [],
+        "tournaments": [],
+        "vouchers": [],
+        "messages": [],
+        "limits": {
+          "betThresholdTime": 929
+        },
+        "serverTime": "2025-02-20 14:47:19"
+      },
+      "game": {
+        "win": {
+          "lines": "0.00",
+          "total": "0.00"
+        },
+        "winsMultipliers": {
+          "lines": "0.00",
+          "total": "0.00"
+        },
+        "stake": "2.00",
+        "multiplier": 1,
+        "winLines": [],
+        "spinMode": "Normal",
+        "fatTiles": [
+          {
+            "tileId": 11,
+            "reel": 4,
+            "index": 3,
+            "width": 1,
+            "height": 1,
+            "multiplier": 10,
+            "amount": "20.00"
+          }
+        ],
+        "actions": [
+          {
+            "type": "SwingStart",
+            "data": {
+              "multiplier": 1,
+              "index": 1
+            }
+          }
+        ],
+        "scatters": [],
+        "reelsBuffer": [
+          [
+            [2, 7, 9],
+            [2, 5, 5, 1],
+            [9, 6, 2]
+          ],
+          [
+            [6, 4, 2],
+            [5, 4, 7, 3],
+            [9, 9, 3]
+          ],
+          [
+            [4, 6, 1],
+            [4, 1, 6, 7],
+            [2, 5, 2]
+          ],
+          [
+            [5, 6, 3],
+            [4, 4, 5, 7],
+            [5, 5, 1]
+          ],
+          [
+            [7, 4, 6],
+            [4, 5, 3, 11],
+            [9, 5, 2]
+          ]
+        ],
+        "features": [],
+        "hasState": false
+      },
+      "jackpots": null,
+      "bonusChance": null
+    }
+  }
+]

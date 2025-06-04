@@ -2,9 +2,9 @@
   <div class="battles">
     <div class="battles-header">
       <BattlesHeaderOverview v-if="battlesGetRouteName === 'BattlesOverview'" />
-      <BattlesHeaderCreate v-else-if="battlesGetRouteName === 'BattlesCreate'" />
-      <BattlesHeaderGame v-else-if="battlesGetRouteName === 'BattlesGame'" />
-      <FunRizeRaces v-else-if="battlesGetRouteName === 'FunRizeRaces'" />
+      <BattlesHeaderCreate v-if="battlesGetRouteName === 'BattlesCreate'" />
+      <BattlesHeaderGame v-if="battlesGetRouteName === 'BattlesGame'" />
+      <FunRizeRaces v-if="battlesGetRouteName === 'FunRizeRaces'" />
     </div>
     <div class="battles-content">
       <transition name="slide-fade" mode="out-in">

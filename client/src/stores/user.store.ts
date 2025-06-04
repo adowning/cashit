@@ -111,6 +111,22 @@ export const useUserStore = defineStore('user', () => {
       }) as Promise<PaginatedResponse<LeaderboardUserSubset> | null>
     },
   })
+
+  // For getAllUserProfiles - a paginated query with search and sorting
+  const _getAllUserProfiles = useQuery({
+    key: () => ['user', 'getAllUserProfiles'],
+    query: async (context: any) => {
+      const { page, limit, search, orderBy, orderDirection } = context || {}
+      return orpcClient.user.getAllUserProfiles.call({
+        page: page || 1,
+        limit: limit || 50,
+        search,
+        orderBy: orderBy || 'createdAt',
+        orderDirection: orderDirection || 'desc',
+      }) as Promise<PaginatedResponse<SharedUserProfileType> | null>
+    },
+    enabled: computed(() => authStore.isAuthenticated),
+  })
   // --- Actions (now mostly trigger mutations or manage query parameters) ---
 
   async function updateUserProfile(
@@ -186,6 +202,26 @@ export const useUserStore = defineStore('user', () => {
       // To fetch specific page:
       await _getLeaderboard.refetch(true) // Pass variables directly
       return { success: true, data: _getLeaderboard.data.value }
+    } catch (e: any) {
+      return { success: false, error: normalizeError(e), data: null }
+    }
+  }
+
+  async function fetchAllUserProfiles(params?: {
+    page?: number
+    limit?: number
+    search?: string
+    orderBy?: 'username' | 'createdAt' | 'totalXpFromOperator'
+    orderDirection?: 'asc' | 'desc'
+  }): Promise<{
+    success: boolean
+    data?: PaginatedResponse<SharedUserProfileType> | null
+    error?: any
+  }> {
+    try {
+      // Refetch with the provided parameters
+      await _getAllUserProfiles.refetch(true)
+      return { success: true, data: _getAllUserProfiles.data.value }
     } catch (e: any) {
       return { success: false, error: normalizeError(e), data: null }
     }
@@ -269,6 +305,11 @@ export const useUserStore = defineStore('user', () => {
       isLoading: computed(() => _getLeaderboard.isLoading.value),
       error: computed(() => normalizeError(_getLeaderboard.error.value)),
     },
+    allUserProfilesState: {
+      data: computed(() => _getAllUserProfiles.data.value),
+      isLoading: computed(() => _getAllUserProfiles.isLoading.value),
+      error: computed(() => normalizeError(_getAllUserProfiles.error.value)),
+    },
 
     // Actions
     updateUserProfile,
@@ -276,6 +317,7 @@ export const useUserStore = defineStore('user', () => {
     setReferrerCode,
     fetchMyReferrals,
     fetchLeaderboard,
+    fetchAllUserProfiles,
     dispatchUserCashtag,
     clearActionError, // May need adjustment or removal
   }

@@ -215,8 +215,8 @@ export default class Table {
     processUpdates: boolean,
     processDeletes: boolean
   ): StringKeyMap[][] {
-    const events = []
-    const eventsNeedingResolution = []
+    const events: StringKeyMap[] = []
+    const eventsNeedingResolution: StringKeyMap[] = []
     let i = 0
     for (const pendingEvent of pendingEvents) {
       // Filter events based on which operations actually have subscriptions.
@@ -244,7 +244,7 @@ export default class Table {
     const sortedPrimaryKeyColNames = Object.keys(eventsNeedingResolution[0]?.primaryKeyData).sort()
 
     const eventsByPrimaryKeys: StringKeyMap = {}
-    const eventPrimaryKeyData = []
+    const eventPrimaryKeyData: StringKeyMap[] = []
     for (const event of eventsNeedingResolution) {
       const primaryKeyData = event.primaryKeyData || {}
       eventPrimaryKeyData.push(primaryKeyData)
@@ -280,14 +280,14 @@ export default class Table {
   }
 
   async _getRecordsWhere(tablePath: string, whereGroups: StringKeyMap[]): Promise<StringKeyMap[]> {
-    const bindings = []
-    const orStatements = []
+    const bindings: any[] = []
+    const orStatements: any[] = []
     let i = 1
 
     // Build the query -- where (A and B) or (C and D) or ...
     for (const params of whereGroups) {
       if (!params) continue
-      const andStatements = []
+      const andStatements: any[] = []
       for (const colName in params) {
         andStatements.push(`${formatRelation(colName)} = $${i}`)
         bindings.push(params[colName])
@@ -323,9 +323,9 @@ export default class Table {
   }
 
   _splitEventsByOperation(allEvents: Event[]): Event[][] {
-    const inserts = []
-    const updates = []
-    const deletes = []
+    const inserts: any[] = []
+    const updates: any[] = []
+    const deletes: any[] = []
     for (const event of allEvents) {
       switch (event.operation) {
         case Operation.INSERT:

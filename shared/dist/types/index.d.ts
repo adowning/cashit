@@ -11,6 +11,7 @@ export * from './deposit';
 export * from './event';
 export * from './game';
 export * from './invite';
+export * from './jackpot';
 export * from './mail';
 export * from './prisma';
 export * from './promo';

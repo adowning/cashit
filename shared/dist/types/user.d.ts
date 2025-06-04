@@ -1,4 +1,5 @@
 import type { PrismaUserProfile, PrismaTournamentReward } from './prisma';
+import { PrismaTransactionType } from './prisma';
 export type Email = string;
 export type Username = string;
 /**
@@ -108,6 +109,14 @@ export interface UserBalanceDetails {
     available_balance: string;
     real_balance: string;
     bonus_balance: string;
+}
+export interface UserBalanceUpdatePayload {
+    userId: string;
+    newBalance: number;
+    table: string;
+    changeAmount: number;
+    transactionType: PrismaTransactionType;
+    relatedTransactionId: string;
 }
 /**
  * DTO representing the user's detailed VIP status and benefits.

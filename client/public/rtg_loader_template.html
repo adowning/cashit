@@ -52,17 +52,20 @@
             isAuthTokenReceived = true
             console.log('[RTG Loader] Auth token received.')
             tryInitializeBridge()
-            window.removeEventListener('message', receiveAuthToken) // Process only once
+            // window.removeEventListener('message', receiveAuthToken) // Process only once
+          } else {
+            console.log('event listener message >>. ', event)
           }
         })
-
+        window.addEventListener('message', console.log(event))
         window.com = window.com || {}
         window.com.casino = window.com.casino || {}
         const casino = window.com.casino
         const urlParams = new URLSearchParams(window.location.search)
 
         // --- Default & URL Parameter Parsing ---
-        const gameId = urlParams.get('gameId') || '777Strike' // Fallback, but should be provided
+        const gameId = urlParams.get('gameName').replace('RTG', '') // Fallback, but should be provided
+        console.log(gameId)
         const lang = urlParams.get('lang') || 'en'
         const currency = urlParams.get('currency') || 'USD'
         const operator = urlParams.get('operator') || 'redtiger'
@@ -186,8 +189,11 @@
             // Construct RGS API URL now that we have authUserId
             const rgsApiBasePath =
               urlParams.get('rgsApiBase') ||
-              `/api/spin-data/${localPreconfig.bridge.operator}/platform`
+              `/rpc/spin-data/${localPreconfig.bridge.operator}/platform`
             localPreconfig.server.rgsApi = `${rgsApiBasePath}/${authToken}/${localPreconfig.server.launchParams.gameId}/`
+
+            // console.log(urlParams.get('rgsApiBase'))
+            // console.log(localPreconfig.server.rgsApi)
 
             casino.preconfig = localPreconfig // Assign the fully prepared config
 

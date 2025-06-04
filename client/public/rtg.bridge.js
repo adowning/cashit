@@ -9556,6 +9556,17 @@
             {
               key: 'action',
               value: function (e, t) {
+                console.log('here')
+                console.log(e)
+                console.log(t)
+          // parent.postMessage('asdf', '*') // In production, specify parent origin
+
+            window.parent.postMessage(
+                              {
+                                type: 'action',
+                              },
+                              '*'
+                            )
                 return this._app.action(e, t)
               },
             },

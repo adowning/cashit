@@ -30,7 +30,10 @@
     <!-- <div style="line-height: .5;padding-top: 10px; padding-bottom: 3px; padding-left: 10px; padding-right: 10px  ">
       {{ text }}
     </div> -->
-    <slot class="primary-text" />
+    <!-- <slot class="primary-text" /> -->
+    <div class="text-3xl flex onacona px-1">
+      <slot />
+    </div>
   </div>
   <div v-else>
     <div

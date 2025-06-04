@@ -28,6 +28,7 @@ model Transaction {
   operatorId          String?
   products            Product[]
   rebateGenerated     RebateTransaction?
+  jackpotWins         JackpotWin[]
   Operator            Operator?          @relation(fields: [operatorId], references: [id])
   product             Product?           @relation("TransactionProduct", fields: [productId], references: [id])
   UserProfile         UserProfile?       @relation(fields: [userProfileId], references: [id])
@@ -75,7 +76,7 @@ model Wallet {
   operator      Operator      @relation(fields: [operatorId], references: [id], onDelete: Cascade)
   user          UserProfile   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, paymentMethod])
+  @@unique(name: "userOperator", [userId, operatorId])
   @@map("wallets")
 }
 
@@ -107,6 +108,8 @@ enum TransactionType {
   INTERNAL_TRANSFER
   PRODUCT_PURCHASE
   REBATE_PAYOUT
+  JACKPOT_WIN
+  JACKPOT_CONTRIBUTION
 }
 
 enum TransactionStatus {

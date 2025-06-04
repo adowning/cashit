@@ -277,12 +277,12 @@ export function messageSchema<
   return finalSchema
 }
 
-export const TournamentLeaderboardUpdateEvent = z.object({
-  table: z.string(),
-  operation: z.enum(['INSERT', 'UPDATE', 'DELETE']),
-  recordId: z.union([z.string(), z.number(), z.null()]).optional(), // Allow string/number/null IDs
-  data: z.record(z.any()).nullable(), // The row data (can be null on DELETE))
-})
+// export const TournamentLeaderboardUpdateEvent = z.object({
+//   table: z.string(),
+//   operation: z.enum(['INSERT', 'UPDATE', 'DELETE']),
+//   recordId: z.union([z.string(), z.number(), z.null()]).optional(), // Allow string/number/null IDs
+//   data: z.record(z.any()).nullable(), // The row data (can be null on DELETE))
+// })
 // New WebSocket Message Schemas for Tournaments
 export const TournamentStartedEvent = messageSchema(
   'TOURNAMENT_STARTED_WS', // WebSocket message type, distinct from AppEvents enum value

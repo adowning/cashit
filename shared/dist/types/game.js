@@ -1,8 +1,4 @@
 "use strict";
-// Suggested content for: ai_folder/packages/types/src/interface/game.ts
-// This file should be reviewed to ensure RTGSpinResponseDto, RtgSpinResult,
-// ProviderSpinResponseData, and ProviderSettingsResponseData are consistent
-// and that Provider types can be safely cast or mapped to RtgSpinResult/RtgSettingsResult.
 Object.defineProperty(exports, "__esModule", { value: true });
 // export type GetPrismaGameFavoriteListResponse = {
 //   code: number

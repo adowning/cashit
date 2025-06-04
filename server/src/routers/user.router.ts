@@ -50,7 +50,7 @@ export const userRouter = {
   getCurrentUser: protectedProcedure
     // .input(UpdateUserInputSchema)
     .handler(async ({ context }): Promise<PrismaUserProfileType> => {
-      console.log('getCurrentUser', context.session.user.id, 'getCurrentUser')
+      // console.log('getCurrentUser', context.session.user.id, 'getCurrentUser')
       const id = context.session.user.id
       if (!context.session?.user?.id) {
         throw new Error('User not authenticated')
@@ -61,14 +61,14 @@ export const userRouter = {
         //   wallets: true, // Example: include necessary relations for the full user context
         // },
       })
-      console.log('userProfile', userProfile?.id)
+      // console.log('userProfile', userProfile?.id)
       const userProfiles = await _prisma.userProfile.findMany()
-      console.log('userProfile', userProfiles?.length)
+      // console.log('userProfile', userProfiles?.length)
 
       if (!userProfile) {
         throw new Error('UserProfile not found for authenticated user.')
       }
-      console.log('userProfile', userProfile.id)
+      // console.log('userProfile', userProfile.id)
       return userProfile
     }),
 
@@ -151,7 +151,7 @@ export const userRouter = {
         throw new Error('User not authenticated')
       }
       // ... (Your implementation for setting referrer)
-      console.log(`User ${context.session.user.id} set referrer with code: ${input.referrerCode}`)
+      // console.log(`User ${context.session.user.id} set referrer with code: ${input.referrerCode}`)
       return { success: true, message: 'Set referrer logic TBD' }
     }),
 
@@ -200,5 +200,58 @@ export const userRouter = {
       })
       const total = await _prisma.userProfile.count()
       return { items, total, page, limit, totalPages: Math.ceil(total / limit) }
+    }),
+
+  getAllUserProfiles: protectedProcedure
+    .input(
+      z.object({
+        page: z.number().min(1).optional().default(1),
+        limit: z.number().min(1).max(100).optional().default(50),
+        search: z.string().optional(),
+        orderBy: z
+          .enum(['username', 'createdAt', 'totalXpFromOperator'])
+          .optional()
+          .default('createdAt'),
+        orderDirection: z.enum(['asc', 'desc']).optional().default('desc'),
+      })
+    )
+    .handler(async ({ input }): Promise<PaginatedResponseType<PrismaUserProfileType>> => {
+      const { page, limit, search, orderBy, orderDirection } = input
+      const skip = (page - 1) * limit
+
+      // Build where clause for search
+      const where: Prisma.UserProfileWhereInput = search
+        ? {
+            OR: [
+              { username: { contains: search, mode: 'insensitive' } },
+              { cashtag: { contains: search, mode: 'insensitive' } },
+            ],
+          }
+        : {}
+
+      // Build orderBy clause
+      const orderByClause: Prisma.UserProfileOrderByWithRelationInput = {
+        [orderBy]: orderDirection,
+      }
+
+      const items = await _prisma.userProfile.findMany({
+        where,
+        orderBy: orderByClause,
+        skip,
+        take: limit,
+        include: {
+          wallets: true, // Include wallet information if needed
+        },
+      })
+
+      const total = await _prisma.userProfile.count({ where })
+
+      return {
+        items,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      }
     }),
 }
