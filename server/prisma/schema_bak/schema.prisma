@@ -1,0 +1,22 @@
+generator client {
+  provider     = "prisma-client"
+  output       = "../generated"
+  moduleFormat = "esm"
+}
+
+generator typescriptInterfaces {
+  provider          = "ts-node ../node_modules/.bin/prisma-generator-typescript-interfaces"
+  output            = "../../../shared/src/types/prisma.ts"
+  client            = "../generated"
+  enumPrefix        = "Prisma"
+  modelPrefix       = "Prisma"
+  modelType         = "type"
+  optionalRelations = "true"
+  prettier          = "true"
+}
+
+datasource db {
+  provider  = "postgres"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}

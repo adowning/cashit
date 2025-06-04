@@ -1,0 +1,61 @@
+model Jackpot {
+  id                    String      @id @default(cuid())
+  type                  JackpotType
+  currentAmountCoins    Int         @default(0) // Amount in coins (100 coins = $1)
+  seedAmountCoins       Int         @default(0) // Base amount when reset
+  minimumBetCoins       Int         @default(1) // Minimum bet to be eligible
+  contributionRateBasisPoints Int   @default(0) // Rate in basis points (10000 = 100%)
+  probabilityPerMillion Int         @default(0) // Probability per million spins
+  minimumTimeBetweenWinsMinutes Int @default(0) // Minimum time between wins
+  lastWonAt             DateTime?
+  lastWonBy             String?     // UserProfile ID
+  isActive              Boolean     @default(true)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  
+  // Relations
+  contributions         JackpotContribution[]
+  wins                  JackpotWin[]
+  lastWinner            UserProfile? @relation("JackpotLastWinner", fields: [lastWonBy], references: [id])
+  
+  @@map("jackpots")
+}
+
+model JackpotContribution {
+  id                    String   @id @default(cuid())
+  jackpotId             String
+  gameSpinId            String   // Each spin can contribute to multiple jackpots
+  contributionAmountCoins Int    // Amount in coins contributed to this jackpot
+  createdAt             DateTime @default(now())
+  
+  // Relations
+  jackpot               Jackpot  @relation(fields: [jackpotId], references: [id])
+  gameSpin              GameSpin @relation(fields: [gameSpinId], references: [id])
+  
+  @@unique([jackpotId, gameSpinId]) // Prevent duplicate contributions per spin per jackpot
+  @@map("jackpot_contributions")
+}
+
+model JackpotWin {
+  id                    String      @id @default(cuid())
+  jackpotId             String
+  winnerId              String
+  winAmountCoins        Int         // Amount won in coins
+  gameSpinId            String      @unique // The spin that triggered the win
+  transactionId         String?     // Transaction that paid out the win
+  createdAt             DateTime    @default(now())
+  
+  // Relations
+  jackpot               Jackpot     @relation(fields: [jackpotId], references: [id])
+  winner                UserProfile @relation(fields: [winnerId], references: [id])
+  gameSpin              GameSpin    @relation(fields: [gameSpinId], references: [id])
+  transaction           Transaction? @relation(fields: [transactionId], references: [id])
+  
+  @@map("jackpot_wins")
+}
+
+enum JackpotType {
+  MINOR
+  MAJOR  
+  GRAND
+}

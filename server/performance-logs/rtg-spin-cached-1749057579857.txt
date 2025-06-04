@@ -1,0 +1,57 @@
+
+=== CACHED RTG SPIN PERFORMANCE LOG ===
+Timestamp: 2025-06-04T17:19:39.857Z
+User ID: lhL30ZMSSK9r1lzpyjjJ4vyJtqxarBZj
+Game ID: BassBossRTG
+Success: true
+CacheDatabase Used: DragonflyDB
+
+
+JACKPOT PROCESSING (Phase 4.5 - Asynchronous):
+- Processing Mode: Asynchronous (Non-blocking)
+- Jackpot Contributions: Processing asynchronously
+- Total Contribution: Processing asynchronously
+- Jackpot Win: Processing asynchronously
+- Performance Impact: Zero (jackpot processing doesn't block spin response)
+
+
+CACHED PERFORMANCE METRICS (Bun.sql + Redis):
+- Total Execution Time: 673.61ms
+- User Profile Query (Cached): 0.02ms
+- Game Query (Cached): 2.49ms
+- Session Query (Cached): 92.79ms
+- Wallet Query (Cached): 84.13ms
+- RGS Call Time: 0.11ms
+- Cached Transaction (Bun.sql): 491.26ms
+
+CACHE PERFORMANCE (Metrics from CacheService):
+- Cache Hit Rate: 70.83%
+- Cache Hits: 119
+- Cache Misses: 49
+- Cache Avg Response Time: 3.33ms
+- Cache Errors: 0
+
+PERFORMANCE IMPROVEMENT vs BASELINE:
+- Target: <300ms total execution time
+- Previous Baseline: ~3800ms average (example value)
+- Previous Optimized: ~580ms average (example value)
+- Current Cached: 673.61ms
+- Improvement vs Baseline: 82.27% (example calculation)
+- Improvement vs Optimized: -16.14% (example calculation)
+
+CACHED PERFORMANCE BREAKDOWN:
+- Database Operations (incl. transaction): 99.57%
+- RGS Call: 0.02%
+- Cache Operations (estimated): 0.42%
+
+OPTIMIZATION TECHNIQUES APPLIED:
+✅ Bun.sql native PostgreSQL driver
+✅ DragonflyDB caching layer (via cacheService)
+✅ Single atomic transaction block
+✅ Intelligent cache invalidation
+✅ Cache warming capabilities (via cacheService.warmCache)
+✅ Performance metrics tracking
+✅ Retry mechanism for transient "prepared statement" DB errors
+✅ Phase 4.5: Asynchronous jackpot processing (non-blocking)
+
+=====================================

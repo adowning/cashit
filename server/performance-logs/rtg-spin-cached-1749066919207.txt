@@ -1,0 +1,52 @@
+
+=== CACHED RTG SPIN PERFORMANCE LOG ===
+Timestamp: 2025-06-04T19:55:19.207Z
+User ID: 8HRRl5WFsjFTdv9bxjFmmL1z1AeKGZlw
+Game ID: BassBossRTG
+Success: false
+CacheDatabase Used: DragonflyDB 
+Error: PostgresError [ERR_POSTGRES_SERVER_ERROR]: column "updatedAt" of relation "wallets" does not exist
+
+
+CACHED PERFORMANCE METRICS (Bun.sql + Redis):
+- Total Execution Time: 44.57ms
+- User Profile Query (Cached): 3.86ms
+- Game Query (Cached): 0.00ms
+- Session Query (Cached): 0.00ms
+- Wallet Query (Cached): 0.00ms
+- RGS Call Time: 0.00ms
+- Cached Transaction (Bun.sql): 0.00ms
+
+CACHE PERFORMANCE (Metrics from CacheService):
+- Cache Hit Rate: 73.08%
+- Cache Hits: 19
+- Cache Misses: 7
+- Cache Avg Response Time: 0.80ms
+- Cache Errors: 0
+
+PERFORMANCE IMPROVEMENT vs BASELINE:
+- Target: <300ms total execution time
+- Previous Baseline: ~3800ms average (example value)
+- Previous Optimized: ~580ms average (example value)
+- Current Cached: 44.57ms
+- Improvement vs Baseline: 98.83% (example calculation)
+- Improvement vs Optimized: 92.32% (example calculation)
+
+CACHED PERFORMANCE BREAKDOWN:
+- Database Operations (incl. transaction): 8.66%
+- RGS Call: 0.00%
+- Cache Operations (estimated): 91.34%
+
+OPTIMIZATION TECHNIQUES APPLIED:
+✅ Bun.sql native PostgreSQL driver
+✅ DragonflyDB caching layer (via cacheService)
+✅ Single atomic transaction block
+✅ Intelligent cache invalidation
+✅ Asynchronous Cache warming capabilities (via cacheService.warmCache)
+✅ Performance metrics tracking
+✅ Retry mechanism for transient "prepared statement" DB errors
+✅ Phase 4.5: Asynchronous jackpot processing (non-blocking)
+✅ Parallelized initial data fetches
+✅ Asynchronous performance logging
+
+=====================================

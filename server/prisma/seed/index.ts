@@ -12,7 +12,6 @@ import {
   GameProvider as PrismaGameProvider,
   Game as PrismaGame,
   Product as PrismaProduct,
-  Todo as PrismaTodo,
   Tournament as PrismaTournament,
   GameSession as PrismaGameSession,
   GameSpin as PrismaGameSpin,
@@ -36,7 +35,6 @@ import { seedGameProviders } from './seedGameProviders'
 // import { seedGameLaunchLinks } from './seedGames'; // File 'seedGames.ts' exports 'seedGameLaunchLinks'
 import { seedGameSessionsAndSpins } from './seedGameSessionsAndSpins'
 import { seedTournaments } from './seedTournaments'
-import { seedTodos } from './seedTodo'
 // seedCurrency.ts is removed as Currency model is deprecated
 
 const prisma = new PrismaClient()
@@ -164,11 +162,16 @@ FOR EACH ROW EXECUTE FUNCTION notify_spec_data_change()`,
   }
 }
 const tableNames = [
-  'TournamentGamePlay',
-  'TournamentReward',
-  'TournamentParticipant',
-  'TournamentGame',
-  'Tournament',
+  // 'TournamentGamePlay',
+  // 'TournamentReward',
+  // 'TournamentParticipant',
+  // 'TournamentGame',
+  // 'Tournament',
+  'game_providers',
+  'game_sessions',
+  'game_spins',
+  'game_launch_links',
+  'operators',
   'game_spins',
   'game_launch_links',
   'game_sessions',
@@ -178,25 +181,11 @@ const tableNames = [
   'products',
   'vip_infos',
   'user_profiles',
-  'xp_events',
   'operator_invitations',
   'session',
   'account',
   'user',
-  'operator', // This should be 'operator' if table name mapped
-  'game_providers',
   'games',
-  'currencies', // This table should be removed if model is deprecated
-  'achievements',
-  'user_achievements',
-  'notifications',
-  'chat_messages',
-  'friendships',
-  'posts',
-  'comments',
-  'event_log',
-  'verification',
-  'todo',
 ]
 
 // Adjust tableNames: remove 'currencies', change 'operator_access' to 'operator' (or actual DB table name)
@@ -308,11 +297,13 @@ async function main() {
   // --- Load Games (from games2.json via loadgames.ts) ---
   // loadGames expects (prisma, key: { id: string })
   let loadedGamesFromJSON: PrismaGame[] = []
+  console.log(mainOperator.id)
   try {
     loadedGamesFromJSON = (await loadGames(prisma, { id: mainOperator.id })) as PrismaGame[]
-    console.log(`Loaded ${loadedGamesFromJSON.length} games using loadgames.ts.`)
-  } catch (e) {
-    console.error('Error loading games with loadgames.ts:', e)
+    // console.log(`Loaded ${loadedGamesFromJSON.length} games using loadgames.ts.`)
+  } catch (e: any) {
+    console.log(e)
+    throw new Error('Error loading games with loadgames.ts:', e)
   }
 
   const allGamesFromDb = await prisma.game.findMany({ where: { operatorId: mainOperator.id } })

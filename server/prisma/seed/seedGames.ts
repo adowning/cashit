@@ -39,7 +39,7 @@ export async function seedGameLaunchLinks(
         userId: profile.userId,
         gameId: randomGame.id,
         operatorId: mainOperator?.id as string,
-        token_internal: faker.string.uuid() + faker.string.alphanumeric(10),
+        tokenInternal: faker.string.uuid() + faker.string.alphanumeric(10),
         currency: profile.activeCurrencyType,
         mode: faker.helpers.arrayElement(['real', 'demo']),
         state: 'SESSION_INIT',
@@ -47,7 +47,7 @@ export async function seedGameLaunchLinks(
         expiresAt: faker.date.future({ years: 1 }),
         requestIp: faker.internet.ip(),
         userAgent: faker.internet.userAgent(),
-        session_url: `https://casino.example.com/launch/${randomGame.name}?token=${faker.string.alphanumeric(32)}`,
+        sessionUrl: `https://casino.example.com/launch/${randomGame.name}?token=${faker.string.alphanumeric(32)}`,
         meta: { platform: faker.helpers.arrayElement(['desktop', 'mobile']), language: 'en' },
         userProfileId: profile.id,
       }

@@ -16,7 +16,6 @@ generator typescriptInterfaces {
 }
 
 datasource db {
-  provider  = "postgres"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgres"
+  url      = env("DATABASE_URL")
 }

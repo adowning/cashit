@@ -16,16 +16,16 @@ model UserProfile {
   operatorId            String?                 @map("operator_id")
   currentGameSessionid  String?                 @map("current_game_sessionid")
   vipInfoId             String                  @unique @map("vip_info_id")
-  Tournament            Tournament[]
-  TournamentParticipant TournamentParticipant[]
-  TournamentReward      TournamentReward[]      @relation("TournamentWinner")
+  tournament            Tournament[]
+  tournamentParticipant TournamentParticipant[]
+  tournamentReward      TournamentReward[]      @relation("TournamentWinner")
   gameLaunchLink        GameLaunchLink[]
   pastGameSessions      GameSession[]           @relation("UserGameSessions")
+  jackpotWins           JackpotWin[]
+  lastJackpotWon        Jackpot[]               @relation("JackpotLastWinner")
   operatorInvitations   OperatorInvitation[]    @relation("ReceivedInvitations")
   rebateTransactions    RebateTransaction[]
   transactions          Transaction[]
-  jackpotWins           JackpotWin[]
-  lastJackpotWon        Jackpot[]               @relation("JackpotLastWinner")
   currentGameSession    GameSession?            @relation(fields: [currentGameSessionid], references: [id])
   vipInfo               VipInfo                 @relation(fields: [vipInfoId], references: [id])
   wallets               Wallet[]

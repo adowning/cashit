@@ -1,0 +1,174 @@
+model Game {
+  id                   String             @id @default(cuid())
+  name                 String
+  title                String
+  goldsvetData         Json?
+  description          String?
+  supportedProviders   GameProviderName[]
+  category             GameCategory
+  tags                 String[]
+  isActive             Boolean            @default(true)
+  thumbnailUrl         String?
+  bannerUrl            String?
+  meta                 Json?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  featured             Boolean            @default(false)
+  providerName         String?
+  totalWagered         Int                @default(0)
+  gameProviderId       String?
+  operatorId           String?
+  tournamentDirectives Json?
+  status               Boolean            @default(true)
+  checked              Boolean            @default(false)
+  TournamentGames      TournamentGames[]
+  gameLaunchLinks      GameLaunchLink[]
+  gameSessions         GameSession[]
+  gameProvider         GameProvider?      @relation(fields: [gameProviderId], references: [id])
+  operator             Operator?          @relation(fields: [operatorId], references: [id])
+
+  @@map("games")
+}
+
+model GameSession {
+  id                      String        @id @default(cuid())
+  isActive                Boolean       @default(false)
+  sessionData             Json?
+  authSessionId           String?
+  currencyId              String?
+  startedAt               DateTime      @default(now())
+  endTime                 DateTime?
+  startTime               DateTime?
+  ipAddress               String?
+  startingBalance         Int?          @default(0)
+  startingTotalXp         Int?          @default(0)
+  userAgent               String?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+  totalWagered            Int           @default(0)
+  totalWon                Int           @default(0)
+  userId                  String
+  gameId                  String
+  rtgToken                String?
+  rtgFingerPrint          String?
+  profileId               String?
+  game                    Game          @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  refferenceToUserProfile UserProfile   @relation("UserGameSessions", fields: [userId], references: [id], onDelete: Cascade)
+  spins                   GameSpin[]
+  UserProfile             UserProfile[]
+
+  @@map("game_sessions")
+}
+
+model GameSpin {
+  id             String      @id @default(cuid())
+  spinData       Json?
+  createdAt      DateTime    @default(now())
+  grossWinAmount Int         @default(0)
+  currencyId     String?
+  spinNumber     Int         @default(0)
+  gameSessionId  String
+  wagerAmount    Int         @default(0)
+  sessionId      String
+  timeStamp      DateTime
+  gameSession    GameSession @relation(fields: [gameSessionId], references: [id], onDelete: Cascade)
+
+  // Jackpot relations
+  jackpotContributions JackpotContribution[]
+  jackpotWin           JackpotWin?
+
+  @@map("game_spins")
+}
+
+model GameProvider {
+  id              String           @id @default(cuid())
+  name            String           @unique
+  displayName     String?
+  rgsBaseUrl      String
+  settingsPath    String?
+  spinPath        String?
+  resolveBetPath  String?
+  providerRoundId String?
+  authType        ProviderAuthType @default(API_KEY)
+  apiKey          String?
+  apiSecret       String?
+  publicKey       String?
+  privateKeyRef   String?
+  configJson      Json?            @default("{}")
+  isActive        Boolean          @default(true)
+  notes           String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  games           Game[]
+
+  @@index([name])
+  @@index([isActive])
+  @@map("game_providers")
+}
+
+model GameLaunchLink {
+  id                 String       @id @default(cuid())
+  token_internal     String       @unique @default(cuid())
+  currency           String
+  player_operator_id String?
+  mode               String
+  meta               Json?
+  requestIp          String?      @map("request_ip")
+  userAgent          String?      @map("user_agent")
+  session_url        String?      @unique
+  state              String       @default("SESSION_INIT")
+  active             Boolean      @default(true)
+  expiresAt          DateTime?    @map("expires_at")
+  extra_meta         Json?
+  token_original     String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  userId             String
+  gameId             String
+  operatorId         String
+  userProfileId      String?
+  game               Game         @relation(fields: [gameId], references: [id], onDelete: NoAction)
+  operator           Operator     @relation(fields: [operatorId], references: [id], onDelete: NoAction)
+  UserProfile        UserProfile? @relation(fields: [userProfileId], references: [id])
+
+  @@map("game_launch_links")
+}
+
+enum GameCategory {
+  FISH
+  POKER
+  SLOTS
+  TABLE_GAMES
+  LIVE_CASINO
+  SPORTSBOOK
+  VIRTUAL_SPORTS
+  LOTTERY
+  CRASH
+  OTHER
+}
+
+enum GameProviderName {
+  PRAGMATICPLAY
+  EVOPLAY
+  NETENT
+  PLAYNGO
+  RELAXGAMING
+  HACKSAW
+  BGAMING
+  SPRIBE
+  INTERNAL
+  REDTIGER
+  NETGAME
+  BIGFISHGAMES
+  CQNINE
+  NOLIMIT
+  KICKASS
+}
+
+enum ProviderAuthType {
+  API_KEY
+  OAUTH2
+  JWT_SIGN
+  CUSTOM
+  NONE
+}

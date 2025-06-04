@@ -1,0 +1,134 @@
+model Transaction {
+  id                  String             @id @default(cuid())
+  processedAt         DateTime?
+  walletId            String?
+  type                TransactionType
+  status              TransactionStatus  @default(PENDING)
+  amount              Int
+  netAmount           Int?
+  feeAmount           Int?
+  productId           String?
+  paymentMethod       PaymentMethod?
+  balanceBefore       Int?
+  balanceAfter        Int?
+  bonusBalanceBefore  Int?
+  bonusBalanceAfter   Int?
+  bonusAmount         Int?
+  wageringRequirement Int?
+  wageringProgress    Int?
+  description         String?
+  provider            String?
+  providerTxId        String?
+  relatedGameId       String?
+  relatedRoundId      String?
+  metadata            Json?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  userProfileId       String?
+  operatorId          String?
+  products            Product[]
+  rebateGenerated     RebateTransaction?
+  jackpotWins         JackpotWin[]
+  Operator            Operator?          @relation(fields: [operatorId], references: [id])
+  product             Product?           @relation("TransactionProduct", fields: [productId], references: [id])
+  UserProfile         UserProfile?       @relation(fields: [userProfileId], references: [id])
+  wallet              Wallet?            @relation(fields: [walletId], references: [id])
+
+  @@index([walletId])
+  @@index([provider, providerTxId])
+  @@index([paymentMethod])
+  @@index([createdAt])
+  @@map("transactions")
+}
+
+model RebateTransaction {
+  id                  String       @id @default(cuid())
+  userId              String
+  transactionId       String       @unique
+  rebateAmount        Float
+  currencyId          String
+  vipLevel            Int
+  rebatePercentage    Float
+  status              RewardStatus @default(PENDING)
+  paidOutAt           DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+  originalTransaction Transaction  @relation(fields: [transactionId], references: [id])
+  user                UserProfile  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+  @@map("rebate_transactions")
+}
+
+model Wallet {
+  id            String        @id @default(cuid())
+  balance       Float         @default(0.0)
+  isActive      Boolean       @default(true)
+  address       String?       @unique
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  userId        String
+  operatorId    String
+  paymentMethod PaymentMethod
+  bonusBalance  Int           @default(0)
+  lockedBalance Int           @default(0)
+  transactions  Transaction[]
+  operator      Operator      @relation(fields: [operatorId], references: [id], onDelete: Cascade)
+  user          UserProfile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique(name: "userOperator", [userId, operatorId])
+  @@map("wallets")
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  BET
+  WIN
+  TRANSFER_SENT
+  TRANSFER_RECEIVED
+  SYSTEM_ADJUSTMENT_CREDIT
+  SYSTEM_ADJUSTMENT_DEBIT
+  TOURNAMENT_BUYIN
+  TOURNAMENT_PRIZE
+  AFFILIATE_COMMISSION
+  REFUND
+  FEE
+  BONUS_AWARD
+  BET_PLACE
+  BET_WIN
+  BET_LOSE
+  BET_REFUND
+  BONUS_WAGER
+  BONUS_CONVERT
+  BONUS_EXPIRED
+  XP_AWARD
+  ADJUSTMENT_ADD
+  ADJUSTMENT_SUB
+  INTERNAL_TRANSFER
+  PRODUCT_PURCHASE
+  REBATE_PAYOUT
+  JACKPOT_WIN
+  JACKPOT_CONTRIBUTION
+}
+
+enum TransactionStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  CANCELLED
+  REFUNDED
+  EXPIRED
+  REJECTED
+  REQUIRES_ACTION
+  ON_HOLD
+}
+
+enum RewardStatus {
+  AVAILABLE
+  CLAIMED
+  EXPIRED
+  PENDING
+  VOIDED
+}

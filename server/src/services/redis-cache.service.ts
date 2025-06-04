@@ -7,6 +7,7 @@ export const CACHE_KEYS = {
   GAME_SESSION: 'game_session',
   WALLET: 'wallet',
   PROVIDER_CONFIG: 'provider_config',
+  JACKPOTS: 'jackpots', // Phase 4: Added for jackpot caching
 } as const
 
 // Cache TTL values in seconds - Optimized based on performance analysis

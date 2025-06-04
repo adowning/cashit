@@ -14,9 +14,10 @@ export async function seedOperators(prisma: PrismaClient): Promise<Operator> {
     const hashedSecret = await bcrypt.hash('supersecretoperatorpassword', 10)
     operator = await prisma.operator.create({
       data: {
+        id: faker.string.alphanumeric(10),
         name: operatorName,
-        operator_secret: hashedSecret,
-        operator_access: 'internal_services', // Example access level
+        operatorSecret: hashedSecret,
+        operatorAccess: 'internal_services', // Example access level
         callbackUrl: faker.internet.url(),
         active: true,
         permissions: [
@@ -33,6 +34,7 @@ export async function seedOperators(prisma: PrismaClient): Promise<Operator> {
           PaymentMethod.INSTORE_CARD,
           PaymentMethod.INSTORE_CASH,
         ],
+        updatedAt: new Date(),
       },
     })
     console.log(`Created operator: ${operator.name}`)

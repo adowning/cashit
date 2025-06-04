@@ -6,7 +6,7 @@ import { gameRouter } from './game.router'
 import { transactionRouter } from './transaction'
 import { tournamentRouter } from './tournament.router'
 import { jackpotRouter } from './jackpot.router'
-import { pragmaticRouter } from '../services/pragmatic/pragmatic-game.routes'
+// import { pragmaticRouter } from '../services/pragmatic/pragmatic-game.routes'
 
 export { WebSocketRouter } from './socket.router'
 
@@ -26,7 +26,7 @@ export const appRouter = {
   tournament: tournamentRouter,
   game: gameRouter,
   jackpot: jackpotRouter,
-  pragmatic: pragmaticRouter,
+  // pragmatic: pragmaticRouter,
 }
 export type AppRouter = typeof appRouter
 

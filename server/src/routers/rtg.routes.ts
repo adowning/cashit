@@ -76,6 +76,7 @@ export class RtgApi {
   }
 
   private async rtgSettings(c: Context) {
+    console.log(c.env.context)
     const user = c.env.context.user
     const gameName = c.req.param('gameName')
 

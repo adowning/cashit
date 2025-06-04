@@ -30,8 +30,9 @@ export default async function loadGames(prisma: PrismaClient, key: OperatorKey):
         skipDuplicates: true,
       })
       console.log(`Inserted/skipped ${gamesToInsert.length} games from games2.json.`)
-    } catch (error) {
-      console.error('Error inserting games from games2.json:', error)
+    } catch (error: any) {
+      console.error('Error inserting games from games2.json:')
+      throw new Error(error)
     }
   }
 
@@ -100,8 +101,8 @@ export default async function loadGames(prisma: PrismaClient, key: OperatorKey):
       }
     })
     game.goldsvetData = goldsvetData
-
-    // Ensure required fields have defaults if not present
+    console.log(providerEnumKey)
+    // Ensure required fields have defa ults if not present
     game.name = game.name || game.title || `Unknown Game ${faker.string.uuid()}`
     game.title = game.title || game.name
     game.supportedProviders =

@@ -1,0 +1,67 @@
+model Tournament {
+  id              String                  @id @default(cuid())
+  name            String
+  description     String?
+  startTime       DateTime
+  endTime         DateTime?
+  targetScore     Int?
+  status          TournamentStatus        @default(PENDING)
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+  createdByid     String?
+  userId          String?
+  user            UserProfile?            @relation(fields: [userId], references: [id])
+  participants    TournamentParticipant[]
+  rewards         TournamentReward[]
+  TournamentGames TournamentGames[]
+
+  @@index([status, startTime, endTime])
+}
+
+model TournamentParticipant {
+  id           String               @id @default(cuid())
+  tournamentId String
+  userId       String
+  score        Int                  @default(0)
+  rank         Int?
+  joinedAt     DateTime             @default(now())
+  gamePlays    TournamentGamePlay[]
+  tournament   Tournament           @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user         UserProfile          @relation(fields: [userId], references: [id])
+
+  @@unique([tournamentId, userId])
+  @@index([userId])
+  @@index([tournamentId, score])
+}
+
+model TournamentGamePlay {
+  id                      String                @id @default(cuid())
+  tournamentParticipantId String
+  gameId                  String
+  pointsEarned            Int
+  playedAt                DateTime              @default(now())
+  gameSessionId           String?
+  tournamentParticipant   TournamentParticipant @relation(fields: [tournamentParticipantId], references: [id], onDelete: Cascade)
+
+  @@index([tournamentParticipantId])
+}
+
+model TournamentReward {
+  id           String       @id @default(cuid())
+  tournamentId String
+  rank         Int
+  description  String
+  isClaimed    Boolean      @default(false)
+  winnerId     String?
+  tournament   Tournament   @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  winner       UserProfile? @relation("TournamentWinner", fields: [winnerId], references: [id])
+
+  @@index([tournamentId])
+}
+
+enum TournamentStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}

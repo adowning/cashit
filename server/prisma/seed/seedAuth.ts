@@ -2,13 +2,16 @@ import { PrismaClient } from '@prisma/client'
 import { faker } from '@faker-js/faker'
 import bcrypt from 'bcryptjs'
 import { User } from 'prisma/generated'
+import { generateUsernames } from './wutang.js'
 
 export async function seedUsersAndAccounts(prisma: PrismaClient) {
   // Renamed function
   console.log('Seeding users and accounts (auth)...')
+
   const usersToCreate = 20
   const createdUsersList: User[] = []
   const defaultPassword = 'Password123!' // Use a common secure password for mock users
+  const tangNamesList = generateUsernames(usersToCreate + 5)
 
   // 1. Create or find Admin User
   const adminEmail = 'admin@casino.example.com'
@@ -71,7 +74,7 @@ export async function seedUsersAndAccounts(prisma: PrismaClient) {
         data: {
           id: faker.string.uuid(),
           name: `${firstName} ${lastName}`,
-          username: faker.internet.userName({ firstName, lastName }).toLowerCase() + i,
+          username: tangNamesList[i], //faker.internet.userName({ firstName, lastName }).toLowerCase() + i,
           displayUsername: `${firstName}${faker.number.int({ min: 10, max: 99 })}`,
           email: email,
           emailVerified: faker.datatype.boolean(0.7),

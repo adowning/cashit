@@ -7,7 +7,8 @@ import type { RTGSpinRequestDto, ProviderSpinResponseData, RtgSpinResult } from 
 import { proxyRequestToRgs, RgsProxyError } from './rtg.service.js' // Assuming this is a project-specific service
 import { toCents } from './transaction.service.js' // Assuming this is a project-specific service
 const sql = new SQL(
-  'postgresql://postgres.acqrudqzutnwrvmvlshc:acqrudqzutnwrvmvlshc@aws-0-us-east-2.pooler.supabase.com:5432/postgres',
+  // 'postgresql://postgres.acqrudqzutnwrvmvlshc:acqrudqzutnwrvmvlshc@aws-0-us-east-2.pooler.supabase.com:5432/postgres',
+  'postgresql://postgres:password@192.168.1.35:5439/mydatabase',
   {
     // prepare: false, // Disable persisting named prepared statements on the server
   }

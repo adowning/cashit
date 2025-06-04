@@ -21,7 +21,6 @@ import { Scalar } from '@scalar/hono-api-reference'
 import { Server } from 'bun'
 import { Session } from 'better-auth'
 import { jackpotJobs } from '@/jobs/jackpot.jobs'
-import { GameAPI } from '@/services/pragmatic/pragmatic.routes'
 const path = require('path')
 const { readFileSync } = require('fs')
 const ejs = require('ejs')
@@ -61,7 +60,7 @@ export type HonoEnv = {
 const app = new Hono()
 app.use(logger())
 app.get('/scalar', Scalar({ url: '/doc' }))
-const gameApi = new GameAPI(app)
+// const gameApi = new GameAPI(app)
 const rtgApi = new RtgApi(app)
 
 // Add performance monitoring routes
@@ -76,7 +75,10 @@ app.use(
     credentials: true,
   })
 )
-app.on(['POST', 'GET'], '/api/auth/**', (c) => auth.handler(c.req.raw))
+app.all('/api/auth/*', async (c) => {
+  const response = await auth.handler(c.req.raw)
+  return response
+})
 // app.use('/rtg/*', async (c, next) => {
 //   const context = await createContext({ context: c })
 //   const authSession = await auth.api.getSession({
@@ -224,6 +226,8 @@ const serverInstance = Bun.serve<AppWsData, {}>({
         }
       }
       console.log(token)
+      console.log(token)
+      console.log(token)
       if (token != null) req.headers.set('Authorization', token)
 
       const authSession = await auth.api.getSession({
@@ -234,7 +238,8 @@ const serverInstance = Bun.serve<AppWsData, {}>({
       console.log(authSession)
       console.log(parsedUrl.pathname)
       ///rtg/games/rtg/platform/0Fnal8tl5RQwjg2nHZXkeD2jNTBnJiPO/777Strike/game/settings
-
+      if (authSession === null || authSession.session === undefined)
+        return new Response('Unauthorized', { status: 401 })
       const res = await app.fetch(req, {
         prefix: '/rtg',
         context: authSession,

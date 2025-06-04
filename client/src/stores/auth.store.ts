@@ -360,7 +360,7 @@ export const useAuthStore = defineStore(
           username: creds.username,
           name: creds.name || creds.username, // Ensure 'name' is provided to better-auth
         }
-        return authClient.signUp.email(actualPayload) as any // Using 'as any' for now
+        return authClient.signUp.email(actualPayload) as any // Use email signup with username data
       }
       return _handleAuthApiCall(apiCall, payload, {
         successMessage: 'Registration successful! Welcome.',

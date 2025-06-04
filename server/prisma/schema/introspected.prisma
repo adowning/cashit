@@ -1,10 +1,1 @@
-model TournamentGames {
-  A          String
-  B          String
-  games      Game       @relation(fields: [A], references: [id], onDelete: Cascade)
-  Tournament Tournament @relation(fields: [B], references: [id], onDelete: Cascade)
 
-  @@id([A, B], map: "_TournamentGames_AB_pkey")
-  @@index([B], map: "_TournamentGames_B_index")
-  @@map("_TournamentGames")
-}

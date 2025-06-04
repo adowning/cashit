@@ -81,7 +81,7 @@ export type PrismaGame = {
     tournamentDirectives: JsonValue | null;
     status: boolean;
     checked: boolean;
-    TournamentGames?: PrismaTournamentGames[];
+    tournamentGames?: PrismaTournamentGames[];
     gameLaunchLinks?: PrismaGameLaunchLink[];
     gameSessions?: PrismaGameSession[];
     gameProvider?: PrismaGameProvider | null;
@@ -152,19 +152,19 @@ export type PrismaGameProvider = {
 };
 export type PrismaGameLaunchLink = {
     id: string;
-    token_internal: string;
+    tokenInternal: string;
     currency: string;
-    player_operator_id: string | null;
+    playerOperatorId: string | null;
     mode: string;
     meta: JsonValue | null;
     requestIp: string | null;
     userAgent: string | null;
-    session_url: string | null;
+    sessionUrl: string | null;
     state: string;
     active: boolean;
     expiresAt: Date | null;
-    extra_meta: JsonValue | null;
-    token_original: string | null;
+    extraMeta: JsonValue | null;
+    tokenOriginal: string | null;
     createdAt: Date;
     updatedAt: Date;
     userId: string;
@@ -174,12 +174,6 @@ export type PrismaGameLaunchLink = {
     game?: PrismaGame;
     operator?: PrismaOperator;
     UserProfile?: PrismaUserProfile | null;
-};
-export type PrismaTournamentGames = {
-    A: string;
-    B: string;
-    games?: PrismaGame;
-    Tournament?: PrismaTournament;
 };
 export type PrismaJackpot = {
     id: string;
@@ -205,8 +199,8 @@ export type PrismaJackpotContribution = {
     gameSpinId: string;
     contributionAmountCoins: number;
     createdAt: Date;
-    jackpot?: PrismaJackpot;
     gameSpin?: PrismaGameSpin;
+    jackpot?: PrismaJackpot;
 };
 export type PrismaJackpotWin = {
     id: string;
@@ -216,16 +210,16 @@ export type PrismaJackpotWin = {
     gameSpinId: string;
     transactionId: string | null;
     createdAt: Date;
-    jackpot?: PrismaJackpot;
-    winner?: PrismaUserProfile;
     gameSpin?: PrismaGameSpin;
+    jackpot?: PrismaJackpot;
     transaction?: PrismaTransaction | null;
+    winner?: PrismaUserProfile;
 };
 export type PrismaOperator = {
     id: string;
     name: string;
-    operator_secret: string;
-    operator_access: string;
+    operatorSecret: string;
+    operatorAccess: string;
     callbackUrl: string;
     active: boolean;
     permissions: PrismaKeyMode[];
@@ -281,11 +275,6 @@ export type PrismaProduct = {
     Transaction?: PrismaTransaction | null;
     transactions?: PrismaTransaction[];
 };
-export type PrismaTodo = {
-    id: number;
-    text: string;
-    completed: boolean;
-};
 export type PrismaTournament = {
     id: string;
     name: string;
@@ -301,7 +290,7 @@ export type PrismaTournament = {
     user?: PrismaUserProfile | null;
     participants?: PrismaTournamentParticipant[];
     rewards?: PrismaTournamentReward[];
-    TournamentGames?: PrismaTournamentGames[];
+    tournamentGames?: PrismaTournamentGames[];
 };
 export type PrismaTournamentParticipant = {
     id: string;
@@ -333,6 +322,12 @@ export type PrismaTournamentReward = {
     tournament?: PrismaTournament;
     winner?: PrismaUserProfile | null;
 };
+export type PrismaTournamentGames = {
+    A: string;
+    B: string;
+    games?: PrismaGame;
+    tournament?: PrismaTournament;
+};
 export type PrismaTransaction = {
     id: string;
     processedAt: Date | null;
@@ -361,12 +356,12 @@ export type PrismaTransaction = {
     updatedAt: Date;
     userProfileId: string | null;
     operatorId: string | null;
+    jackpotWins?: PrismaJackpotWin[];
     products?: PrismaProduct[];
     rebateGenerated?: PrismaRebateTransaction | null;
-    jackpotWins?: PrismaJackpotWin[];
-    Operator?: PrismaOperator | null;
+    operator?: PrismaOperator | null;
     product?: PrismaProduct | null;
-    UserProfile?: PrismaUserProfile | null;
+    userProfile?: PrismaUserProfile | null;
     wallet?: PrismaWallet | null;
 };
 export type PrismaRebateTransaction = {
@@ -418,16 +413,16 @@ export type PrismaUserProfile = {
     operatorId: string | null;
     currentGameSessionid: string | null;
     vipInfoId: string;
-    Tournament?: PrismaTournament[];
-    TournamentParticipant?: PrismaTournamentParticipant[];
-    TournamentReward?: PrismaTournamentReward[];
+    tournament?: PrismaTournament[];
+    tournamentParticipant?: PrismaTournamentParticipant[];
+    tournamentReward?: PrismaTournamentReward[];
     gameLaunchLink?: PrismaGameLaunchLink[];
     pastGameSessions?: PrismaGameSession[];
+    jackpotWins?: PrismaJackpotWin[];
+    lastJackpotWon?: PrismaJackpot[];
     operatorInvitations?: PrismaOperatorInvitation[];
     rebateTransactions?: PrismaRebateTransaction[];
     transactions?: PrismaTransaction[];
-    jackpotWins?: PrismaJackpotWin[];
-    lastJackpotWon?: PrismaJackpot[];
     currentGameSession?: PrismaGameSession | null;
     vipInfo?: PrismaVipInfo;
     wallets?: PrismaWallet[];

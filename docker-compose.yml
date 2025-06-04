@@ -1,15 +1,15 @@
 version: '3.9'
 services:
-  # db:
-  #   image: postgres:latest
-  #   environment:
-  #     POSTGRES_USER: user
-  #     POSTGRES_PASSWORD: password
-  #     POSTGRES_DB: mydatabase
-  #   ports:
-  #     - '5439:5432'
-  #   volumes:
-  #     - ./docker/db_data:/var/lib/postgresql/data
+  db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: mydatabase
+    ports:
+      - '5439:5432'
+    volumes:
+      - ./docker/db_data:/var/lib/postgresql/data
   # pgadmin:
   #   image: dpage/pgadmin4:latest
   #   environment:
@@ -21,19 +21,19 @@ services:
   #     - db
   #   volumes:
   #     - ./docker/pgadmin_data:/var/lib/pgadmin
-  dragonfly:
-    image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
-    ulimits:
-      memlock: -1
-    ports:
-      - '6381:6379'
-    # For better performance, consider `host` mode instead `port` to avoid docker NAT.
-    # `host` mode is NOT currently supported in Swarm Mode.
-    # https://docs.docker.com/compose/compose-file/compose-file-v3/#network_mode
-    # network_mode: "host"
-    volumes:
-      - dragonflydata:/data
+  # dragonfly:
+  #   image: 'docker.dragonflydb.io/dragonflydb/dragonfly'
+  #   ulimits:
+  #     memlock: -1
+  #   ports:
+  #     - '6381:6379'
+  #   # For better performance, consider `host` mode instead `port` to avoid docker NAT.
+  #   # `host` mode is NOT currently supported in Swarm Mode.
+  #   # https://docs.docker.com/compose/compose-file/compose-file-v3/#network_mode
+  #   # network_mode: "host"
+  #   volumes:
+  #     - dragonflydata:/data
 volumes:
-  #   db_data:
+  db_data:
   #   pgadmin_data:
-  dragonflydata:
+  # dragonflydata:

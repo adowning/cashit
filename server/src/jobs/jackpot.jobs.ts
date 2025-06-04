@@ -68,7 +68,7 @@ export class JackpotJobs {
     this.maintenanceInterval = setInterval(
       async () => {
         try {
-          // await this.runMaintenanceTasks()
+          await this.runMaintenanceTasks()
         } catch (error) {
           console.error('❌ Error in jackpot maintenance job:', error)
         }
@@ -128,13 +128,13 @@ export class JackpotJobs {
     // Log current status (only log every 10 minutes to avoid spam)
     const now = new Date()
     if (now.getMinutes() % 10 === 0) {
-      // console.log('📊 Jackpot Status:')
-      // stats.jackpots.forEach((jackpot: any) => {
-      //   console.log(
-      //     `  ${jackpot.type}: $${jackpot.currentAmountDollars.toFixed(2)} (${jackpot.currentAmountCoins} coins)`
-      //   )
-      // })
-      // console.log(`  Total Pool: $${stats.totalPoolDollars.toFixed(2)}`)
+      console.log('📊 Jackpot Status:')
+      stats.jackpots.forEach((jackpot: any) => {
+        console.log(
+          `  ${jackpot.type}: $${jackpot.currentAmountDollars.toFixed(2)} (${jackpot.currentAmountCoins} coins)`
+        )
+      })
+      console.log(`  Total Pool: $${stats.totalPoolDollars.toFixed(2)}`)
     }
 
     // Check for anomalies
@@ -268,9 +268,9 @@ export class JackpotJobs {
    * Manual maintenance trigger (for admin use)
    */
   async runManualMaintenance(): Promise<void> {
-    // console.log('🔧 Running manual jackpot maintenance...')
-    // await this.runMaintenanceTasks()
-    // console.log('✅ Manual jackpot maintenance completed')
+    console.log('🔧 Running manual jackpot maintenance...')
+    await this.runMaintenanceTasks()
+    console.log('✅ Manual jackpot maintenance completed')
   }
 
   /**
