@@ -379,7 +379,6 @@ check_authentication() {
     auth_test_response=$(curl -s -w "\n%{http_code}" \
         -X POST "$BASE_URL/rtg/games/rtg/platform/$AUTH_TOKEN/$GAME_ID/game/settings" \
         -H "Content-Type: application/json" \
-        -H "$COOKIE_HEADER" \
         -d '{"test": true}')
 
     auth_http_code=$(echo "$auth_test_response" | tail -n1)

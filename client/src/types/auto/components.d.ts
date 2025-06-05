@@ -45,6 +45,7 @@ declare module 'vue' {
     FormCheckRadio: typeof import('./../../components/common/FormCheckRadio.vue')['default']
     FormCheckRadioGroup: typeof import('./../../components/common/FormCheckRadioGroup.vue')['default']
     FunRizeRaces: typeof import('./../../components/races/FunRizeRaces.vue')['default']
+    GameCard: typeof import('./../../components/home/GameCard.vue')['default']
     GameCarousel: typeof import('./../../components/home/GameCarousel.vue')['default']
     GlassButton: typeof import('./../../components/common/GlassButton.vue')['default']
     GlobalLoading: typeof import('./../../components/common/GlobalLoading.vue')['default']

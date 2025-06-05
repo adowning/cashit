@@ -12,6 +12,7 @@
         "@tanstack/vue-query": "^5.77.2",
         "bcryptjs": "^3.0.2",
         "date-fns": "^4.1.0",
+        "fs-extra": "^11.3.0",
         "hono": "^4.7.10",
         "lucide-vue-next": "^0.511.0",
         "partysocket": "^1.1.4",

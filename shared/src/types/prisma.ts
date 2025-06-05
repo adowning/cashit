@@ -527,6 +527,7 @@ export type PrismaWallet = {
   transactions?: PrismaTransaction[];
   operator?: PrismaOperator;
   user?: PrismaUserProfile;
+  cashtag: string | null;
 };
 
 export type PrismaUserProfile = {

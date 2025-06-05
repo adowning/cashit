@@ -117,7 +117,7 @@ class RedisCacheService {
 
     this.setupEventHandlers()
     this.connect()
-    this.startPerformanceMonitoring()
+    // this.startPerformanceMonitoring()
   }
 
   private setupEventHandlers(): void {

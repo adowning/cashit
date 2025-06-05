@@ -1,15 +1,18 @@
 <template>
-  <div id="app" class="roxdisplay">
+  <div id="app" class="onacona">
     <!-- <Transition name="fade-loader"> -->
     <div
       v-if="isConnected"
       style="z-index: 999999; position: absolute; top: -2px; right: -6px; width: 25px"
     >
-      <img src="/images/common/connection-high.svg" h="10" w="15" @click="runTest" />
+      <img
+        :src="`/images/common/connection-${isConnected ? 'high' : 'low'}.svg`"
+        h="10"
+        w="15"
+        @click="runTest"
+      />
     </div>
-    <div v-else style="z-index: 999999; position: absolute; top: -2px; right: -6px; width: 25px">
-      <img src="/images/common/connection-off.png" h="10" w="15" />
-    </div>
+
     <div class="animate__animated animate__fadeIn">
       <GlobalLoading v-if="isAppLoading && isMobile" />
     </div>
@@ -40,8 +43,8 @@
     </div>
   </div>
 
-  <OverlayLayer v-if="depositStore.shopOpen" :model-value="depositStore.shopOpen">
-    <ShopView v-if="depositStore.shopOpen" />
+  <OverlayLayer v-if="transactionStore.shopOpen" :model-value="transactionStore.shopOpen">
+    <ShopView v-if="transactionStore.shopOpen" />
   </OverlayLayer>
   <!-- <OverlayLayer v-if="tournamentStore.isBattlesOpen" :model-value="tournamentStore.isBattlesOpen">
     <FunRizeRaces v-if="tournamentStore.isBattlesOpen" />
@@ -71,7 +74,7 @@
 
   // --- Initialize Stores ---
   const authStore = useAuthStore()
-  const depositStore = useTransactionStore()
+  const transactionStore = useTransactionStore()
   const imageLoadingStore = useImageLoadingStore()
   const tournamentStore = useTournamentStore()
   const router = useRouter()
@@ -225,7 +228,9 @@
           const vipStore = useVipStore()
           const gameStore = useGameStore()
           await vipStore.dispatchVipInfo()
+          await transactionStore.dispatchOperatorData()
           await gameStore.dispatchGameBigWin()
+
           await gameStore.dispatchGetAllGames()
           await connect()
         } catch (e) {

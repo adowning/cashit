@@ -37,8 +37,9 @@
   }
   function _toggleShopOpen() {
     // console.log('asdf')
-    // depositStore.toggleShopOpen()
-    router.push('/rtggame')
+    depositStore.toggleShopOpen()
+    depositStore.setDepositScreenName(DepositScreenName.SELECT_PRODUCT)
+    // router.push('/rtggame')
   }
   function changeLeaderBoardOpen() {
     // console.log(leaderBoardOpen)

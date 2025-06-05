@@ -82,6 +82,8 @@ export interface DepositProduct {
   priceInCents: number
   // currencyId: string | null
   iconUrl?: string | null
+  bonusSpins?: number
+  amountToReceiveInCredits?: number
   // bonusOffer?: any; // Details about any bonus tied to this product
 }
 

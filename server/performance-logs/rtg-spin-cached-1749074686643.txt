@@ -1,0 +1,52 @@
+
+=== CACHED RTG SPIN PERFORMANCE LOG ===
+Timestamp: 2025-06-04T22:04:46.643Z
+User ID: KSX6QoxVxY8zCnPHtnWVYFpz5uppyiK6
+Game ID: BassBossRTG
+Success: false
+CacheDatabase Used: DragonflyDB 
+Error: Error: INSUFFICIENT_FUNDS
+
+
+CACHED PERFORMANCE METRICS (Bun.sql + Redis):
+- Total Execution Time: 30.92ms
+- User Profile Query (Cached): 0.32ms
+- Game Query (Cached): 3.79ms
+- Session Query (Cached): 11.43ms
+- Wallet Query (Cached): 3.79ms
+- RGS Call Time: 0.44ms
+- Cached Transaction (Bun.sql): 0.00ms
+
+CACHE PERFORMANCE (Metrics from CacheService):
+- Cache Hit Rate: 67.50%
+- Cache Hits: 54
+- Cache Misses: 26
+- Cache Avg Response Time: 1.90ms
+- Cache Errors: 0
+
+PERFORMANCE IMPROVEMENT vs BASELINE:
+- Target: <300ms total execution time
+- Previous Baseline: ~3800ms average (example value)
+- Previous Optimized: ~580ms average (example value)
+- Current Cached: 30.92ms
+- Improvement vs Baseline: 99.19% (example calculation)
+- Improvement vs Optimized: 94.67% (example calculation)
+
+CACHED PERFORMANCE BREAKDOWN:
+- Database Operations (incl. transaction): 62.54%
+- RGS Call: 1.44%
+- Cache Operations (estimated): 36.03%
+
+OPTIMIZATION TECHNIQUES APPLIED:
+✅ Bun.sql native PostgreSQL driver
+✅ DragonflyDB caching layer (via cacheService)
+✅ Single atomic transaction block
+✅ Intelligent cache invalidation
+✅ Asynchronous Cache warming capabilities (via cacheService.warmCache)
+✅ Performance metrics tracking
+✅ Retry mechanism for transient "prepared statement" DB errors
+✅ Phase 4.5: Asynchronous jackpot processing (non-blocking)
+✅ Parallelized initial data fetches
+✅ Asynchronous performance logging
+
+=====================================

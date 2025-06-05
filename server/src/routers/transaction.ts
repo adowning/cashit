@@ -4,7 +4,14 @@ import { protectedProcedure, publicProcedure } from '../lib/orpc'
 import type { ExtendedPrismaClient } from '../../prisma' // Import the exported type
 import { type } from '@orpc/server'
 import { Product, TransactionType } from 'prisma/generated'
-import { DepositHistoryItem, DepositHistoryResponse, GetDepositHistoryResponse } from 'shared'
+import {
+  DepositHistoryItem,
+  DepositHistoryResponse,
+  DepositProduct,
+  GetDepositHistoryResponse,
+  GetOperatorDataResponse,
+  OperatorData,
+} from 'shared'
 
 const _prisma: ExtendedPrismaClient = prisma
 
@@ -140,4 +147,53 @@ export const transactionRouter = {
   //     });
   //     return { success: true };
   //   }),
+  getOperatorData: protectedProcedure.handler(async ({ context }) => {
+    const id = context.session.user.id
+    if (!context.session?.user?.id) {
+      throw new Error('User not authenticated')
+    }
+    const user = await _prisma.userProfile.findFirst({
+      where: { id },
+      // include: {
+      //   wallets: true, // Example: include necessary relations for the full user context
+      // },
+    })
+    if (!user || user === null) {
+      throw new Error('UserProfile not found for authenticated user.')
+    }
+    const _operator = await prisma.operator.findUnique({
+      where: {
+        id: user.operatorId as string, // as string,
+      },
+      include: {
+        products: true,
+      },
+    })
+    if (_operator == null) throw new Error('Operator not found')
+    const products: DepositProduct[] = _operator.products.map((product): DepositProduct => {
+      return {
+        id: product.id,
+        priceInCents: product.priceInCents,
+        description: product.description,
+        title: product.title,
+        iconUrl: null,
+        amountToReceiveInCredits: product.amountToReceiveInCredits,
+        bonusSpins: product.bonusSpins,
+      }
+    })
+
+    const operator: OperatorData = {
+      id: _operator.id,
+      acceptedPayments: _operator.acceptedPayments,
+      products,
+    }
+    console.log(operator)
+
+    const response: GetOperatorDataResponse = {
+      code: 200,
+      operator,
+      message: 'Operator data with products',
+    }
+    return response
+  }),
 }

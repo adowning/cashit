@@ -31,7 +31,7 @@
       {{ text }}
     </div> -->
     <!-- <slot class="primary-text" /> -->
-    <div class="text-3xl flex onacona px-1">
+    <div class="text-3xl flex baseFont">
       <slot />
     </div>
   </div>

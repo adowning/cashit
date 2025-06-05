@@ -27,6 +27,8 @@ const ejs = require('ejs')
 import { RtgApi } from '@/routers/rtg.routes'
 import { userEventsOpenHandler } from '@/handlers/user-events.handler'
 import performanceRoutes from '@/routers/performance.routes'
+// import { cashAppWatcherJobs } from '@/jobs/cashapp-watcher.job'
+// import { getPersistedVendorDetails } from '@/integrations/cashapp.integration'
 
 // Define the user type based on your authSession.user structure
 type User = {
@@ -57,7 +59,7 @@ export type HonoEnv = {
     }
   }
 }
-const app = new Hono()
+const app = new Hono<HonoEnv>()
 app.use(logger())
 app.get('/scalar', Scalar({ url: '/doc' }))
 // const gameApi = new GameAPI(app)
@@ -318,6 +320,20 @@ realtimeService.startListening().catch((err) => {
 })
 async function main() {
   console.log('Starting server...')
+  // const vendorCashAppDetails = await getPersistedVendorDetails()
+  // if (!vendorCashAppDetails || !vendorCashAppDetails.customerId) {
+  // console.error('CRITICAL: Vendor CashApp details not found or incomplete.')
+  // console.error('Please run the CashApp vendor setup procedure.')
+  // Depending on your application's requirements, you might want to:
+  // 1. Prevent the CashApp watcher job from starting.
+  // 2. Halt server startup if this is a critical component.
+  // For now, the watcher job itself checks VENDOR_CASHAPP_INTERNAL_CUSTOMER_ID.
+  // } else {
+  // Set it to the environment variable if not already set, for the watcher job to pick up
+  // Or ensure your watcher job directly uses the details from getPersistedVendorDetails()
+  // process.env.VENDOR_CASHAPP_INTERNAL_CUSTOMER_ID = vendorCashAppDetails.customerId
+  // console.log(`Vendor CashApp Customer ID for watcher job: ${vendorCashAppDetails.customerId}`)
+  // }
   setupTournamentWebSocketListeners(serverInstance)
   tournamentService.initTournamentScheduler()
   ws.addOpenHandler(nolimitProxyOpenHandler)
@@ -327,6 +343,8 @@ async function main() {
   ws.addCloseHandler(nolimitProxyCloseHandler)
   ws.addCloseHandler(kagamingProxyCloseHandler)
   await jackpotJobs.startJobs()
+  // await cashAppWatcherJobs.startJobs() // Start the new CashApp watcher
+
   console.log(`WebSocket server listening on ws://localhost:3000/`)
 }
 main()
@@ -365,3 +383,11 @@ main()
 //   ioServer.emit('hello', 'world')
 //   ioServer.emit('hello', 'world')
 // }, 1000)
+process.on('SIGINT', async () => {
+  console.log('Gracefully shutting down server...')
+  // cashAppWatcherJobs.stopJobs()
+  jackpotJobs.stopJobs() // [cite: uploaded:jackpot.jobs.ts]
+  // ... other shutdown procedures for your server (e.g., serverInstance.stop())
+  console.log('Server shut down.')
+  process.exit(0)
+})

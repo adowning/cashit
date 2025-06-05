@@ -75,6 +75,7 @@ model Wallet {
   transactions  Transaction[]
   operator      Operator      @relation(fields: [operatorId], references: [id], onDelete: Cascade)
   user          UserProfile   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cashtag       String?       @unique
 
   @@unique([userId, operatorId], name: "userOperator")
   @@map("wallets")

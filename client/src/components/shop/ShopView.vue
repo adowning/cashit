@@ -25,7 +25,7 @@
     // error: authError, // Auth store errors
   } = storeToRefs(authStore)
   const { dispatchOperatorData, depositScreenName } = depositStore
-  const { dispatchUserDepositHistory } = depositStore
+  // const { dispatchUserTransactionHistory } = depositStore
 
   // const shop = store.shop
   // const products = store.products
@@ -103,7 +103,7 @@
   // const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
   async function close() {
-    await depositStore.dispatchUserDepositHistory()
+    await depositStore.dispatchUserTransactionHistory()
 
     // console.log('adding fadeout anim and refreshing user')
     target.value?.classList.add(`animate__animated`, 'animate__fadeOut')
@@ -137,7 +137,7 @@
   onMounted(async () => {
     // window.addEventListener('resize', updateScreenWidth)
     // Fetch initial deposit configuration
-    await dispatchUserDepositHistory()
+    await depositStore.dispatchUserTransactionHistory()
     await dispatchOperatorData()
     // await authStore.refreshUser()
     console.log(depositStore.getOperatorData)

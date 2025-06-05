@@ -14,8 +14,8 @@ export enum DepositScreenName {
 export const useTransactionStore = defineStore('deposit', () => {
   // State properties converted to reactive references
   const success = ref(false)
+  const restClient = orpcManager.getRestClient() // For fetching current user via ORPC
   const errMessage = ref('')
-  const restClient = orpcManager.getRestClient()
   const depositConfig = ref<any>({
     // Keeping 'any' type as in original
     bonus: [
@@ -116,7 +116,7 @@ export const useTransactionStore = defineStore('deposit', () => {
   const setOperatorData = (item: OperatorData) => {
     operatorData.value = item
   }
-  const { deposit: depositApi } = useApiClient()
+  // const { deposit: depositApi } = useApiClient()
   const dispatchProducts = async () => {
     setSuccess(false)
     try {
@@ -142,10 +142,11 @@ export const useTransactionStore = defineStore('deposit', () => {
   const dispatchOperatorData = async () => {
     setSuccess(false)
     try {
-      const response = await depositApi.getOperatorData()
+      const response = await restClient.transaction.getOperatorData()
       console.log(response.operator.products)
       setSuccess(true)
       setOperatorData(response.operator)
+      setProducts(response.operator.products)
     } catch (error: any) {
       setErrorMessage(handleException(error.code))
     }
@@ -163,10 +164,10 @@ export const useTransactionStore = defineStore('deposit', () => {
   }
 
   // user deposit submit
-  const dispatchUserDepositSubmit = async (data: InitializeDepositDto) => {
+  const dispatchUserDepositSubmit = async () => {
     setSuccess(false)
     try {
-      const response = await depositApi.initializeDeposit(data)
+      const response = await restClient.transaction.getOperatorData()
       console.log(response)
       setDepositSubmit(response)
       setSuccess(true)

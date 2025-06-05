@@ -40,6 +40,8 @@ export interface DepositProduct {
     description?: string | null;
     priceInCents: number;
     iconUrl?: string | null;
+    bonusSpins?: number;
+    amountToReceiveInCredits?: number;
 }
 export interface DepositPaymentMethod {
     id: string;

@@ -101,14 +101,13 @@
       return
     }
 
-    console.log('Starting to preload image for:', game.title)
     imageLoadingStates.value.set(game.id, 'loading')
 
     const img = new Image()
     const imageUrl = getGameImageUrl(game)
 
     img.onload = () => {
-      console.log(`Successfully loaded image for: ${game.title} (${img.width}x${img.height})`)
+      // console.log(`Successfully loaded image for: ${game.title} (${img.width}x${img.height})`)
 
       // Store image dimensions and aspect ratio
       const aspectRatio = img.width / img.height
@@ -175,7 +174,7 @@
     let token = localStorage.getItem('auth')
     token = destr(token).accessToken
     if (!token) {
-      console.error('No access token found. Cannot load game.')
+      // console.error('No access token found. Cannot load game.')
       return
     }
 
@@ -188,7 +187,7 @@
     } else if (game.developer === 'redtiger') {
       await router.push(`/rtggame/?gameName=${game.name}&token=${token}`)
     } else {
-      console.warn(`Unsupported developer: ${game.developer}`)
+      // console.warn(`Unsupported developer: ${game.developer}`)
     }
   }
 
@@ -207,7 +206,7 @@
           if (entry.isIntersecting) {
             const gameId = parseInt(entry.target.getAttribute('data-game-id') || '0')
             const game = games.value.find((g) => g.id === gameId)
-            console.log('Card in view:', gameId, game?.title) // Debug log
+            // console.log('Card in view:', gameId, game?.title) // Debug log
             if (game && !loadedImages.value.has(game.id)) {
               preloadImage(game)
               intersectionObserver?.unobserve(entry.target)
@@ -225,7 +224,7 @@
     // Observe all game cards with a delay to ensure DOM is ready
     setTimeout(() => {
       const gameCards = document.querySelectorAll('.game-card')
-      console.log('Setting up observers for', gameCards.length, 'cards') // Debug log
+      // console.log('Setting up observers for', gameCards.length, 'cards') // Debug log
       gameCards.forEach((card) => {
         if (intersectionObserver) {
           intersectionObserver.observe(card)
@@ -243,7 +242,7 @@
       temperature: item.temperature ?? 'none',
       featured: item.featured ?? false,
     }))
-    console.log('Games loaded:', games.value)
+    // console.log('Games loaded:', games.value)
 
     // Setup lazy loading after games are loaded
     nextTick(() => {

@@ -1,3 +1,4 @@
+import { DepositProduct } from '@/types/transaction'
 import type { PrismaPaymentMethod, PrismaProduct } from './prisma'
 
 export interface GetCurrencyItem {
@@ -39,7 +40,7 @@ export interface GetPrismaProductsResponse {
 export interface OperatorData {
   id: string
   acceptedPayments: string[]
-  products: PrismaProductWithoutTransactions[]
+  products: DepositProduct[]
 }
 
 export interface GetOperatorDataResponse {
