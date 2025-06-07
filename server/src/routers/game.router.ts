@@ -1,30 +1,17 @@
-import z from 'zod/v4'
-import prisma from '../../prisma/'
-import { protectedProcedure, publicProcedure } from '../lib/orpc'
-import type { ExtendedPrismaClient } from '../../prisma'
 import {
-  PrismaGameCategory,
-  RTGSettingsRequestDto,
-  RTGSettingsResponseDto,
-  RTGSpinRequestDto,
-  RTGSpinResponseDto,
-  ProviderSettingsResponseData, // Assuming this is the detailed structure for RTG settings
-  ProviderSpinResponseData, // Assuming this is the detailed structure for RTG spin result
-  PrismaGameHistoryItem as GameHistoryItem, // From shared types for game history
-  PrismaGameBigWinData as GameBigWinData, // From shared types for big wins
+  PrismaGameBigWinData as GameBigWinData,
+  PrismaGameHistoryItem as GameHistoryItem,
+  LaunchGameResponseDto,
+  OutputGameBigWinItem, // Using the shared PrismaGame for broader compatibility
+  PaginatedResponse,
+  PrismaGameProviderName, // From shared types for big wins
   PrismaGameProvider as SharedGameProvider,
   PrismaGame as SharedPrismaGame, // Using the shared PrismaGame for broader compatibility
-  PaginatedResponse,
-  LaunchGameResponseDto,
-  PrismaGameProviderName,
-  HighRollerInfo,
-  LuckyBetInfo,
-  OutputGameBigWinItem,
-  GameBigWinResponseData,
 } from 'shared/dist' // Ensure your shared types are correctly structured and exported
-import { Prisma } from '../../prisma/generated/client' // For Prisma.* types if needed
-import { GameCategory as PrismaGameCategoryEnum } from '../../prisma/generated/client'
-import { RTGJackpotIntegration } from '@/integrations/rtg-jackpot.integration'
+import z from 'zod/v4'
+import prisma from '../../prisma/'
+import { Prisma, GameCategory as PrismaGameCategoryEnum } from '../../prisma/generated/client' // For Prisma.* types if needed
+import { protectedProcedure, publicProcedure } from '../lib/orpc'
 // const prisma = new PrismaClient()
 // Use your actual ExtendedPrismaClient constructor or factory here
 // const prisma: ExtendedPrismaClient = new (require('../../prisma').ExtendedPrismaClient)()
@@ -32,10 +19,6 @@ import { RTGJackpotIntegration } from '@/integrations/rtg-jackpot.integration'
 // --- Zod Schemas for Input Validation ---
 const GameIdSchema = z.object({
   id: z.string().cuid(), // Assuming game IDs are CUIDs
-})
-
-const GameSlugSchema = z.object({
-  slug: z.string(),
 })
 
 const GameEnterSchema = z.object({
@@ -129,7 +112,7 @@ const mapPrismaGameToSharedGame = (game: GameWithProvider): SharedPrismaGame => 
     gameLaunchLinks: [], // Placeholder
 
     // operator: null, // Placeholder
-    TournamentGames: [], // Placeholder
+    tournamentGames: [], // Placeholder
     goldsvetData: game.goldsvetData,
     // id: '',
     // name: '',
@@ -156,7 +139,7 @@ const mapPrismaGameToSharedGame = (game: GameWithProvider): SharedPrismaGame => 
   }
 }
 
-export const gameRouter = {
+export const gameRouter: any = {
   getGameCategories: publicProcedure
     // .output(z.array(z.nativeEnum(PrismaGameCategoryEnum))) // Assuming you just return enum values
     .handler(async () => {
@@ -193,7 +176,6 @@ export const gameRouter = {
         skip: (page - 1) * limit,
         take: limit,
       })
-      const x = gamesData.map(mapPrismaGameToSharedGame)
       // console.log(x[0])
       // console.log(x[1])
       return {
@@ -240,7 +222,6 @@ export const gameRouter = {
         skip: (page - 1) * limit,
         take: limit,
       })
-      const x = gamesData.map(mapPrismaGameToSharedGame)
       return {
         items: gamesData.map(mapPrismaGameToSharedGame),
         total: totalGames,
@@ -634,8 +615,7 @@ export const gameRouter = {
 
   getFavoriteGames: protectedProcedure
     .output(z.array(z.string())) // Assuming it returns an array of game IDs (CUIDs)
-    .handler(async ({ context }): Promise<string[]> => {
-      const userId = context.session.user.id
+    .handler(async (): Promise<string[]> => {
       // You need a model to store user's favorite games, e.g., UserFavoriteGame
       // For example: model UserFavoriteGame { userId String, gameId String, @@id([userId, gameId]) }
       // const favorites = await prisma.userFavoriteGame.findMany({
@@ -649,10 +629,7 @@ export const gameRouter = {
   setFavoriteGame: protectedProcedure
     .input(SetFavoriteGameSchema)
     .output(z.object({ success: z.boolean() }))
-    .handler(async ({ context, input }): Promise<{ success: boolean }> => {
-      const userId = context.session.user.id
-      const { gameId, isFavorite } = input
-
+    .handler(async ({}): Promise<{ success: boolean }> => {
       // Again, depends on your UserFavoriteGame model
       // if (isFavorite) {
       //   await prisma.userFavoriteGame.upsert({

@@ -179,15 +179,15 @@
     }
 
     if (game.developer === 'netgame') {
-      await router.push(`/games/netgame/?gameName=${game.name}&token=${token}`)
+      await router.push(`/netgame/?gameName=${game.name}&token=${token}`)
     } else if (game.developer === 'netent') {
-      await router.push(`/games/netent/?gameName=${game.name}&token=${token}`)
+      await router.push(`/netent/?gameName=${game.name}&token=${token}`)
     } else if (game.developer === 'nolimit') {
-      await router.push(`/games/nolimit/?gameName=${game.name}&token=${token}`)
+      await router.push(`/nolimit/?gameName=${game.name}&token=${token}`)
     } else if (game.developer === 'redtiger') {
-      await router.push(`/rtggame/?gameName=${game.name}&token=${token}`)
+      await router.push(`/redtiger/?gameName=${game.name}&token=${token}`)
     } else {
-      // console.warn(`Unsupported developer: ${game.developer}`)
+      console.warn(`Unsupported developer: ${game.developer}`)
     }
   }
 

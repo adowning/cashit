@@ -46,6 +46,24 @@ export const routes: RouteRecordRaw[] = [
     // props: false, // Passes route params as props to the component
   },
   {
+    path: '/nolimit/:game',
+    name: 'NolimitGame',
+    component: () => import('@/views/NolimitGame.vue'), // A
+    // props: false, // Passes route params as props to the component
+  },
+  {
+    path: '/netgame',
+    name: 'NetGameGame',
+    component: () => import('@/views/NetGameGame.vue'), // A
+    // props: false, // Passes route params as props to the component
+  },
+  {
+    path: '/netgame/:game',
+    name: 'NetGameGame',
+    component: () => import('@/views/NetGameGame.vue'), // A
+    // props: false, // Passes route params as props to the component
+  },
+  {
     path: '/home',
     component: () => import('@/views/HomeView.vue'),
     name: 'Home',

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<head>
+  <base href="https://slots.cashflowcasino.com/nolimit" target="_blank" />
+  <meta charset="utf-8" />
+  <title>Cashcow | Casino</title>
+  <script src="https://unpkg.com/axios@1.6.7/dist/axios.min.js"></script>
+</head>
+
+<body>
+  <div id="addon"></div>
+  <script src="./nolimit-latest.min.js"></script>
+  <script type="module">
+    // --- This section is key for your Vue component ---
+    const queryString = window.location.search;
+    const urlParams = new URLSearchParams(queryString);
+    const gameName = urlParams.get("gameName");
+    const user = JSON.parse(urlParams.get("user")); // Expects a user object
+
+    if (user && user.id !== undefined) {
+      console.log("nolimit.js version:", nolimit.version);
+      window.axios = axios;
+      window.userId = user.id;
+
+      var options = {};
+      var query = window.location.search.substring(1);
+      if (query.length > 0) {
+        var a = query.split("&");
+        for (var i = 0; i < a.length; i++) {
+          var b = a[i].split("=");
+          options[decodeURIComponent(b[0])] = decodeURIComponent(b[1] || "");
+        }
+      }
+      options.device = "desktop";
+      options.width = "100%";
+      options.height = "100%";
+      options.game = gameName;
+
+      // Initialize the Nolimit game
+      const api = nolimit.init("addon", options);
+
+      // --- Communication back to the Vue component ---
+      api.on("load", function (game) {
+        console.log(options.game, options.device, "is loaded");
+        // Notify parent window that the game is ready
+        window.parent.postMessage({ event: "nolimit_ready" }, "*");
+      });
+
+      api.on("balance", function updateBalance(balance) {
+         // This is crucial for updating the balance in your main app
+        window.parent.postMessage({ event: "nolimit_balance", data: balance }, "*");
+      });
+
+      api.on("message", function (x) {
+        // Generic message handler
+        window.parent.postMessage({ event: "nolimit_message", data: x }, "*");
+      });
+    }
+  </script>
+</body>
+</html>

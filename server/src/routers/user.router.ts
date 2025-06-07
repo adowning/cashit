@@ -1,15 +1,13 @@
 // File: ai/server/src/routers/user.routes.ts
-import z from 'zod/v4'
-import prisma from '../../prisma/index' // Your extended Prisma client
-import { protectedProcedure, publicProcedure } from '../lib/orpc'
-import type { ExtendedPrismaClient } from '../../prisma' // Import Prisma namespace for input types
-import {
-  PrismaUserProfile as PrismaUserProfileType,
-  UpdateUserInput as UpdateUserInputTypeShared, // Type from shared/dist for input structure
-  SetReferrerDto as SetReferrerDtoTypeShared, // Type from shared/dist
-  PaginatedResponse as PaginatedResponseType,
-} from 'shared/dist'
+import { protectedProcedure } from '@/lib/orpc'
 import { Prisma } from 'prisma/generated'
+import {
+  PaginatedResponse as PaginatedResponseType,
+  PrismaUserProfile as PrismaUserProfileType,
+} from 'shared/dist'
+import z from 'zod/v4'
+import type { ExtendedPrismaClient } from '../../prisma' // Import Prisma namespace for input types
+import prisma from '../../prisma/index' // Your extended Prisma client
 
 const _prisma: ExtendedPrismaClient = prisma
 
@@ -46,10 +44,10 @@ const SetReferrerDtoSchema = z.object({
   referrerCode: z.string(),
 })
 
-export const userRouter = {
+export const userRouter: Record<string, unknown> = {
   getCurrentUser: protectedProcedure
     // .input(UpdateUserInputSchema)
-    .handler(async ({ context }): Promise<PrismaUserProfileType> => {
+    .handler(async ({ context }: { context: any }): Promise<PrismaUserProfileType> => {
       // console.log('getCurrentUser', context.session.user.id, 'getCurrentUser')
       const id = context.session.user.id
       if (!context.session?.user?.id) {
@@ -62,7 +60,7 @@ export const userRouter = {
         // },
       })
       // console.log('userProfile', userProfile?.id)
-      const userProfiles = await _prisma.userProfile.findMany()
+      await _prisma.userProfile.findMany()
       // console.log('userProfile', userProfiles?.length)
 
       if (!userProfile) {
@@ -146,7 +144,7 @@ export const userRouter = {
 
   setReferrer: protectedProcedure
     .input(SetReferrerDtoSchema)
-    .handler(async ({ context, input }): Promise<{ success: boolean; message: string }> => {
+    .handler(async ({ context }): Promise<{ success: boolean; message: string }> => {
       if (!context.session?.user?.id) {
         throw new Error('User not authenticated')
       }

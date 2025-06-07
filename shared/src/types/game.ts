@@ -19,6 +19,33 @@ export interface LuckyBetInfo {
   timestamp: Date
   userId?: string // Added for internal processing
 }
+export interface NolimitGameLaunchOptions {
+  gameName: string
+  user: {
+    id: string | number
+    // Add other fields your loader/game might need, e.g., username
+  }
+}
+export interface NetGameOptions {
+  gameName: string //
+  token: string
+  url: string
+}
+export interface RtgGameLaunchOptions {
+  gameName: string // e.g., "777Strike"
+  lang?: string
+  currency?: string
+  mode?: 'real' | 'demo'
+  // Add any other parameters that your rtg_loader_template.html expects
+  // or that are needed to construct the full preconfig
+  rgsApiBase?: string // Base for your proxy: e.g., /api/rtg/platform
+  gameCdnBase?: string // If different from default construction
+  operator?: string
+  provider?: string
+  depositUrl?: string
+  lobbyUrl?: string
+  // ... any other specific params from com.casino.preconfig
+}
 export interface OutputGameBigWinItem {
   id: string // Unique ID for this item (e.g., spin.id for lucky bet, user.id for high roller)
   userId: string

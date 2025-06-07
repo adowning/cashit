@@ -1,6 +1,7 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "composite": true,
     "target": "ESNext",
     "moduleResolution": "bundler",
     "verbatimModuleSyntax": false,
@@ -11,42 +12,49 @@
       "@/*": ["./src/*"]
     },
     "outDir": "./dist",
-    "types": ["bun"],
+    "rootDir": "./src",
+    "types": ["bun", "node"],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "lib": ["ESNext"],
-    "module": "Preserve",
+    "module": "ESNext",
     "moduleDetection": "force",
     "allowJs": true,
-    "allowImportingTsExtensions": true,
-    "noEmit": true,
+    // "allowImportingTsExtensions": true,
+    "noEmit": false,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedIndexedAccess": true,
-    "noImplicitAny": false,
+    "noImplicitAny": true,
     "noImplicitOverride": true,
-    "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "noPropertyAccessFromIndexSignature": false
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noPropertyAccessFromIndexSignature": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "forceConsistentCasingInFileNames": true
   },
   "tsc-alias": {
     "resolveFullPaths": true
   },
+  "include": ["src/**/*", "src/**/*.json"],
   "exclude": [
     "node_modules",
-    "prisma/generated",
-    "prisma/migrations",
-    "src/services/pragmatic/engine",
-    "src/services/pragmatic",
-    "public",
     "dist",
     "public",
-    "test",
-    "test/*",
-    "test/**/*",
-    "test/**/**/*"
+    "**/performance-logs/**",
+    "**/cashapp/**",
+    "**/pragmatic/**",
+    "**/test/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/prisma/migrations/**",
+    "**/prisma/generated/**",
+    "**/public/**",
+    ".turbo"
   ],
   "references": [
-    // Add this section
     {
       "path": "../shared"
     }

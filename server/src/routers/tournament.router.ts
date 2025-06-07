@@ -1,17 +1,16 @@
-import z from 'zod/v4'
-import prisma from '../../prisma/index'
-import { protectedProcedure, publicProcedure } from '../lib/orpc'
-import type { ExtendedPrismaClient } from '../../prisma'
 import {
+  JoinTournamentResponse as JoinTournamentResponseShared,
+  PrismaTournament,
+  PrismaTournamentParticipant,
+  PrismaTournamentReward,
   TournamentCore,
   TournamentDetailed,
   TournamentParticipantInfo,
-  JoinTournamentResponse as JoinTournamentResponseShared,
   TournamentStatus,
-  PrismaTournament,
-  PrismaTournamentReward,
-  PrismaTournamentParticipant,
 } from 'shared/dist'
+import z from 'zod/v4'
+import prisma from '../../prisma/index'
+import { protectedProcedure, publicProcedure } from '../lib/orpc'
 
 // Zod Schemas for input validation, mirroring shared types
 const ListTournamentsQuerySchema = z
@@ -53,7 +52,7 @@ const mapPrismaTournamentToTournamentCore = (
   }
 }
 
-export const tournamentRouter = {
+export const tournamentRouter: any = {
   list: publicProcedure
     .input(ListTournamentsQuerySchema)
     .handler(async ({ input }): Promise<TournamentCore[]> => {
@@ -75,7 +74,7 @@ export const tournamentRouter = {
         where: whereClause,
         include: {
           participants: true, // For participantCount
-          TournamentGames: { include: { games: true } },
+          tournamentGames: { include: { games: true } },
           rewards: true, // For prizeFund (example calculation)
         },
         orderBy: {
@@ -91,7 +90,7 @@ export const tournamentRouter = {
       const tournament = await prisma.tournament.findUnique({
         where: { id: input.tournamentId },
         include: {
-          TournamentGames: { include: { games: true } },
+          tournamentGames: { include: { games: true } },
           rewards: { include: { winner: true } },
           participants: {
             include: { user: true },

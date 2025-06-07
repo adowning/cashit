@@ -1,6 +1,7 @@
 import { Pool } from 'pg'
 import createSubscriber, { Subscriber } from 'pg-listen'
 
+import { formatTablePath } from '@/utils/formatters'
 import config from './dbupdates/config'
 import logger from './dbupdates/logger'
 import Table from './dbupdates/table'
@@ -10,7 +11,6 @@ import {
   StringKeyMap,
   TableOptions,
 } from './dbupdates/types'
-import { formatTablePath } from './dbupdates/utils/formatters'
 
 const DEFAULT_OPTIONS = {
   user: config.defaults.DB_USER,
@@ -23,7 +23,7 @@ const DEFAULT_OPTIONS = {
   channel: config.defaults.CHANNEL,
   bufferInterval: config.defaults.BUFFER_INTERVAL,
   maxBufferSize: config.defaults.MAX_BUFFER_SIZE,
-  onError: (err: Error) => {},
+  onError: () => {},
 }
 
 /**

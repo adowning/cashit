@@ -1,48 +1,46 @@
 {
-    "compilerOptions": {
-        // Environment setup & latest features
-        "lib": [
-            "ESNext",
-            "DOM",
-            "DOM.Iterable"
-        ],
-        "target": "ESNext",
-        "module": "ESNext",
-        "moduleDetection": "force",
-        // "jsx": "react-jsx",
-        // "allowJs": true,
-        // // Path resolution
-        // "baseUrl": "./",
-        // "paths": {
-        //     "@server/*": [
-        //         "./server/src/*"
-        //     ],
-        //     "@client/*": [
-        //         "./client/src/*"
-        //     ],
-        //     "@shared/dist/*": [
-        //         "./shared/dist/*"
-        //     ],
-        //     "@admin/*": [
-        //         "./admin/src/*"
-        //     ]
-        // },
-        // // Module resolution
-        // "moduleResolution": "bundler",
-        // "allowSyntheticDefaultImports": true,
-        // "esModuleInterop": true,
-        // "verbatimModuleSyntax": true,
-        // // Strictness and best practices
-        // "strict": true,
-        // "forceConsistentCasingInFileNames": true,
-        // "noFallthroughCasesInSwitch": true,
-        // "noUncheckedIndexedAccess": true,
-        // "experimentalDecorators": true,
-        // // Output control
-        // "skipLibCheck": true,
-        // // Optional strict flags (disabled by default)
-        // "noUnusedLocals": false,
-        // "noUnusedParameters": false,
-        // "noPropertyAccessFromIndexSignature": false
-    }
+  "compilerOptions": {
+    "lib": ["ESNext", "DOM", "DOM.Iterable"],
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleDetection": "force",
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "preserve"
+  },
+  "exclude": [
+    "**/node_modules",
+    "**/dist",
+    "**/build",
+    "**/.next",
+    "**/.nuxt",
+    "**/.output",
+    "**/.cache",
+    "**/.turbo",
+    "**/public",
+    "**/test/**",
+    "**/tests/**",
+    "**/__tests__/**",
+    "**/*.test.*",
+    "**/*.spec.*",
+    "**/performance-logs/**",
+    "**/cashapp/**",
+    "**/pragmatic/**",
+    "**/prisma/migrations/**",
+    "**/prisma/generated/**",
+    "**/public/**",
+    ".git"
+  ],
+  "references": [
+    { "path": "./client" },
+    { "path": "./server" },
+    { "path": "./shared" },
+    { "path": "./admin" }
+  ]
 }

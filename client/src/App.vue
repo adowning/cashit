@@ -12,11 +12,9 @@
         @click="runTest"
       />
     </div>
-
     <div class="animate__animated animate__fadeIn">
       <GlobalLoading v-if="isAppLoading && isMobile" />
     </div>
-
     <div v-if="!isAppLoading">
       <!-- Content shown after loading is complete -->
       <div v-if="isAuthenticated && currentUser">
@@ -24,7 +22,6 @@
           <div class="animate__animated animate__fadeIn">
             <GlobalLoading v-if="isAppLoading" />
           </div>
-
           <RouterView />
         </DesktopSection>
         <MobileSection v-if="isMobile">

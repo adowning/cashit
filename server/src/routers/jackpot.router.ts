@@ -1,22 +1,13 @@
+import { JackpotUtils, type GetJackpotsResponse, type JackpotDisplayDto } from 'shared'
 import z from 'zod/v4'
-import prisma from '../../prisma/'
 import { protectedProcedure, publicProcedure } from '../lib/orpc'
-import { JackpotService } from '../services/jackpot.service.js'
-import { GameSpinService } from '../services/game-spin.service.js'
-import {
-  JackpotUtils,
-  type GetJackpotsResponse,
-  type JackpotDisplayDto,
-  PaginatedResponse,
-} from 'shared'
+import { GameSpinService } from '../services/game-spin.service'
+import { JackpotService } from '../services/jackpot.service'
 
 const jackpotService = new JackpotService()
 const gameSpinService = new GameSpinService()
 
 // --- Zod Schemas for Input Validation ---
-const UserIdSchema = z.object({
-  userId: z.string().cuid(),
-})
 
 const GameIdSchema = z.object({
   gameId: z.string().cuid(),
@@ -30,12 +21,9 @@ const LimitQuerySchema = z.object({
   limit: z.number().int().min(1).max(100).optional().default(10),
 })
 
-const PaginationSchema = z.object({
-  page: z.number().int().min(1).optional().default(1),
-  limit: z.number().int().min(1).max(100).optional().default(20),
-})
-
-export const jackpotRouter = {
+export const jackpotRouter = {} as const
+// The actual router object is defined below
+Object.assign(jackpotRouter, {
   /**
    * Get all active jackpots with current amounts
    */
@@ -290,10 +278,10 @@ export const jackpotRouter = {
   }),
 
   /**
-   * Initialize jackpots (admin endpoint)
+   * Initialize jackpots (admin only)
    */
   initializeJackpots: protectedProcedure.handler(async () => {
     await jackpotService.initializeJackpots()
     return { message: 'Jackpots initialized successfully' }
   }),
-}
+})

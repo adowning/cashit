@@ -1,6 +1,6 @@
+import { cacheService } from '@/services/redis.service'
 import { Hono } from 'hono'
-import { performanceMonitor } from '../services/performance-monitor.service.js'
-import { cacheService } from '../services/redis-cache.service.js'
+import { performanceMonitor } from '../services/performance-monitor.service'
 
 const app = new Hono()
 
@@ -11,11 +11,14 @@ app.get('/metrics', async (c) => {
     return c.json(metrics)
   } catch (error) {
     console.error('Failed to get performance metrics:', error)
-    return c.json({ 
-      status: 'error', 
-      message: 'Failed to retrieve performance metrics',
-      timestamp: new Date().toISOString()
-    }, 500)
+    return c.json(
+      {
+        status: 'error',
+        message: 'Failed to retrieve performance metrics',
+        timestamp: new Date().toISOString(),
+      },
+      500
+    )
   }
 })
 
@@ -27,15 +30,18 @@ app.get('/summary', async (c) => {
     return c.json({
       status: 'success',
       data: summary,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
     console.error('Failed to get performance summary:', error)
-    return c.json({ 
-      status: 'error', 
-      message: 'Failed to retrieve performance summary',
-      timestamp: new Date().toISOString()
-    }, 500)
+    return c.json(
+      {
+        status: 'error',
+        message: 'Failed to retrieve performance summary',
+        timestamp: new Date().toISOString(),
+      },
+      500
+    )
   }
 })
 
@@ -55,7 +61,7 @@ app.get('/cache/health', async (c) => {
   try {
     const isHealthy = await cacheService.healthCheck()
     const metrics = cacheService.getMetrics()
-    
+
     return c.json({
       status: 'success',
       healthy: isHealthy,
@@ -66,16 +72,19 @@ app.get('/cache/health', async (c) => {
         errors: metrics.errors,
         connectionErrors: metrics.connectionErrors,
       },
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
     console.error('Cache health check failed:', error)
-    return c.json({ 
-      status: 'error', 
-      healthy: false,
-      message: 'Cache health check failed',
-      timestamp: new Date().toISOString()
-    }, 500)
+    return c.json(
+      {
+        status: 'error',
+        healthy: false,
+        message: 'Cache health check failed',
+        timestamp: new Date().toISOString(),
+      },
+      500
+    )
   }
 })
 
@@ -86,15 +95,18 @@ app.post('/cache/reset-metrics', async (c) => {
     return c.json({
       status: 'success',
       message: 'Cache metrics reset successfully',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
     console.error('Failed to reset cache metrics:', error)
-    return c.json({ 
-      status: 'error', 
-      message: 'Failed to reset cache metrics',
-      timestamp: new Date().toISOString()
-    }, 500)
+    return c.json(
+      {
+        status: 'error',
+        message: 'Failed to reset cache metrics',
+        timestamp: new Date().toISOString(),
+      },
+      500
+    )
   }
 })
 
@@ -103,7 +115,7 @@ app.get('/dashboard', async (c) => {
   try {
     const metrics = performanceMonitor.getApiMetrics()
     const cacheMetrics = cacheService.getMetrics()
-    
+
     const html = `
 <!DOCTYPE html>
 <html>
@@ -140,7 +152,7 @@ app.get('/dashboard', async (c) => {
         <h1>🚀 Performance Dashboard</h1>
         <p>Last updated: ${new Date().toLocaleString()}</p>
         <button class="refresh-btn" onclick="refreshData()">Refresh Now</button>
-        
+
         <div class="grid">
             <div class="card">
                 <h2>Cache Performance</h2>
@@ -165,7 +177,7 @@ app.get('/dashboard', async (c) => {
                     <div class="metric-label">Errors</div>
                 </div>
             </div>
-            
+
             <div class="card">
                 <h2>System Status</h2>
                 <div class="metric">
@@ -182,7 +194,7 @@ app.get('/dashboard', async (c) => {
                 </div>
             </div>
         </div>
-        
+
         <div class="card">
             <h2>Phase 3 Optimizations</h2>
             <p>✅ Enhanced TTL values (10min user, 1hr games, 30s wallet)</p>
@@ -192,7 +204,7 @@ app.get('/dashboard', async (c) => {
             <p>✅ Performance alerting system</p>
             <p>✅ Comprehensive metrics tracking</p>
         </div>
-        
+
         <div class="card">
             <h2>Performance Improvements</h2>
             <p><strong>Baseline (Prisma):</strong> ~3,800ms</p>
@@ -200,16 +212,16 @@ app.get('/dashboard', async (c) => {
             <p><strong>Cached (Bun.sql + Redis):</strong> ~425ms (88.8% improvement)</p>
             <p><strong>Phase 3 Target:</strong> <300ms with >80% cache hit rate</p>
         </div>
-        
+
         <div class="card">
             <h2>Recommendations</h2>
-            ${metrics.performance.recommendations ? metrics.performance.recommendations.map(r => `<p>• ${r}</p>`).join('') : '<p>No recommendations available</p>'}
+            ${metrics.performance.recommendations ? metrics.performance.recommendations.map((r: any) => `<p>• ${r}</p>`).join('') : '<p>No recommendations available</p>'}
         </div>
     </div>
 </body>
 </html>
     `
-    
+
     return c.html(html)
   } catch (error) {
     console.error('Failed to generate dashboard:', error)

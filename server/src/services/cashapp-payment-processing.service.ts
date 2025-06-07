@@ -1,18 +1,16 @@
 // src/services/cashapp-payment-processing.service.ts
-import {
-  fetchReceivedVendorPayments,
-  ReceivedCashAppPayment,
-} from '@/integrations/cashapp.integration'
+
 import * as transactionService from './transaction.service'
 import prisma from '../../prisma' // Your Prisma client instance
 import { AppEvents, typedAppEventEmitter } from '../lib/events'
 import { TransactionStatus, TransactionType, UserProfile } from '../../prisma/generated/client'
+import { ReceivedCashAppPayment, fetchReceivedVendorPayments } from './cashapp.integration'
 
 const VENDOR_CASHAPP_INTERNAL_CUSTOMER_ID = process.env.VENDOR_CASHAPP_INTERNAL_CUSTOMER_ID
 const GAME_TOKEN_PRODUCT_ID_CASHAPP_DEPOSIT =
   process.env.GAME_TOKEN_PRODUCT_ID_CASHAPP_DEPOSIT || 'CASHAPP_GAME_TOKENS_V1'
 const CASHAPP_DEPOSIT_PROVIDER_TAG = 'CASHAPP_AUTO_DEPOSIT'
-const GAME_TOKEN_CURRENCY = process.env.GAME_TOKEN_CURRENCY || 'GTK' // Example currency for game tokens
+// const GAME_TOKEN_CURRENCY = process.env.GAME_TOKEN_CURRENCY || 'GTK' // Example currency for game tokens
 
 async function findUserForPayment(payment: ReceivedCashAppPayment): Promise<UserProfile | null> {
   if (payment.senderCashtag) {

@@ -1,6 +1,10 @@
 import { ORPCError, os } from '@orpc/server'
 import type { Context } from './context'
+// import { ZodSmartCoercionPlugin } from '@orpc/zod' // <-- zod v3
 
+// const handler = new OpenAPIHandler(router, {
+//   plugins: [new ZodSmartCoercionPlugin()]
+// })
 export const o = os.$context<Context>()
 
 export const publicProcedure = o

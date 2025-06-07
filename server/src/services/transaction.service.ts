@@ -1,16 +1,15 @@
 // File: server/src/services/transaction.service.ts
 
 import {
-  PrismaClient,
-  Wallet,
-  Transaction,
-  TransactionType,
-  TransactionStatus,
   Prisma,
+  Transaction,
+  TransactionStatus,
+  TransactionType,
+  Wallet,
 } from 'prisma/generated/client'
 
-import { typedAppEventEmitter, AppEvents } from '../lib/events'
 import prisma from '../../prisma/index'
+import { AppEvents, typedAppEventEmitter } from '../lib/events'
 
 // --- Core Transaction Creation ---
 
@@ -55,12 +54,12 @@ export async function createTransactionRecord(
     type: args.type,
     status: args.status,
     amount: args.amountInCents,
-    Operator: { connect: { id: args.operatorId } },
+    operator: { connect: { id: args.operatorId } },
   }
 
   // Connect to UserProfile
   if (args.userId) {
-    createInput.UserProfile = { connect: { id: args.userId } }
+    createInput.userProfile = { connect: { id: args.userId } }
   }
 
   // Connect to wallet if provided
@@ -98,7 +97,7 @@ export async function createTransactionRecord(
 // --- Wallet Management ---
 export async function getOrCreateWallet(
   userId: string,
-  currencyId: string,
+  // currencyId: string,
   operatorId: string,
   tx?: any
 ): Promise<Wallet> {
@@ -183,7 +182,7 @@ export async function recordSystemAwardTransaction(
   },
   tx: any
 ): Promise<Transaction> {
-  const wallet = await getOrCreateWallet(args.userId, 'USD', args.operatorId || 'default', tx)
+  const wallet = await getOrCreateWallet(args.userId, 'USD', args.operatorId || 'default')
   const amountInCents = args.amountInCents
   let balanceBeforeInCents: number
   let balanceTypeToUpdate: 'balance' | 'bonusBalance' = 'balance'

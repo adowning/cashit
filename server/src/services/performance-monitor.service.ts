@@ -1,4 +1,4 @@
-import { cacheService } from './redis-cache.service.js'
+import { cacheService } from './redis.service'
 
 // Performance monitoring service for comprehensive system health
 class PerformanceMonitorService {
@@ -7,7 +7,7 @@ class PerformanceMonitorService {
     cacheMetrics: any
     systemMetrics: any
   }> = []
-  
+
   private readonly MAX_HISTORY_SIZE = 100 // Keep last 100 measurements
   private monitoringInterval: Timer | null = null
 
@@ -17,7 +17,7 @@ class PerformanceMonitorService {
 
   private startMonitoring(): void {
     console.log('📊 [PerformanceMonitor] Starting comprehensive performance monitoring...')
-    
+
     // Monitor every 30 seconds
     this.monitoringInterval = setInterval(() => {
       this.collectMetrics()
@@ -27,10 +27,10 @@ class PerformanceMonitorService {
   private async collectMetrics(): Promise<void> {
     try {
       const timestamp = Date.now()
-      
+
       // Collect cache metrics
       const cacheMetrics = cacheService.getMetrics()
-      
+
       // Collect system metrics
       const systemMetrics = {
         memoryUsage: process.memoryUsage(),
@@ -52,7 +52,6 @@ class PerformanceMonitorService {
 
       // Check for performance issues
       this.checkPerformanceAlerts(cacheMetrics, systemMetrics)
-
     } catch (error) {
       console.error('[PerformanceMonitor] Failed to collect metrics:', error)
     }
@@ -67,50 +66,65 @@ class PerformanceMonitorService {
 
     // Cache performance alerts
     if (cacheMetrics.hitRate < 60) {
-      console.warn(`⚠️ [PerformanceMonitor] Low cache hit rate: ${cacheMetrics.hitRate.toFixed(2)}%`)
+      console.warn(
+        `⚠️ [PerformanceMonitor] Low cache hit rate: ${cacheMetrics.hitRate.toFixed(2)}%`
+      )
     }
 
     if (cacheMetrics.avgResponseTime > 10) {
-      console.warn(`⚠️ [PerformanceMonitor] Slow cache response: ${cacheMetrics.avgResponseTime.toFixed(2)}ms`)
+      console.warn(
+        `⚠️ [PerformanceMonitor] Slow cache response: ${cacheMetrics.avgResponseTime.toFixed(2)}ms`
+      )
     }
   }
 
   // Get performance summary for the last N minutes
   getPerformanceSummary(minutes: number = 5): any {
-    const cutoffTime = Date.now() - (minutes * 60 * 1000)
-    const recentMetrics = this.performanceHistory.filter(m => m.timestamp > cutoffTime)
+    const cutoffTime = Date.now() - minutes * 60 * 1000
+    const recentMetrics = this.performanceHistory.filter((m) => m.timestamp > cutoffTime)
 
     if (recentMetrics.length === 0) {
       return { error: 'No recent metrics available' }
     }
 
     // Calculate averages
-    const avgCacheHitRate = recentMetrics.reduce((sum, m) => sum + m.cacheMetrics.hitRate, 0) / recentMetrics.length
-    const avgCacheResponseTime = recentMetrics.reduce((sum, m) => sum + m.cacheMetrics.avgResponseTime, 0) / recentMetrics.length
-    const avgMemoryMB = recentMetrics.reduce((sum, m) => sum + (m.systemMetrics.memoryUsage.heapUsed / 1024 / 1024), 0) / recentMetrics.length
+    const avgCacheHitRate =
+      recentMetrics.reduce((sum, m) => sum + m.cacheMetrics.hitRate, 0) / recentMetrics.length
+    const avgCacheResponseTime =
+      recentMetrics.reduce((sum, m) => sum + m.cacheMetrics.avgResponseTime, 0) /
+      recentMetrics.length
+    const avgMemoryMB =
+      recentMetrics.reduce(
+        (sum, m) => sum + m.systemMetrics.memoryUsage.heapUsed / 1024 / 1024,
+        0
+      ) / recentMetrics.length
 
     const latest = recentMetrics[recentMetrics.length - 1]
-
     return {
       timeRange: `Last ${minutes} minutes`,
       sampleCount: recentMetrics.length,
       cache: {
         avgHitRate: Math.round(avgCacheHitRate * 100) / 100,
         avgResponseTime: Math.round(avgCacheResponseTime * 100) / 100,
-        currentHits: latest.cacheMetrics.hits,
-        currentMisses: latest.cacheMetrics.misses,
-        currentErrors: latest.cacheMetrics.errors,
-        connectionErrors: latest.cacheMetrics.connectionErrors,
+        currentHits: latest?.cacheMetrics?.hits,
+        currentMisses: latest?.cacheMetrics?.misses,
+        currentErrors: latest?.cacheMetrics?.errors,
+        connectionErrors: latest?.cacheMetrics?.connectionErrors,
       },
       system: {
         avgMemoryMB: Math.round(avgMemoryMB * 100) / 100,
-        currentMemoryMB: Math.round((latest.systemMetrics.memoryUsage.heapUsed / 1024 / 1024) * 100) / 100,
-        uptimeHours: Math.round((latest.systemMetrics.uptime / 3600) * 100) / 100,
+        currentMemoryMB:
+          Math.round((latest?.systemMetrics.memoryUsage.heapUsed / 1024 / 1024) * 100) / 100,
+        uptimeHours: Math.round((latest?.systemMetrics.uptime / 3600) * 100) / 100,
       },
       performance: {
         status: this.getPerformanceStatus(avgCacheHitRate, avgCacheResponseTime, avgMemoryMB),
-        recommendations: this.getPerformanceRecommendations(avgCacheHitRate, avgCacheResponseTime, avgMemoryMB),
-      }
+        recommendations: this.getPerformanceRecommendations(
+          avgCacheHitRate,
+          avgCacheResponseTime,
+          avgMemoryMB
+        ),
+      },
     }
   }
 
@@ -121,7 +135,11 @@ class PerformanceMonitorService {
     return 'NEEDS_ATTENTION'
   }
 
-  private getPerformanceRecommendations(hitRate: number, responseTime: number, memoryMB: number): string[] {
+  private getPerformanceRecommendations(
+    hitRate: number,
+    responseTime: number,
+    memoryMB: number
+  ): string[] {
     const recommendations: string[] = []
 
     if (hitRate < 70) {
@@ -171,7 +189,7 @@ SYSTEM METRICS:
 PERFORMANCE STATUS: ${summary.performance?.status || 'UNKNOWN'}
 
 RECOMMENDATIONS:
-${summary.performance?.recommendations?.map(r => `- ${r}`).join('\n') || '- No recommendations available'}
+${summary.performance?.recommendations?.map((r: any) => `- ${r}`).join('\n') || '- No recommendations available'}
 
 PHASE 3 OPTIMIZATIONS ACTIVE:
 ✅ Enhanced TTL values (10min user, 1hr games, 30s wallet)
@@ -213,7 +231,7 @@ TARGET PERFORMANCE ACHIEVED:
         monitoringActive: true,
         preloadingEnabled: true,
         alertingEnabled: true,
-      }
+      },
     }
   }
 

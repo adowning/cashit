@@ -1,21 +1,20 @@
-import * as tournamentService from '../services/tournament.service'
-import {
-  TournamentStartedEvent,
-  TournamentEndedEvent,
-  TournamentParticipantJoinedEvent,
-  TournamentNotificationEvent,
-} from '@/lib/schema' //
-import { Server } from 'bun'
 import { AppEvents, typedAppEventEmitter } from '@/lib/events'
+import { validateAndPublish } from '@/utils'
+import { Server } from 'bun'
+
 import {
   TournamentCreatedPayload,
+  TournamentEndedEvent,
   TournamentEndedPayload,
   TournamentLeaderboardUpdatedPayload,
   TournamentLeaderboardUpdateEvent,
+  TournamentNotificationEvent,
+  TournamentParticipantJoinedEvent,
   TournamentParticipantJoinedPayload,
+  TournamentStartedEvent,
   TournamentStartedPayload,
-} from 'shared'
-import { validateAndPublish } from '@/lib/utils'
+} from '../../../shared/dist'
+import * as tournamentService from '../services/tournament.service'
 
 // Helper to construct a WebSocket message structure if not using validateAndPublish strictly
 function formatWebSocketMessage<T>(type: string, payload: T) {

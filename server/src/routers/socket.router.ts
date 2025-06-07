@@ -1,36 +1,37 @@
+import { handleJoinRoom, handleSendMessage } from '@/handlers/chat.handler'
+import { handlePing } from '@/handlers/heartbeat.handler'
+import { nolimitProxyMessageHandler, NoLimitProxyWsData } from '@/handlers/nolimit-proxy.handler'
+import { cacheService } from '@/services/redis.service' // Import the Redis service
+import { WebSocketMonitorService } from '@/services/websocket-monitor.service'
+import { safeJsonParse, subscribeToTopic, unsubscribeFromTopic, validateAndSend } from '@/utils'
 import type { Server, ServerWebSocket, WebSocketHandler } from 'bun'
-import { v4 as randomUUIDv7 } from 'uuid'
-import { z } from 'zod'
 import {
-  JoinRoom,
-  Ping,
-  UserLeft,
-  SendMessage,
-  SubscribeToTournamentTopic,
-  UnsubscribeFromTournamentTopic,
-  SubscribeToGeneralTournaments,
-  UnsubscribeFromGeneralTournaments,
-  GenericWsResponse,
+  AppWsData,
   CloseHandler,
   CloseHandlerContext,
+  GenericWsResponse,
+  JoinRoom,
+  LaravelCommand,
   MessageHandler,
   MessageHandlerContext,
   MessageHandlerEntry,
   MessageSchemaType,
   OpenHandler,
   OpenHandlerContext,
+  Ping,
   SendFunction,
-  WsData,
+  SendMessage,
+  SubscribeToGeneralTournaments,
+  SubscribeToTournamentTopic,
+  UnsubscribeFromGeneralTournaments,
+  UnsubscribeFromTournamentTopic,
   UpgradeRequestOptions,
-  AppWsData,
   UserBalanceUpdate,
   UserBalanceUpdatePayload,
+  UserLeft,
 } from 'shared'
-import { subscribeToTopic, unsubscribeFromTopic, safeJsonParse, validateAndSend } from '@/lib/utils'
-import { handleJoinRoom, handleSendMessage } from '@/handlers/chat.handler'
-import { handlePing } from '@/handlers/heartbeat.handler'
-import { kagamingProxyOpenHandler } from '@/handlers/kagaming-proxy.handler'
-import { nolimitProxyMessageHandler, NoLimitProxyWsData } from '@/handlers/nolimit-proxy.handler'
+import { v4 as randomUUIDv7 } from 'uuid'
+import { z } from 'zod'
 
 // export type AppWsData = WsData & {
 //   userId?: string
@@ -55,7 +56,11 @@ import { nolimitProxyMessageHandler, NoLimitProxyWsData } from '@/handlers/nolim
 // }
 
 // --- Tournament Topic Subscription Handlers ---
-import { UserBalanceUpdateMessageSchema } from 'shared' // From shared types
+import {
+  kagamingProxyMessageHandler,
+  KaGamingProxyWsData,
+} from '@/handlers/kagaming-proxy.handler'
+import { handleLaravelCommand } from '@/handlers/php-slots.handler'
 import { AppEvents, typedAppEventEmitter } from '@/lib/events'
 
 function handleSubscribeToTournamentTopic(
@@ -113,9 +118,15 @@ export class WebSocketRouter<T extends AppWsData = AppWsData> {
   private messageHandlers: Map<string, MessageHandlerEntry<T>> = new Map()
   private openHandlers: OpenHandler<T>[] = []
   private closeHandlers: CloseHandler<T>[] = []
+  data: any
 
   constructor() {
     this.registerMessageHandler(Ping, handlePing as MessageHandler<typeof Ping, T>)
+    this.registerMessageHandler(LaravelCommand, ((context) => {
+      // Adapter to match MessageHandler signature
+      // context: { ws, payload, send, server }
+      handleLaravelCommand(context.ws, context.payload, this.server!)
+    }) as MessageHandler<typeof LaravelCommand, T>)
     this.registerMessageHandler(JoinRoom, handleJoinRoom as MessageHandler<typeof JoinRoom, T>)
     this.registerMessageHandler(
       SendMessage,
@@ -184,15 +195,72 @@ export class WebSocketRouter<T extends AppWsData = AppWsData> {
     return success ? clientId : null
   }
 
-  private async defaultOpenHandler(context: OpenHandlerContext<T>): Promise<void> {
-    const { ws, send } = context
-    console.log(ws.data)
+  private defaultOpenHandler = async (context: OpenHandlerContext<T>): Promise<void> => {
+    const { ws } = context
+    const { request } = ws.data
+    const req = request as Request
+    const clientId = randomUUIDv7()
+    const xForwardedFor = req.headers.get('x-forwarded-for')
+    const ip = xForwardedFor
+      ? xForwardedFor?.split(',')[0]?.trim()
+      : req.headers.get('x-real-ip') || 'unknown'
+    const userAgent = req.headers.get('user-agent') || 'unknown'
+    const path = new URL(req.url).pathname
+
+    // Log connection to Redis
+    const connectionKey = `ws:connections:${clientId}`
+    const connectionData = {
+      id: clientId,
+      ip,
+      userAgent,
+      path,
+      connectedAt: new Date().toISOString(),
+      userId: ws.data.userId,
+      username: ws.data.username,
+      type: ws.data.isNoLimitProxy ? 'game' : 'user',
+    }
+
+    await cacheService.set(connectionKey, JSON.stringify(connectionData), 86400) // 24h TTL
+
+    // Increment connection counter
+    await cacheService.incr('ws:stats:total_connections')
+    await cacheService.incr(`ws:stats:connections:${new Date().toISOString().split('T')[0]}`)
+
+    // Track active connections
+    await cacheService.sadd('ws:active_connections', clientId)
+
+    // Set client ID and other metadata on the WebSocket connection
+    ws.data = {
+      ...ws.data,
+      clientId,
+      ip,
+      userAgent,
+      path,
+      connectedAt: new Date().toISOString(),
+    } as T
+
+    // Log the connection
+    await WebSocketMonitorService.logEvent({
+      type: 'connect',
+      clientId,
+      userId: ws.data.userId,
+      username: ws.data.username,
+      path,
+      size: 0,
+      ip,
+      userAgent,
+    })
+
+    const { ws: wsContext, send } = context
+    console.log(wsContext.data)
     const userId =
-      typeof ws.data.user === 'object' && ws.data.user !== null && 'id' in ws.data.user
-        ? (ws.data.user as { id?: string }).id
+      typeof wsContext.data.user === 'object' &&
+      wsContext.data.user !== null &&
+      'id' in wsContext.data.user
+        ? (wsContext.data.user as { id?: string }).id
         : undefined
-    console.log(`WebSocket opened: ${ws.data.clientId}, UserID: ${userId || 'Guest'}`)
-    subscribeToTopic(ws, 'global') // Corrected
+    console.log(`WebSocket opened: ${wsContext.data.clientId}, UserID: ${userId || 'Guest'}`)
+    subscribeToTopic(wsContext, 'global') // Corrected
     typedAppEventEmitter.on(AppEvents.USER_BALANCE_UPDATED, (payload: UserBalanceUpdatePayload) => {
       const topic = `user:${payload.userId}:balanceUpdated`
       console.log(topic)
@@ -204,12 +272,38 @@ export class WebSocketRouter<T extends AppWsData = AppWsData> {
       console.log(`Published user update for userId ${payload.userId} to topic ${topic}`)
     })
     if (userId) {
-      subscribeToTopic(ws, `user_${userId}_updates`) // Corrected
+      subscribeToTopic(wsContext, `user_${userId}_updates`) // Corrected
     }
   }
 
-  private async defaultCloseHandler(context: CloseHandlerContext<T>): Promise<void> {
-    const { ws, reason } = context // Ensure 'reason' is destructured
+  private defaultCloseHandler = async (context: CloseHandlerContext<T>): Promise<void> => {
+    const { ws, code, reason } = context
+    const { clientId } = ws.data
+
+    console.log(`Client disconnected: ${clientId}, code: ${code}, reason: ${reason}`)
+
+    // Log disconnection to Redis
+    const connectionKey = `ws:connections:${clientId}`
+    const connectionData = await cacheService.get(connectionKey)
+
+    if (connectionData) {
+      const conn: any = {}
+      conn.disconnectedAt = new Date().toISOString()
+      conn.disconnectReason = reason
+      conn.disconnectCode = code
+
+      // Move to closed connections with 1h TTL
+      await cacheService.set(`ws:closed_connections:${clientId}`, JSON.stringify(conn), 3600)
+      await cacheService.delete(connectionKey)
+    }
+
+    // Remove from active connections
+    await cacheService.srem('ws:active_connections', clientId)
+
+    // Update stats
+    await cacheService.decr('ws:stats:total_connections')
+    await cacheService.incr('ws:stats:total_disconnections')
+
     // Unsubscribe from all tracked topics on close
     if (ws.data.subscribedTournamentTopics) {
       ws.data.subscribedTournamentTopics.forEach((topic: string) => {
@@ -234,18 +328,6 @@ export class WebSocketRouter<T extends AppWsData = AppWsData> {
     }
   }
 
-  private async handleOpen(ws: ServerWebSocket<T>): Promise<void> {
-    const send = this.createSendFunction(ws)
-    const context: OpenHandlerContext<T> = { ws, send }
-    for (const handler of this.openHandlers) {
-      try {
-        await handler(context)
-      } catch (error) {
-        console.error(`Error in open handler for ${ws.data.clientId}:`, error)
-      }
-    }
-  }
-
   private async handleClose(
     ws: ServerWebSocket<T>,
     code: number,
@@ -266,18 +348,79 @@ export class WebSocketRouter<T extends AppWsData = AppWsData> {
       }
     }
   }
-
+  private async handleOpen(ws: ServerWebSocket<T>): Promise<void> {
+    const send = this.createSendFunction(ws)
+    const context: OpenHandlerContext<T> = { ws, send }
+    for (const handler of this.openHandlers) {
+      try {
+        await handler(context)
+      } catch (error) {
+        console.error(`Error in open handler for ${ws.data.clientId}:`, error)
+      }
+    }
+  }
   private async handleMessage(ws: ServerWebSocket<T>, message: string | Buffer): Promise<void> {
+    const rawMessage = typeof message === 'string' ? message : message.toString('utf-8')
+    const messageSize = Buffer.byteLength(rawMessage, 'utf8')
+    let parsedMessage: any
+    const timestamp = Date.now()
+    const messageId = `${ws.data.clientId}:${timestamp}`
+
+    try {
+      parsedMessage = safeJsonParse(rawMessage)
+      if (!parsedMessage) {
+        console.error('Failed to parse message as JSON:', rawMessage)
+        return
+      }
+
+      // Log message to Redis
+      const messageKey = `ws:messages:${messageId}`
+      const messageData = {
+        id: messageId,
+        clientId: ws.data.clientId,
+        userId: ws.data.userId,
+        username: ws.data.username,
+        path: ws.data['path'],
+        direction: 'in',
+        timestamp,
+        size: messageSize,
+        type: parsedMessage.type || 'unknown',
+        data: parsedMessage,
+      }
+
+      // Store message with 1h TTL
+      await cacheService.set(messageKey, JSON.stringify(messageData), 3600)
+
+      // Add to recent messages list (keep last 1000 messages)
+      await cacheService.lpush('ws:recent_messages', messageKey)
+      await cacheService.ltrim('ws:recent_messages', 0, 999)
+
+      // Update message counters
+      await cacheService.incr('ws:stats:total_messages')
+      await cacheService.incr(`ws:stats:messages:${new Date().toISOString().split('T')[0]}`)
+    } catch (error) {
+      console.error('Error parsing message:', error)
+      return
+    }
+
     if (ws.data.isNoLimitProxy && typeof nolimitProxyMessageHandler === 'function') {
       nolimitProxyMessageHandler(ws as ServerWebSocket<NoLimitProxyWsData>, message)
       return
     }
-    if (ws.data.isKaGamingProxy && typeof kagamingProxyOpenHandler === 'function') {
-      kagamingProxyOpenHandler({ ws: ws as any, send: this.createSendFunction(ws as any) })
+    if (ws.data.isKaGamingProxy && typeof kagamingProxyMessageHandler === 'function') {
+      kagamingProxyMessageHandler(ws as ServerWebSocket<KaGamingProxyWsData>, message)
+      return
+    }
+    if (ws.data['isphpProxy'] && typeof phpProxyOpenHandler === 'function') {
+      phpProxyMessageHandler({ ws: ws as any, send: this.createSendFunction(ws as any) })
       return
     }
     const messageString = message instanceof Buffer ? message.toString() : message
-    const parseResult = safeJsonParse(messageString)
+    const parseResult = safeJsonParse(messageString) as any
+
+    if (parseResult.action) {
+      handleLaravelCommand(ws, parseResult, this.server as Server)
+    }
 
     if (!parseResult.success || !parseResult.data) {
       console.warn(

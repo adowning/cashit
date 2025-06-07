@@ -8,17 +8,17 @@ import {
   TableOperationSubs,
 } from './types'
 import config from './config'
-import debounce from './utils/debounce'
+import debounce from '@/utils/debounce'
 import uid from 'short-uuid'
 import logger from './logger'
-import { formatRelation, formatTablePath } from './utils/formatters'
+import { formatRelation, formatTablePath } from '@/utils/formatters'
 import { Pool } from 'pg'
 
 const DEFAULT_OPTIONS = {
   schema: config.defaults.TABLE_SCHEMA,
   bufferInterval: config.defaults.BUFFER_INTERVAL,
   maxBufferSize: config.defaults.MAX_BUFFER_SIZE,
-  onError: (err: Error) => {},
+  onError: (err: Error) => { },
 }
 
 /**

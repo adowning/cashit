@@ -1,4 +1,6 @@
 export * from './types/index' // This exports all types from your ./types folder
+import { Session } from 'better-auth'
+import { Server } from 'bun'
 
 // Import the User type (and others) defined within the shared package itself.
 // This User type should be based on your Prisma schema, as found in ./types/prisma.ts
@@ -50,4 +52,22 @@ export type GenericError = {
   code: number | string
   message: string
   details?: any
+}
+export type HonoEnv = {
+  Bindings: {
+    serverInstance?: Server // Make serverInstance known to Hono's Env
+  }
+  Variables: {
+    skipAuthMiddleWare: boolean
+    session: Session | null
+    user_with_profile: UserProfile | null
+    user: any | null
+    serverInstance?: Server // Make serverInstance known for c.set/c.get
+    gameSymbol: string | null
+    mgckey: string | null
+    pagination: {
+      skip: number
+      take: number
+    }
+  }
 }

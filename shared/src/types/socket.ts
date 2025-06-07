@@ -4,13 +4,13 @@ export interface GetUserBalanceSocket {
   mt: number
 }
 import type { HeadersInit, Server, ServerWebSocket } from 'bun'
-import { z, ZodObject, ZodLiteral, type ZodRawShape, type ZodTypeAny } from 'zod'
+import { z, ZodLiteral, ZodObject, type ZodRawShape, type ZodTypeAny } from 'zod'
+import { UserProfile } from '..'
 import type {
   TournamentEndedPayload,
   TournamentParticipantJoinedPayload,
   TournamentStartedPayload,
 } from './tournament'
-import { UserProfile } from '..'
 /* SPDX-FileCopyrightText: 2025-present Kriasoft */
 /* SPDX-License-Identifier: MIT */
 export const UserBalanceUpdatePayloadSchema = z.object({
@@ -84,6 +84,12 @@ export const Ping = messageSchema('PING', {
 })
 export const Pong = messageSchema('PONG', {
   userId: z.string(),
+  content: z.string(),
+  timestamp: z.number().optional(),
+})
+export const LaravelCommand = messageSchema('LaravelCommand', {
+  userId: z.string(),
+  action: z.string(),
   content: z.string(),
   timestamp: z.number().optional(),
 })
@@ -383,6 +389,7 @@ export interface WsData {
 
 // Application-specific WebSocket data, extending WsData
 export type AppWsData = WsData & {
+  data: any
   // userId: string; // If userId is always expected after auth for non-proxy
   user: UserProfile
   username?: string

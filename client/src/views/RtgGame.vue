@@ -1,6 +1,6 @@
 <template>
   <div v-if="error === false" style="width: 100vw; height: 100vh">
-    <RtgGameLoader :options="gameLaunchOptions" />
+    <GameLoader :options="gameLaunchOptions" />
   </div>
   <div v-else>
     <p>Game name is missing in the URL.</p>
@@ -8,25 +8,14 @@
 </template>
 
 <script setup lang="ts">
-  import RtgGameLoader from '@/components/games/RtgGameLoader.vue' // Adjust path if needed
+  // import RtgGameLoader from '@/components/games/RtgGameLoader.vue' // Adjust path if needed
   import { reactive } from 'vue'
   import { useRouteQuery } from '@vueuse/router'
 
   const error = ref(false)
   // Define the type for the mode explicitly if you want to be able to change it
   type GameMode = 'real' | 'demo'
-  interface RtgGameLaunchOptions {
-    gameName: string
-    lang?: string
-    currency?: string
-    mode?: 'real' | 'demo'
-    rgsApiBase?: string
-    gameCdnBase?: string
-    operator?: string
-    provider?: string
-    depositUrl?: string
-    lobbyUrl?: string
-  }
+
   // const route = useRoute()
   const gameName = useRouteQuery('gameName') // or with a default value
   console.log(gameName.value)

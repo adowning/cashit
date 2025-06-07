@@ -1,24 +1,23 @@
-import z from 'zod/v4'
-import prisma from '../../prisma/index'
-import { protectedProcedure, publicProcedure } from '../lib/orpc'
-import type { ExtendedPrismaClient } from '../../prisma' // Import the exported type
 import { type } from '@orpc/server'
 import { Product, TransactionType } from 'prisma/generated'
 import {
   DepositHistoryItem,
   DepositHistoryResponse,
   DepositProduct,
-  GetDepositHistoryResponse,
   GetOperatorDataResponse,
   OperatorData,
 } from 'shared'
+import z from 'zod/v4'
+import type { ExtendedPrismaClient } from '../../prisma' // Import the exported type
+import prisma from '../../prisma/index'
+import { protectedProcedure } from '../lib/orpc'
 
 const _prisma: ExtendedPrismaClient = prisma
 
-export const transactionRouter = {
+export const transactionRouter: Record<string, unknown> = {
   getTransactionById: protectedProcedure
     .input(type<{ id: string }>())
-    .handler(async ({ context, input }) => {
+    .handler(async ({ input }) => {
       return await _prisma.transaction.findUniqueOrThrow({
         where: {
           id: input.id,
@@ -30,7 +29,7 @@ export const transactionRouter = {
     }),
   getUserPendingTransactions: protectedProcedure
     .input(type<{ id: string }>())
-    .handler(async ({ context, input }) => {
+    .handler(async ({ context }) => {
       return await _prisma.transaction.findMany({
         where: {
           status: 'PENDING',
@@ -50,7 +49,7 @@ export const transactionRouter = {
       })
     )
     .handler(async ({ context, input }) => {
-      const { onlyPending, page, limit } = input
+      const { page, limit } = input
       try {
         const transactions = await _prisma.transaction.findMany({
           where: {
@@ -76,7 +75,7 @@ export const transactionRouter = {
           //   product: true,
           // },
           include: {
-            Operator: true,
+            operator: true,
             product: true,
           },
         })

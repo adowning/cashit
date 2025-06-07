@@ -1,5 +1,5 @@
 import prisma from '../../prisma/'
-import { JackpotService } from './jackpot.service.js'
+import { JackpotService } from './jackpot.service'
 import { type ProcessJackpotContributionsResponse, type JackpotWinDto } from 'shared'
 
 export interface GameSpinProcessingResult {

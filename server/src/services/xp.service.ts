@@ -1,6 +1,6 @@
 // server/src/services/xp.service.ts
 
-import { VipInfo, Prisma } from '../../prisma/generated/client'
+import { VipInfo } from '../../prisma/generated/client'
 import prisma from '../../prisma/index'
 import { getVipLevelConfiguration } from '../config/leveling.config'
 
@@ -58,13 +58,12 @@ export function calculateXpForDeposit(depositAmountCents: number, vipInfo: VipIn
  */
 export async function addXpToUser(
   userId: string,
-  xpAmount: number,
-  source: string,
-  sourceId?: string,
-  metadata?: Record<string, any>,
-  tx?: Prisma.TransactionClient
+  xpAmount: number
+  // source: string,
+  // sourceId?: string,
+  // metadata?: Record<string, any>,
 ): Promise<XpCalculationResult> {
-  const prismaClient = tx || db
+  // const prismaClient = tx || db
 
   if (xpAmount <= 0) {
     throw new Error('XP amount must be positive')
@@ -88,7 +87,7 @@ export async function addXpToUser(
     const levelProgression = calculateLevelProgression(newTotalXp)
 
     // Update VIP info
-    const updatedVipInfo = await transaction.vipInfo.update({
+    await transaction.vipInfo.update({
       where: { userId },
       data: {
         totalXp: newTotalXp,

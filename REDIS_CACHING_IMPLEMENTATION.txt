@@ -10,7 +10,7 @@ IMPLEMENTATION SUMMARY:
 
 WHAT WAS IMPLEMENTED:
 
-1. REDIS CACHE SERVICE (redis-cache.service.ts):
+1. REDIS CACHE SERVICE (redis.service.ts):
    - Uses Bun's native RedisClient (fastest Redis client available)
    - Comprehensive caching for all hot queries identified in performance analysis
    - Built-in performance metrics tracking (hits, misses, response times)

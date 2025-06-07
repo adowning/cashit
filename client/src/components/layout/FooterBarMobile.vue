@@ -14,8 +14,10 @@
   const showBottomBar = ref(true)
 
   const authStore = useAuthStore()
+  const gameStore = useGameStore()
   // --- State & Getters from Sores (using storeToRefs for reactivity) ---
   const { currentUser } = storeToRefs(authStore)
+  const { isPlaying } = storeToRefs(gameStore)
   const depositStore = useTransactionStore()
   const appBarStore = useAppBarStore()
   const pressed = ref(false)
@@ -25,6 +27,7 @@
   const wheelPageOpen = ref(false)
 
   eventBus.on('hideBottomBar', () => {
+    console.log('Hiding bottom bar...')
     showBottomBar.value = false
   })
   function toggleChat() {
@@ -55,7 +58,7 @@
 </script>
 
 <template>
-  <div v-if="showBottomBar" ref="target" class="bbar flex onacona" style="width: 100%">
+  <div v-if="!isPlaying" ref="target" class="bbar flex onacona" style="width: 100%">
     <!-- <BaseLevel> -->
     <div
       class="flex flex-row justify-start gap-12 px-6"

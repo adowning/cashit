@@ -5,7 +5,7 @@ import { createORPCClient } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
 import { createORPCVueQueryUtils } from '@orpc/vue-query'
 
-export default defineNuxtPlugin(() => {
+export default defineNuxtPlugin((): ORPCVueQueryUtils => {
   const config = useRuntimeConfig()
   const serverUrl = config.public.serverURL
 
@@ -22,11 +22,11 @@ export default defineNuxtPlugin(() => {
   })
 
   const client: RouterClient<typeof appRouter> = createORPCClient(rpcLink)
-  const orpcUtils = createORPCVueQueryUtils(client)
+  const orpc = createORPCVueQueryUtils(client)
 
   return {
     provide: {
-      orpc: orpcUtils,
+      orpc,
     },
   }
 })

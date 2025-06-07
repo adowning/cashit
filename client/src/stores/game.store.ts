@@ -5,8 +5,20 @@ import { defineStore } from 'pinia'
 import { orpcManager } from '@/utils/orpc.client'
 
 import { handleException } from './exception'
-import { PrismaGame } from 'shared'
+import {
+  Game,
+  GameBigWinData,
+  GameEnterBody,
+  GameEnterResponse,
+  GameHistoryResponse,
+  GameSearchResponse,
+  GameUserBody,
+  LaunchGameResponseDto,
+  PrismaGame,
+  Search,
+} from 'shared'
 import destr from 'destr'
+import { GameCategory } from '@/interfaces'
 
 type dialogType = 'login' | 'signup'
 
@@ -21,7 +33,10 @@ export const useGameStore = defineStore(
      * @state errMessage - Stores the error message if an operation fails.
      */
     const errMessage = ref<string>('')
-
+    /**
+     * @state errMessage - Stores the error message if an operation fails.
+     */
+    const isPlaying = ref<boolean>(false)
     /**
      * @state gameCategories - An array of game categories.
      */
@@ -135,6 +150,13 @@ export const useGameStore = defineStore(
      */
     function setSuccess(_success: boolean) {
       success.value = _success
+    }
+    /**
+     * @action setIsPlaying - Sets the success state.
+     * @param success - The new success value.
+     */
+    function setIsPlaying(_isPlaying: boolean) {
+      isPlaying.value = _isPlaying
     }
 
     /**
@@ -664,6 +686,8 @@ export const useGameStore = defineStore(
       gameBigWinItem,
       favoriteGameList,
       setSuccess,
+      isPlaying,
+      setIsPlaying,
       setErrorMessage,
       setGameCategories,
       setGamedevelopers,

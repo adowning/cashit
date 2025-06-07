@@ -3,11 +3,10 @@
  * Handles jackpot contributions and wins without blocking the main spin response
  */
 
-import { sql } from 'bun'
 import { SQL } from 'bun'
-import { JackpotUtils, JACKPOT_CONFIG } from 'shared'
+import { JACKPOT_CONFIG, JackpotUtils } from 'shared'
 import { TransactionStatus } from '../../prisma/generated/client'
-import { cacheService, CACHE_KEYS } from './redis-cache.service.js'
+import { CACHE_KEYS, cacheService } from './redis.service'
 
 const jackpotSql = new SQL(
   'postgresql://postgres.acqrudqzutnwrvmvlshc:acqrudqzutnwrvmvlshc@aws-0-us-east-2.pooler.supabase.com:5432/postgres',
@@ -49,7 +48,9 @@ class AsyncJackpotService {
    * Process jackpot contributions and wins asynchronously
    * This runs after the main spin transaction completes
    */
-  async processJackpotsAsync(request: AsyncJackpotProcessingRequest): Promise<JackpotProcessingResult> {
+  async processJackpotsAsync(
+    request: AsyncJackpotProcessingRequest
+  ): Promise<JackpotProcessingResult> {
     const {
       gameSpinId,
       userId,
@@ -78,14 +79,18 @@ class AsyncJackpotService {
       return { contributions: [] }
     }
 
-    console.log(`🎰 [ASYNC] Processing ${eligibleJackpotTypes.length} eligible jackpot types: ${eligibleJackpotTypes.join(', ')}`)
+    console.log(
+      `🎰 [ASYNC] Processing ${eligibleJackpotTypes.length} eligible jackpot types: ${eligibleJackpotTypes.join(', ')}`
+    )
 
     try {
       // Get active jackpots (cached)
       const activeJackpots = await this.getActiveJackpots(eligibleJackpotTypes)
 
       if (activeJackpots.length === 0) {
-        console.log(`🎰 [ASYNC] No active jackpots found for types: ${eligibleJackpotTypes.join(', ')}`)
+        console.log(
+          `🎰 [ASYNC] No active jackpots found for types: ${eligibleJackpotTypes.join(', ')}`
+        )
         return { contributions: [] }
       }
 
@@ -108,7 +113,9 @@ class AsyncJackpotService {
           )
 
           if (contributionAmount > 0) {
-            console.log(`🎰 [ASYNC] Contributing ${contributionAmount} coins to ${jackpot.type} jackpot`)
+            console.log(
+              `🎰 [ASYNC] Contributing ${contributionAmount} coins to ${jackpot.type} jackpot`
+            )
 
             // Create contribution record
             await tx`
@@ -225,17 +232,18 @@ class AsyncJackpotService {
       // Invalidate caches after successful processing
       if (result.contributions.length > 0 || result.jackpotWin) {
         await this.invalidateJackpotCache()
-        
+
         // Invalidate wallet cache if there was a jackpot win
         if (result.jackpotWin) {
           await cacheService.invalidateWallet(userId, operatorId)
         }
       }
 
-      console.log(`🎰 [ASYNC] Jackpot processing completed: ${result.contributions.length} contributions, ${result.jackpotWin ? '1 win' : '0 wins'}`)
+      console.log(
+        `🎰 [ASYNC] Jackpot processing completed: ${result.contributions.length} contributions, ${result.jackpotWin ? '1 win' : '0 wins'}`
+      )
 
       return result
-
     } catch (error) {
       console.error(`🎰 [ASYNC] Jackpot processing failed for spin ${gameSpinId}:`, error)
       // Don't throw - jackpot processing failure shouldn't affect the main spin
@@ -264,9 +272,7 @@ class AsyncJackpotService {
       WHERE "isActive" = true
     `
 
-    const jackpots = allJackpots.filter((jackpot: any) => 
-      eligibleTypes.includes(jackpot.type)
-    )
+    const jackpots = allJackpots.filter((jackpot: any) => eligibleTypes.includes(jackpot.type))
 
     // Cache for 5 minutes
     if (jackpots.length > 0) {
@@ -299,9 +305,14 @@ class AsyncJackpotService {
    */
   private async invalidateJackpotCache(): Promise<void> {
     const possibleKeys = [
-      'MINOR', 'MAJOR', 'GRAND',
-      'MAJOR,MINOR', 'GRAND,MAJOR', 'GRAND,MAJOR,MINOR',
-      'GRAND,MINOR', 'MINOR,MAJOR',
+      'MINOR',
+      'MAJOR',
+      'GRAND',
+      'MAJOR,MINOR',
+      'GRAND,MAJOR',
+      'GRAND,MAJOR,MINOR',
+      'GRAND,MINOR',
+      'MINOR,MAJOR',
     ]
 
     for (const key of possibleKeys) {

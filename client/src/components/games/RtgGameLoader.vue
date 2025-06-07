@@ -55,23 +55,9 @@
   import CoinSalePopup from '@/components/games/coins/CoinSalePopup.vue'
   import { COIN_OFFERS } from '@/components/games/coins/constants'
   import { router } from '@/router'
+  import { RtgGameLaunchOptions } from 'shared'
 
   const eventBus = useEventManager()
-  interface RtgGameLaunchOptions {
-    gameName: string // e.g., "777Strike"
-    lang?: string
-    currency?: string
-    mode?: 'real' | 'demo'
-    // Add any other parameters that your rtg_loader_template.html expects
-    // or that are needed to construct the full preconfig
-    rgsApiBase?: string // Base for your proxy: e.g., /api/rtg/platform
-    gameCdnBase?: string // If different from default construction
-    operator?: string
-    provider?: string
-    depositUrl?: string
-    lobbyUrl?: string
-    // ... any other specific params from com.casino.preconfig
-  }
 
   const props = defineProps({
     options: {

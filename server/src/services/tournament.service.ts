@@ -1,7 +1,7 @@
 // server/src/services/tournament.service.ts
 
-import { Tournament, TournamentStatus, UserProfile } from 'prisma/generated'
-import type { ExtendedPrismaClient } from '../../prisma' // Import Prisma namespace for input types
+import { AppEvents, typedAppEventEmitter } from '@/lib/events'
+import { Prisma, Tournament, TournamentStatus, UserProfile } from 'prisma/generated'
 import {
   TournamentCreatedPayload,
   TournamentEndedPayload,
@@ -10,9 +10,8 @@ import {
   TournamentParticipantType,
   TournamentStartedPayload,
 } from 'shared/dist'
-import { Prisma } from 'prisma/generated'
+import type { ExtendedPrismaClient } from '../../prisma' // Import Prisma namespace for input types
 import prisma from '../../prisma/index' // Your extended Prisma client
-import { typedAppEventEmitter, AppEvents } from '@/lib/events'
 
 const db: ExtendedPrismaClient = prisma
 // Use Prisma's TournamentStatus enum directly for consistency
@@ -154,7 +153,7 @@ export async function listTournaments(filters: {
   return db.tournament.findMany({
     where,
     include: {
-      TournamentGames: {
+      tournamentGames: {
         include: { games: { select: { id: true, name: true, title: true, thumbnailUrl: true } } },
       },
       participants: { select: { _count: true } }, // Correct way to get participant count via relation
@@ -171,7 +170,7 @@ export async function getTournamentDetails(tournamentId: string): Promise<Tourna
   return db.tournament.findUnique({
     where: { id: tournamentId },
     include: {
-      TournamentGames: {
+      tournamentGames: {
         include: { games: { select: { id: true, name: true, title: true, thumbnailUrl: true } } },
       }, // Select specific game fields
       participants: {
@@ -281,7 +280,7 @@ export async function recordTournamentPoints(
     include: {
       tournament: {
         include: {
-          TournamentGames: { include: { games: true } }, // Include TournamentGames so it is available below
+          tournamentGames: { include: { games: true } }, // Include TournamentGames so it is available below
         },
       },
     },

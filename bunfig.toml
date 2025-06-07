@@ -1,0 +1,69 @@
+# Bun configuration file
+[install]
+# Don't install devDependencies by default
+dev = false
+# Don't install optional dependencies by default
+optional = false
+# Don't install peer dependencies by default
+peer = false
+# Don't install production dependencies by default
+production = false
+
+[test]
+# Enable coverage by default
+coverage = true
+
+# [run] section removed due to unsupported properties
+
+[dev]
+# Enable watch mode by default
+watch = true
+# Enable inspect by default
+inspect = false
+# Enable inspectBrk by default
+inspectBrk = false
+# Enable inspectWait by default
+inspectWait = false
+# Enable noTimeout by default
+noTimeout = false
+# Enable preserveConsole by default
+preserveConsole = true
+# Enable smol by default
+smol = false
+# Enable tsconfig by default
+tsconfig = "tsconfig.json"
+# Enable tsconfigOverrides by default
+tsconfigOverrides = {}
+# Enable watch by default
+# Enable watchThrottle by default
+watchThrottle = 100
+# Enable watchPathIgnorePatterns by default
+watchPathIgnorePatterns = ["node_modules", "dist", ".turbo", ".git"]
+
+[build]
+# Enable minify by default
+minify = true
+# Enable sourcemap by default
+sourcemap = true
+# Enable target by default
+target = "browser"
+# Enable format by default
+format = "esm"
+# Enable splitting by default
+splitting = true
+# Enable treeshake by default
+treeshake = true
+# Enable external by default
+external = []
+# Enable outdir by default
+outdir = "dist"
+# Enable entryPoints by default
+entryPoints = ["src/index.ts"]
+# Enable tsconfig by default
+tsconfig = "tsconfig.json"
+# Enable tsconfigOverrides by default
+tsconfigOverrides = {}
+# Enable watch by default
+watch = true
+# Enable watchPathIgnorePatterns by default
+watchPathIgnorePatterns = ["node_modules", "dist", ".turbo", ".git"]

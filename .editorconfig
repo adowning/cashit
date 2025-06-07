@@ -1,0 +1,39 @@
+# Editor configuration, see https://editorconfig.org
+root = true
+
+[*]
+charset = utf-8
+indent_style = space
+indent_size = 2
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{js,jsx,ts,tsx,vue}]
+quote_type = single
+semi = true
+trailing_comma = es5
+print_width = 100
+single_quote = true
+bracket_spacing = true
+arrow_parens = always
+
+[*.{json,json5,jsonc}]
+indent_size = 2
+
+[*.{yml,yaml}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[*.{diff,md}]
+max_line_length = off
+trim_trailing_whitespace = false
+
+[Makefile]
+indent_style = tab
+
+[Dockerfile]
+indent_style = space
+indent_size = 4

@@ -1,11 +1,11 @@
 // apps/server/src/services/realtime.service.ts
-import type { Server } from 'bun'
-import { z } from 'zod'
-import { PendingEvent, PgRealtimeClientOptions, validateAndPublish } from '@/lib/utils'
-import PgRealtimeClient from './update.service'
-import { DatabaseUpdate, UserBalanceUpdateMessageSchema } from 'shared'
-import type { UserBalanceUpdatePayloadType } from 'shared'
+import { validateAndPublish } from '@/utils'
 import { createClient } from '@supabase/supabase-js'
+import type { Server } from 'bun'
+import type { UserBalanceUpdatePayloadType } from 'shared'
+import { DatabaseUpdate } from 'shared'
+import { PendingEvent, PgRealtimeClientOptions } from './dbupdates/types'
+import PgRealtimeClient from './update.service'
 const supabaseUrl = 'https://acqrudqzutnwrvmvlshc.supabase.co'
 const supabaseAnonKey =
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFjcXJ1ZHF6dXRud3J2bXZsc2hjIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc0ODY0MjUxNSwiZXhwIjoyMDY0MjE4NTE1fQ.JoJPjCo-SGCktLNsowKakpJHQhRHqQIUz2-R4baGhfU'
@@ -96,7 +96,7 @@ export class RealtimeService {
         event: 'UPDATE',
       }
 
-      const channel = supabase
+      supabase
         .channel(channelId)
         //@ts-ignore
         .on('postgres_changes', databaseFilter, (payload: any) => receivedDatabaseEvent(payload))
@@ -150,10 +150,10 @@ export class RealtimeService {
     // Extract userId based on event.table
     switch (event.table) {
       case 'transactions':
-        userId = event.primaryKeyData?.id ?? event.data?.id
+        userId = event.primaryKeyData?.['id'] ?? event.data?.['id']
         break
       case 'user_profiles':
-        userId = event.data?.userId ?? event.primaryKeyData?.userId
+        userId = event.data?.['userId'] ?? event.primaryKeyData?.['userId']
         break
       default:
         console.warn(`[RealtimeService] No userId extraction logic for table: ${event.table}`)
@@ -172,12 +172,12 @@ export class RealtimeService {
       columnNamesChanged.length < 2 &&
       columnNamesChanged?.includes('balance')
     ) {
-      this.updateUserBalanceAndNotify(userId, event.data?.balance ?? 0)
+      this.updateUserBalanceAndNotify(userId, event.data?.['balance'] ?? 0)
     } else {
       const updatePayload = {
         table: event.table,
         operation: event.operation,
-        recordId: event.primaryKeyData?.id ?? event.data?.id ?? 'unknown',
+        recordId: event.primaryKeyData?.['id'] ?? event.data?.['id'] ?? 'unknown',
         data: event.data,
         columnNamesChanged,
       }
@@ -188,7 +188,7 @@ export class RealtimeService {
       this.publishDbUpdate(userId, updatePayload)
     }
   }
-  async updateUserBalanceAndNotify(userId: string, newBalance: number, currency: string = 'FUN') {
+  async updateUserBalanceAndNotify(userId: string, newBalance: number) {
     // ... (your logic to update balance in the database) ...
 
     const payload: UserBalanceUpdatePayloadType = {
@@ -198,11 +198,11 @@ export class RealtimeService {
     }
 
     // Construct the full message object according to the schema
-    const message = {
-      type: UserBalanceUpdateMessageSchema.shape.type.value, // 'USER_BALANCE_UPDATE'
-      payload,
-      meta: { timestamp: Date.now() }, // Add other meta fields as needed
-    }
+    // const message = {
+    //   type: UserBalanceUpdateMessageSchema.shape.type.value, // 'USER_BALANCE_UPDATE'
+    //   payload,
+    //   meta: { timestamp: Date.now() }, // Add other meta fields as needed
+    // }
 
     // Publish to the user-specific topic
     // The server instance should be accessible here.
