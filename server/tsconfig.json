@@ -13,7 +13,7 @@
     },
     "outDir": "./dist",
     "rootDir": "./src",
-    "types": ["bun", "node"],
+    "types": ["bun", "node", "dom"],
     "jsx": "react-jsx",
     "jsxImportSource": "hono/jsx",
     "lib": ["ESNext"],
@@ -37,7 +37,7 @@
   "tsc-alias": {
     "resolveFullPaths": true
   },
-  "include": ["src/**/*", "src/**/*.json"],
+  "include": ["src/**/*", "src/**/*.json", "prisma/generated/**/*.ts"],
   "exclude": [
     "node_modules",
     "dist",
@@ -50,7 +50,6 @@
     "**/*.test.*",
     "**/*.spec.*",
     "**/prisma/migrations/**",
-    "**/prisma/generated/**",
     "**/public/**",
     ".turbo"
   ],

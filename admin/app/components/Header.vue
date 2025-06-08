@@ -1,13 +1,14 @@
 <script setup lang="ts">
-import { USeparator } from '#components';
-import ModeToggle from './ModeToggle.vue'
-import UserMenu from './UserMenu.vue'
+  import { USeparator } from '#components'
+  import ModeToggle from './ModeToggle.vue'
+  import UserMenu from './UserMenu.vue'
 
-const links = [
-    { to: "/", label: "Home" },
-    { to: "/dashboard", label: "Dashboard" },
-    { to: "/todos", label: "Todos" },
-];
+  const links = [
+    { to: '/', label: 'Home' },
+    { to: '/dashboard', label: 'Dashboard' },
+    { to: '/todos', label: 'Todos' },
+    { to: '/websocket-monitor', label: 'Monitor' },
+  ]
 </script>
 
 <template>

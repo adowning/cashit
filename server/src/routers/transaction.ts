@@ -103,6 +103,7 @@ export const transactionRouter: Record<string, unknown> = {
           createdAt: tx.createdAt,
           // currency: tx.currency,
           currency: 'USD', // tx.profile.currency,
+          //@ts-ignore
           product: tx.product as unknown as Product, // Get currency from related profile
         }))
 

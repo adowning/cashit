@@ -35,17 +35,17 @@ Object.assign(jackpotRouter, {
       return {
         jackpots: jackpots.map(
           (jackpot: {
-            id: any
+            id: string
             type: any
             currentAmountCoins: number
             lastWonAt: any
-            lastWinner: { id: string; username: string; avatar: string | null } | null
+            lastWonBy: string | null
           }): JackpotDisplayDto => ({
             id: jackpot.id,
             type: jackpot.type,
             currentAmountDollars: JackpotUtils.coinsToDollars(jackpot.currentAmountCoins),
             lastWonAt: jackpot.lastWonAt,
-            lastWinnerUsername: jackpot.lastWinner ? jackpot.lastWinner.username : null,
+            lastWinnerUsername: jackpot.lastWonBy,
           })
         ),
       }
@@ -67,20 +67,13 @@ Object.assign(jackpotRouter, {
 
     return {
       recentWins: recentWins.map(
-        (win: {
-          id: any
-          jackpot: { type: any }
-          winAmountCoins: number
-          winner: { username: any; avatar: any }
-          gameSpinId: any
-          createdAt: any
-        }) => ({
+        (win) => ({
           id: win.id,
-          jackpotType: win.jackpot.type,
+          jackpotType: win.jackpotType,
           winAmountCoins: win.winAmountCoins,
           winAmountDollars: JackpotUtils.coinsToDollars(win.winAmountCoins),
-          winnerUsername: win.winner.username,
-          winnerAvatar: win.winner.avatar,
+          winnerUsername: win.winnerUsername,
+          winnerAvatar: win.winnerAvatar,
           gameSpinId: win.gameSpinId,
           createdAt: win.createdAt,
         })

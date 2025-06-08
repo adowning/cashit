@@ -1,9 +1,8 @@
-import { Prisma, PrismaClient } from './generated/client'
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { performance } from 'perf_hooks'
 import * as util from 'util'
+import { Prisma, PrismaClient } from '../prisma/generated/index.js'
 
-export type { UserProfile } from './generated' // Assuming this is intended
 
 // Helper type definitions (PrismaModelName, PayloadObjects, RelationFieldNames, IncludeAllRelationsForModel)
 // These should remain as they were in your provided code, they are correct.

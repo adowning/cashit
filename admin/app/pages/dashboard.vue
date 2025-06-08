@@ -185,11 +185,12 @@
   const { $orpc } = useNuxtApp()
 
   // --- Data Fetching with Vue Query ---
+  $orpc.x.tast()
   const games = useQuery($orpc.game.getAllGames.queryOptions())
 
   const { data: stats, isLoading: isStatsLoading } = useQuery({
     queryKey: ['stats'],
-    queryFn: () =>   games.json() //$fetch('/api/ws-stats'),
+    queryFn: () => games.json(), //$fetch('/api/ws-stats'),
     refetchInterval: 30000, // Refetch every 30 seconds
   })
 

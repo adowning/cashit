@@ -1,12 +1,12 @@
-import prisma from '../../prisma/'
 import {
   JACKPOT_CONFIG,
   JackpotUtils,
-  type ProcessJackpotContributionsRequest,
-  type ProcessJackpotContributionsResponse,
   type JackpotContributionDto,
   type JackpotWinDto,
+  type ProcessJackpotContributionsRequest,
+  type ProcessJackpotContributionsResponse,
 } from 'shared'
+import prisma from '../../prisma/'
 
 export class JackpotService {
   prisma: typeof prisma
@@ -233,10 +233,19 @@ export class JackpotService {
   async getJackpotStats() {
     const jackpots = await this.getActiveJackpots()
 
+    interface JackpotWithWinner {
+      type: any
+      currentAmountCoins: any
+      lastWonAt: any
+      lastWinner?: {
+        username: string | null
+      } | null
+    }
+
     const stats = {
       totalPoolCoins: jackpots.reduce((sum, j) => sum + j.currentAmountCoins, 0),
       totalPoolDollars: 0,
-      jackpots: jackpots.map((j) => ({
+      jackpots: jackpots.map((j: JackpotWithWinner) => ({
         type: j.type,
         currentAmountCoins: j.currentAmountCoins,
         currentAmountDollars: JackpotUtils.coinsToDollars(j.currentAmountCoins),

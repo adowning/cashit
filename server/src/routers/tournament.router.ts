@@ -87,7 +87,7 @@ export const tournamentRouter: any = {
   getDetails: publicProcedure
     .input(TournamentIdSchema)
     .handler(async ({ input }): Promise<TournamentDetailed | null> => {
-      const tournament = await prisma.tournament.findUnique({
+      const tournament = (await prisma.tournament.findUnique({
         where: { id: input.tournamentId },
         include: {
           tournamentGames: { include: { games: true } },
@@ -98,7 +98,7 @@ export const tournamentRouter: any = {
           },
           user: true, // For createdBy
         },
-      })
+      })) as TournamentDetailed | null
 
       if (!tournament) return null
 
@@ -120,7 +120,7 @@ export const tournamentRouter: any = {
           winnerId: r.winnerId,
           winnerUsername: r.winner?.username,
         })),
-        participants: tournament.participants.map((p) => ({
+        participants: tournament.participants?.map((p) => ({
           userId: p.userId,
           username: p.user?.username ?? 'Unknown User',
           avatarUrl: p.user?.avatar,

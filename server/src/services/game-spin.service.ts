@@ -314,10 +314,10 @@ export class GameSpinService {
     })
 
     return {
-      totalContributionsCoins: totalContributions._sum.contributionAmountCoins || 0,
-      totalContributionCount: totalContributions._count,
-      totalWinsCoins: totalWins._sum.winAmountCoins || 0,
-      totalWinCount: totalWins._count,
+      totalContributionsCoins: totalContributions?._sum?.contributionAmountCoins || 0,
+      totalContributionCount: totalContributions?._count || 0,
+      totalWinsCoins: totalWins?._sum?.winAmountCoins || 0,
+      totalWinCount: totalWins?._count || 0,
     }
   }
 

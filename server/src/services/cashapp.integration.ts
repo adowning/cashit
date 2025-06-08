@@ -9,11 +9,12 @@
 // - Persisting the client session and lastSyncToken.
 
 import { CashAppClient } from 'server/cashapp/lib/cashapp' // Adjust path
-import fs from 'fs-extra'
+import * as fs from 'fs-extra' // Use namespace import for better type support
 import path from 'path'
 
 // Configuration - ideally from environment variables
-const CASHAPP_VENDOR_DATA_DIR = process.env.CASHAPP_VENDOR_DATA_DIR || './.cashapp_vendor_data'
+// Use bracket notation for environment variables to satisfy TypeScript
+const CASHAPP_VENDOR_DATA_DIR = process.env['CASHAPP_VENDOR_DATA_DIR'] || './.cashapp_vendor_data'
 const VENDOR_SESSION_FILE = path.join(CASHAPP_VENDOR_DATA_DIR, 'vendor_session.json')
 const LAST_SYNC_TOKEN_FILE_PREFIX = 'last_sync_token_' // Per vendor customer ID
 const VENDOR_DETAILS_FILE = path.join(CASHAPP_VENDOR_DATA_DIR, 'vendor_details.json') // To store customer ID and cashtag
@@ -260,7 +261,7 @@ export async function fetchReceivedVendorPayments(
           let senderCashtag: string | undefined = undefined
           if (p.senderId) {
             const senderCustomerEntity = syncResult.entities.find(
-              (e) => e.customer?.customer?.id === p.senderId
+              (e: { customer?: { customer?: { id: string } } }) => e.customer?.customer?.id === p.senderId
             )
             senderCashtag = senderCustomerEntity?.customer?.customer?.cashtag?.name
           }

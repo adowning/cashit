@@ -18,7 +18,7 @@ const DEFAULT_OPTIONS = {
   schema: config.defaults.TABLE_SCHEMA,
   bufferInterval: config.defaults.BUFFER_INTERVAL,
   maxBufferSize: config.defaults.MAX_BUFFER_SIZE,
-  onError: (err: Error) => { },
+  onError: (_err: Error) => { /* Error handling logic here */ },
 }
 
 /**
@@ -174,10 +174,10 @@ export default class Table {
 
     // Resort events now that all are fully resolved.
     const allEvents = events
-      .sort((a, b) => a.i - b.i)
-      .map((event) => {
-        delete event.i
-        return event as Event
+      .sort((a: any, b: any) => (a['i'] || 0) - (b['i'] || 0))
+      .map((event: any) => {
+        const { i, ...rest } = event;
+        return rest as Event
       })
     if (!allEvents.length) return
 
@@ -241,12 +241,14 @@ export default class Table {
   async _resolveEventRecords(eventsNeedingResolution: StringKeyMap[]): Promise<StringKeyMap[]> {
     // Sort primary key column names.
 
-    const sortedPrimaryKeyColNames = Object.keys(eventsNeedingResolution[0]?.primaryKeyData).sort()
+    const firstEvent = eventsNeedingResolution[0];
+    const primaryKeyData = firstEvent && 'primaryKeyData' in firstEvent ? firstEvent['primaryKeyData'] : {};
+    const sortedPrimaryKeyColNames = Object.keys(primaryKeyData).sort()
 
     const eventsByPrimaryKeys: StringKeyMap = {}
     const eventPrimaryKeyData: StringKeyMap[] = []
     for (const event of eventsNeedingResolution) {
-      const primaryKeyData = event.primaryKeyData || {}
+      const primaryKeyData = 'primaryKeyData' in event ? event['primaryKeyData'] : {}
       eventPrimaryKeyData.push(primaryKeyData)
 
       // Map events by their sorted primary key values.

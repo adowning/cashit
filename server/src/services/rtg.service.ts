@@ -2,6 +2,7 @@ import { AppEvents, typedAppEventEmitter } from '@/lib/events'
 import { sql as bunSqlUtil, SQL } from 'bun' // Changed to use global sql import and added sql util for raw
 import { Context } from 'hono'
 import { ContentfulStatusCode } from 'hono/utils/http-status'
+// Using web standard Headers type instead of node-fetch
 import {
   isRgsProxyError,
   ProviderSpinResponseData,
@@ -490,7 +491,7 @@ async function proxyRequestToRgs<TRequest, TResponse>(
 
   const url = config.rgsBaseUrl + rgsUrlPath
 
-  const headers: HeadersInit = {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
     ...(config.apiKey && { 'X-Api-Key': config.apiKey }),

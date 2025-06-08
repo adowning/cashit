@@ -463,27 +463,42 @@ export async function processTournamentEnd(
     })
   }
 
-  for (const reward of tournament.rewards) {
-    const winnerForRank = rankedParticipants.find((p) => p.rank === reward.rank)
-    if (winnerForRank) {
-      await prismaClient.tournamentReward.update({
-        where: { id: reward.id },
-        data: { winnerId: winnerForRank.userId },
-      })
-      // Consider creating a UserReward or similar notification/record for the winner here
+  // Add type for tournament with rewards
+  const tournamentWithRewards = tournament as Tournament & {
+    rewards: Array<{ id: string; rank: number }>
+  }
+
+  // Safely handle rewards if they exist
+  if (tournamentWithRewards.rewards) {
+    for (const reward of tournamentWithRewards.rewards) {
+      const winnerForRank = rankedParticipants.find((p) => p.rank === reward.rank)
+      if (winnerForRank) {
+        await prismaClient.tournamentReward.update({
+          where: { id: reward.id },
+          data: { winnerId: winnerForRank.userId },
+        })
+        // Consider creating a UserReward or similar notification/record for the winner here
+      }
+    }
+  }
+
+  // Define participant with user type
+  type ParticipantWithUser = typeof rankedParticipants[number] & {
+    user?: {
+      username: string | null
     }
   }
 
   typedAppEventEmitter.emit(AppEvents.TOURNAMENT_ENDED, {
     tournamentId,
     name: tournament.name,
-    results: rankedParticipants.map((p) => ({
+    results: rankedParticipants.map((p: ParticipantWithUser) => ({
       userId: p.userId,
-      username: p.user.username || 'Player', // User.username can be null
+      username: p.user?.username || 'Player',
       score: p.score,
       rank: p.rank,
     })),
-  } as TournamentEndedPayload) // Ensure TournamentEndedPayload matches this structure
+  } as TournamentEndedPayload)
   console.log(`Tournament ${tournamentId} (${tournament.name}) ended and processed.`)
 }
 

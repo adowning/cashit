@@ -60,7 +60,7 @@ async function processSingleCashAppPayment(payment: ReceivedCashAppPayment): Pro
           paymentCreatedAt: payment.createdAt,
         },
       })
-      .catch((e) => console.error('Failed to log unmatched payment', e))
+      .catch((e: Error) => console.error('Failed to log unmatched payment', e))
     return
   }
 
@@ -132,8 +132,8 @@ async function processSingleCashAppPayment(payment: ReceivedCashAppPayment): Pro
       // 2. Credit user's main wallet
       const wallet = await transactionService.getOrCreateWallet(
         user.id,
-        user.currency || 'USD',
-        user.operatorId,
+        'USD', // Default to USD since currency is not on the user model
+        user.operatorId || undefined, // Convert null to undefined to match expected type
         tx
       )
       const mainBalanceBefore = wallet.balance
@@ -182,10 +182,14 @@ async function processSingleCashAppPayment(payment: ReceivedCashAppPayment): Pro
       )
 
       // Emit events
+      // Emit balance update with required properties
       typedAppEventEmitter.emit(AppEvents.USER_BALANCE_UPDATED, {
         userId: user.id,
-        newBalance: updatedWallet.balance, // Main balance
-        // currency: user.currency || 'USD', // Add if your event expects it
+        newBalance: updatedWallet.balance,
+        table: 'wallet',
+        changeAmount: payment.amount.amountInCents,
+        transactionType: 'DEPOSIT',
+        relatedTransactionId: pendingDeposit.id
       })
       // If game tokens are separate and have their own event:
       // typedAppEventEmitter.emit(AppEvents.USER_GAME_TOKEN_BALANCE_UPDATED, { userId: user.id, newGameTokenBalance: updatedWallet.gameTokenBalance });

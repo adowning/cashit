@@ -1,5 +1,3 @@
-import { ev } from '@/utils/env'
-
 export default {
   DEBUG: false, //['false', true].includes(ev('DEBUG')),
   defaults: {

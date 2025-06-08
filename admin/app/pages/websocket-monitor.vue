@@ -65,35 +65,39 @@
           <template #header>
             <h3 class="font-semibold">Active Connections ({{ connections.length }})</h3>
           </template>
-          
-          <UTable 
+
+          <UTable
             :rows="connections"
             :loading="isLoading"
             :empty-state="{
               icon: 'i-heroicons-link-20-solid',
-              label: 'No active connections'
+              label: 'No active connections',
             }"
           >
             <template #id-data="{ row }">
               <UTooltip :text="row.id">
-                <span class="truncate max-w-[100px] inline-block">{{ row.id.slice(0, 8) }}...</span>
+                <span class="truncate max-w-[100px] inline-block"
+                  >{{ row.id.slice(0, 8) }}...</span
+                >
               </UTooltip>
             </template>
-            
+
             <template #user-data="{ row }">
               <div class="flex items-center space-x-2">
                 <UIcon name="i-heroicons-user" class="w-4 h-4" />
-                <span>{{ row.username || 'Guest' }}</span>
-                <UBadge v-if="row.userId" color="gray">{{ row.userId.slice(0, 6) }}...</UBadge>
+                <span>{{ row.username || "Guest" }}</span>
+                <UBadge v-if="row.userId" color="gray"
+                  >{{ row.userId.slice(0, 6) }}...</UBadge
+                >
               </div>
             </template>
-            
+
             <template #type-data="{ row }">
               <UBadge :color="row.type === 'user' ? 'green' : 'blue'">
                 {{ row.type }}
               </UBadge>
             </template>
-            
+
             <template #connectedAt-data="{ row }">
               {{ new Date(row.connectedAt).toLocaleTimeString() }}
             </template>
@@ -105,51 +109,63 @@
           <template #header>
             <h3 class="font-semibold">Recent Messages ({{ messages.length }})</h3>
           </template>
-          
+
           <UTabs :items="tabs">
             <template #item="{ item }">
               <div class="h-[500px] overflow-y-auto">
-                <div v-if="filteredMessages.length === 0" class="text-center py-8 text-gray-500">
+                <div
+                  v-if="filteredMessages.length === 0"
+                  class="text-center py-8 text-gray-500"
+                >
                   No messages found
                 </div>
-                
+
                 <div v-else class="space-y-4">
-                  <div 
-                    v-for="message in filteredMessages" 
+                  <div
+                    v-for="message in filteredMessages"
                     :key="message.id"
                     class="p-3 rounded-md"
                     :class="{
                       'bg-blue-50 dark:bg-blue-900/20': message.direction === 'in',
-                      'bg-green-50 dark:bg-green-900/20': message.direction === 'out'
+                      'bg-green-50 dark:bg-green-900/20': message.direction === 'out',
                     }"
                   >
                     <div class="flex justify-between items-start mb-1">
                       <div class="flex items-center space-x-2">
-                        <span class="font-mono text-xs px-2 py-0.5 rounded"
+                        <span
+                          class="font-mono text-xs px-2 py-0.5 rounded"
                           :class="{
-                            'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300': message.direction === 'in',
-                            'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300': message.direction === 'out'
+                            'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300':
+                              message.direction === 'in',
+                            'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300':
+                              message.direction === 'out',
                           }"
                         >
-                          {{ message.direction === 'in' ? 'IN' : 'OUT' }}
+                          {{ message.direction === "in" ? "IN" : "OUT" }}
                         </span>
-                        <span class="text-xs text-gray-500">{{ formatTime(message.timestamp) }}</span>
+                        <span class="text-xs text-gray-500">{{
+                          formatTime(message.timestamp)
+                        }}</span>
                         <UBadge size="xs" color="gray">{{ message.type }}</UBadge>
                       </div>
                       <div class="text-xs text-gray-500">
                         {{ formatSize(message.size) }}
                       </div>
                     </div>
-                    
+
                     <div class="mt-1">
                       <div class="text-sm font-mono break-all">
-                        <pre class="whitespace-pre-wrap text-xs">{{ JSON.stringify(message.data, null, 2) }}</pre>
+                        <pre class="whitespace-pre-wrap text-xs">{{
+                          JSON.stringify(message.data, null, 2)
+                        }}</pre>
                       </div>
                     </div>
-                    
+
                     <div class="mt-2 text-xs text-gray-500 flex justify-between">
                       <span>Client: {{ message.clientId.slice(0, 8) }}...</span>
-                      <span v-if="message.userId">User: {{ message.userId.slice(0, 8) }}...</span>
+                      <span v-if="message.userId"
+                        >User: {{ message.userId.slice(0, 8) }}...</span
+                      >
                     </div>
                   </div>
                 </div>
@@ -163,58 +179,58 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
-import { useWebSocketMonitor } from '~/composables/useWebSocketMonitor'
+import { ref, onMounted, onBeforeUnmount, computed } from "vue";
+import { useWebSocketMonitor } from "~/composables/useWebSocketMonitor";
 
-const { 
-  messages, 
-  connections, 
-  stats, 
-  isLoading, 
-  refresh, 
-  startAutoRefresh, 
+const {
+  messages,
+  connections,
+  stats,
+  isLoading,
+  refresh,
+  startAutoRefresh,
   stopAutoRefresh,
   formatTime,
-  formatSize
-} = useWebSocketMonitor()
+  formatSize,
+} = useWebSocketMonitor();
 
-const autoRefresh = ref(false)
-let autoRefreshCleanup: (() => void) | null = null
+const autoRefresh = ref(false);
+let autoRefreshCleanup: (() => void) | null = null;
 
 const tabs = [
-  { key: 'all', label: 'All' },
-  { key: 'in', label: 'Incoming' },
-  { key: 'out', label: 'Outgoing' }
-]
+  { key: "all", label: "All" },
+  { key: "in", label: "Incoming" },
+  { key: "out", label: "Outgoing" },
+];
 
-const activeTab = ref('all')
+const activeTab = ref("all");
 
 const filteredMessages = computed(() => {
-  if (activeTab.value === 'all') return messages.value
-  return messages.value.filter(m => m.direction === activeTab.value)
-})
+  if (activeTab.value === "all") return messages.value;
+  return messages.value.filter((m) => m.direction === activeTab.value);
+});
 
 const toggleAutoRefresh = () => {
-  autoRefresh.value = !autoRefresh.value
-  
+  autoRefresh.value = !autoRefresh.value;
+
   if (autoRefresh.value) {
-    autoRefreshCleanup = startAutoRefresh(5000)
+    autoRefreshCleanup = startAutoRefresh(5000);
   } else if (autoRefreshCleanup) {
-    autoRefreshCleanup()
-    autoRefreshCleanup = null
+    autoRefreshCleanup();
+    autoRefreshCleanup = null;
   }
-}
+};
 
 // Initial data load
 onMounted(async () => {
-  await refresh()
-  toggleAutoRefresh()
-})
+  await refresh();
+  toggleAutoRefresh();
+});
 
 // Clean up auto-refresh on unmount
 onBeforeUnmount(() => {
   if (autoRefreshCleanup) {
-    autoRefreshCleanup()
+    autoRefreshCleanup();
   }
-})
+});
 </script>

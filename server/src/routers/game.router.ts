@@ -1,20 +1,18 @@
 import {
   PrismaGameBigWinData as GameBigWinData,
   PrismaGameHistoryItem as GameHistoryItem,
+  GameSpin,
   LaunchGameResponseDto,
-  OutputGameBigWinItem, // Using the shared PrismaGame for broader compatibility
   PaginatedResponse,
-  PrismaGameProviderName, // From shared types for big wins
+  PrismaGameProviderName,
   PrismaGameProvider as SharedGameProvider,
-  PrismaGame as SharedPrismaGame, // Using the shared PrismaGame for broader compatibility
-} from 'shared/dist' // Ensure your shared types are correctly structured and exported
+  PrismaGame as SharedPrismaGame,
+} from 'shared/dist'
 import z from 'zod/v4'
 import prisma from '../../prisma/'
-import { Prisma, GameCategory as PrismaGameCategoryEnum } from '../../prisma/generated/client' // For Prisma.* types if needed
+import { Prisma, GameCategory as PrismaGameCategoryEnum } from '../../prisma/generated/client'
 import { protectedProcedure, publicProcedure } from '../lib/orpc'
-// const prisma = new PrismaClient()
-// Use your actual ExtendedPrismaClient constructor or factory here
-// const prisma: ExtendedPrismaClient = new (require('../../prisma').ExtendedPrismaClient)()
+// Initialize prisma client (already imported at top)
 
 // --- Zod Schemas for Input Validation ---
 const GameIdSchema = z.object({
@@ -37,8 +35,8 @@ const GameHistoryQuerySchema = z
 const GameSearchQuerySchema = z
   .object({
     query: z.string().optional(),
-    category: z.ZodAny,
-    provider: z.ZodAny,
+    category: z.string().optional(),
+    provider: z.string().optional(),
     page: z.number().int().min(1).optional().default(1),
     limit: z.number().int().min(1).max(100).optional().default(20),
     featured: z.boolean().optional(),
@@ -52,16 +50,13 @@ const SetFavoriteGameSchema = z.object({
   isFavorite: z.boolean(),
 })
 
-// Shared type for Game with provider info, adjust as necessary
+// Shared type for Game with provider info
 type GameWithProvider = SharedPrismaGame & {
-  gameProvider?: SharedGameProvider | null
-}
+  gameProvider?: SharedGameProvider | null;
+};
 
-// Helper to map PrismaGame to a client-friendly structure (SharedPrismaGame or custom)
-// This ensures consistency and avoids sending unnecessary fields.
+// Helper to map PrismaGame to a client-friendly structure
 const mapPrismaGameToSharedGame = (game: GameWithProvider): SharedPrismaGame => {
-  // Ensure all fields required by SharedPrismaGame are mapped
-  // This is an example; you'll need to adjust based on your actual SharedPrismaGame definition
   return {
     id: game.id,
     name: game.name,
@@ -73,73 +68,59 @@ const mapPrismaGameToSharedGame = (game: GameWithProvider): SharedPrismaGame => 
     isActive: game.isActive,
     thumbnailUrl: game.thumbnailUrl,
     bannerUrl: game.bannerUrl,
-    meta: game.meta, // Prisma.JsonValue maps to JsonValue in shared
+    meta: game.meta,
     createdAt: game.createdAt,
     updatedAt: game.updatedAt,
     featured: game.featured,
     providerName: game.providerName,
     totalWagered: game.totalWagered,
     gameProviderId: game.gameProviderId,
-    gameProvider: game.gameProvider
-      ? {
-          // Map provider if included and needed
-          id: game.gameProvider.id,
-          name: game.gameProvider.name,
-          displayName: game.gameProvider.displayName,
-          rgsBaseUrl: game.gameProvider.rgsBaseUrl,
-          settingsPath: game.gameProvider.settingsPath,
-          spinPath: game.gameProvider.spinPath,
-          resolveBetPath: game.gameProvider.resolveBetPath,
-          providerRoundId: game.gameProvider.providerRoundId,
-          authType: game.gameProvider.authType,
-          apiKey: game.gameProvider.apiKey, // Be cautious exposing sensitive fields
-          apiSecret: game.gameProvider.apiSecret, // Be cautious
-          publicKey: game.gameProvider.publicKey,
-          privateKeyRef: game.gameProvider.privateKeyRef,
-          configJson: game.gameProvider.configJson,
-          isActive: game.gameProvider.isActive,
-          notes: game.gameProvider.notes,
-          createdAt: game.gameProvider.createdAt,
-          updatedAt: game.gameProvider.updatedAt,
-        }
-      : null,
+    gameProvider: game.gameProvider ? {
+      id: game.gameProvider.id,
+      name: game.gameProvider.name,
+      displayName: game.gameProvider.displayName,
+      rgsBaseUrl: game.gameProvider.rgsBaseUrl,
+      settingsPath: game.gameProvider.settingsPath,
+      spinPath: game.gameProvider.spinPath,
+      resolveBetPath: game.gameProvider.resolveBetPath,
+      providerRoundId: game.gameProvider.providerRoundId,
+      authType: game.gameProvider.authType,
+      apiKey: game.gameProvider.apiKey,
+      apiSecret: game.gameProvider.apiSecret,
+      publicKey: game.gameProvider.publicKey,
+      privateKeyRef: game.gameProvider.privateKeyRef,
+      configJson: game.gameProvider.configJson,
+      isActive: game.gameProvider.isActive,
+      notes: game.gameProvider.notes,
+      createdAt: game.gameProvider.createdAt,
+      updatedAt: game.gameProvider.updatedAt,
+    } : null,
     operatorId: game.operatorId,
     tournamentDirectives: [],
-    // Ensure other fields like gameSessions, gameLaunchLinks, operator, TournamentGame are handled
-    // or explicitly excluded if not needed by the client for this DTO.
-    // For simplicity, I'm omitting them here, but you might need them.
-    gameSessions: [], // Placeholder or fetch if needed
-    gameLaunchLinks: [], // Placeholder
-
-    // operator: null, // Placeholder
-    tournamentGames: [], // Placeholder
+    gameSessions: [],
+    gameLaunchLinks: [],
+    tournamentGames: [],
     goldsvetData: game.goldsvetData,
-    // id: '',
-    // name: '',
-    // title: '',
-    // goldsvetData: null,
-    // description: null,
-    // supportedProviders: [],
-    // category: 'FISH',
-    // tags: [],
-    // isActive: false,
-    // thumbnailUrl: null,
-    // bannerUrl: null,
-    // meta: null,
-    // createdAt: undefined,
-    // updatedAt: undefined,
-    // featured: false,
-    // providerName: null,
-    // totalWagered: 0,
-    // gameProviderId: null,
-    // operatorId: null,
-    // tournamentDirectives: null,
-    status: true,
-    checked: true,
-  }
+    status: game.status,
+    checked: game.checked,
+  };
+};
+
+// Lucky bet info interface
+interface LuckyBetInfo {
+  id: string;
+  userId: string;
+  username: string;
+  avatar: string | null;
+  gameId: string | null;
+  gameName: string | null;
+  winAmount: number;
+  wagerAmount: number;
+  multiplier: number | null;
+  timestamp: Date;
 }
 
-export const gameRouter: any = {
+export const gameRouter = {
   getGameCategories: publicProcedure
     // .output(z.array(z.nativeEnum(PrismaGameCategoryEnum))) // Assuming you just return enum values
     .handler(async () => {
@@ -179,7 +160,7 @@ export const gameRouter: any = {
       // console.log(x[0])
       // console.log(x[1])
       return {
-        items: gamesData,
+        items: gamesData.map(mapPrismaGameToSharedGame),
         total: totalGames,
         page,
         limit,
@@ -329,7 +310,7 @@ export const gameRouter: any = {
   //     return { success: true, result: mockRtgSettingsData }
   //   }),
 
-  // // Placeholder for RTG specific spin - requires actual RTG integration
+  // Placeholder for RTG specific spin - requires actual RTG integration
   // rtgSpin: protectedProcedure
   //   .input(z.custom<RTGSpinRequestDto>())
   //   .output(z.custom<RTGSpinResponseDto>())
@@ -443,15 +424,16 @@ export const gameRouter: any = {
 
   getGameBigWins: publicProcedure
     .output(z.custom<GameBigWinData>())
-    .handler(async (): Promise<GameBigWinData> => {
-      const now = new Date()
-      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+  .handler(async (): Promise<GameBigWinData> => {
+    try {
+      const now = new Date();
+      const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
 
-      const finalDisplayLimit = 10 // How many to show in the UI
-      const initialFetchMultiplier = 3 // Fetch 3x more records initially for diversification
-      const luckyBetsFetchLimit = finalDisplayLimit * initialFetchMultiplier
-      const highRollersFetchLimit = finalDisplayLimit * initialFetchMultiplier
+      const finalDisplayLimit = 10; // How many to show in the UI
+      const initialFetchMultiplier = 3; // Fetch 3x more records initially for diversification
+      const luckyBetsFetchLimit = finalDisplayLimit * initialFetchMultiplier;
+      const highRollersFetchLimit = finalDisplayLimit * initialFetchMultiplier;
 
       // --- Fetch Lucky Bets (with increased limit for diversification) ---
       const rawLuckyBetsData = await prisma.gameSpin.findMany({
@@ -490,158 +472,185 @@ export const gameRouter: any = {
         },
       })
 
-      const userBestSpins = new Map<string, OutputGameBigWinItem>()
+      interface LuckyBetInfo {
+        id: string;
+        userId: string;
+        username: string;
+        avatar: string | null;
+        gameId: string | null;
+        gameName: string | null;
+        winAmount: number;
+        wagerAmount: number;
+        multiplier: number | null;
+        timestamp: Date;
+      }
+      const userBestSpins = new Map<string, LuckyBetInfo>();
 
       for (const spin of rawLuckyBetsData) {
         if (!spin.gameSession?.userId || !spin.gameSession.refferenceToUserProfile) {
-          continue
+          continue;
         }
 
-        const userId = spin.gameSession.userId
-        const wager = spin.wagerAmount || 1
-        const multiplier =
-          spin.grossWinAmount && wager > 0
-            ? parseFloat((spin.grossWinAmount / wager).toFixed(2))
-            : null
+        const userId = spin.gameSession.userId;
+        const winAmount = spin.grossWinAmount;
+        const wagerAmount = spin.wagerAmount;
+        const multiplier = wagerAmount > 0 ? winAmount / wagerAmount : null;
 
-        const currentSpinInfo: OutputGameBigWinItem = {
-          id: spin.id,
-          userId: userId,
-          username: spin.gameSession.refferenceToUserProfile.username || 'Player',
-          avatar: spin.gameSession.refferenceToUserProfile.avatar || null,
-          gameName: spin.gameSession.game?.name || spin.gameSession.game?.name || 'Unknown Game',
-          winAmount: spin.grossWinAmount,
-          wagerAmount: spin.wagerAmount,
-          multiplier: multiplier,
-          timestamp: spin.timeStamp,
-          gameId: spin.gameSession.game?.id,
-          // gameIcon: spin.gameSession.game?.thumbnailUrl || null,
-        }
+        const existingBestSpin = userBestSpins.get(userId);
 
-        const existingBestSpin = userBestSpins.get(userId)
-        if (!existingBestSpin || currentSpinInfo.winAmount > existingBestSpin.winAmount) {
-          userBestSpins.set(userId, currentSpinInfo)
+        // Keep only the best spin (highest multiplier) per user
+        if (!existingBestSpin || (multiplier !== null && (!existingBestSpin.multiplier || multiplier > existingBestSpin.multiplier))) {
+          userBestSpins.set(userId, {
+            id: spin.id,
+            userId: userId,
+            username: spin.gameSession.refferenceToUserProfile.username,
+            avatar: spin.gameSession.refferenceToUserProfile.avatar,
+            gameId: spin.gameSession.game?.id ?? null,
+            gameName: spin.gameSession.game?.name ?? null,
+            winAmount: winAmount,
+            wagerAmount: wagerAmount,
+            multiplier: multiplier,
+            timestamp: spin.createdAt,
+          });
         }
       }
 
-      const diversifiedLuckyBets = Array.from(userBestSpins.values())
-        .sort((a, b) => b.winAmount! - a.winAmount!)
-        .slice(0, finalDisplayLimit)
+      // Convert map values to array and take the top N for display
+      const luckyBets = Array.from(userBestSpins.values())
+        .sort((a, b) => (b.multiplier ?? 0) - (a.multiplier ?? 0)) // Sort by multiplier descending
+        .slice(0, finalDisplayLimit); // Take top N
 
-      // --- Fetch High Rollers ---
-      const highRollersAggregates = await prisma.gameSession.groupBy({
-        by: ['userId'],
+      // --- Fetch High Rollers (users with highest total wagered in last 7 days) ---
+      // This requires aggregating game session data per user.
+      // Prisma doesn't directly support GROUP BY with aggregation in findMany,
+      // so we might need a raw query or a more complex approach.
+      // For simplicity and demonstration, let's fetch recent game sessions and aggregate in memory.
+      // NOTE: For large datasets, a raw SQL query for aggregation is highly recommended for performance.
+
+      const rawHighRollersData = await prisma.gameSession.findMany({
         where: {
-          startTime: { gte: sevenDaysAgo },
-          totalWagered: { gt: 0 },
+          startTime: {
+            gte: sevenDaysAgo,
+          },
+          totalWagered: {
+            gt: 0,
+          },
         },
-        _sum: { totalWagered: true },
-        _max: { startTime: true },
-        orderBy: { _sum: { totalWagered: 'desc' } },
-        take: highRollersFetchLimit,
-      })
-
-      const final_high_rollers: OutputGameBigWinItem[] = []
-      if (highRollersAggregates.length > 0) {
-        const userIds = highRollersAggregates
-          .map((hr) => hr.userId)
-          .filter((id) => id !== null) as string[]
-        if (userIds.length > 0) {
-          const userDetails = await prisma.userProfile.findMany({
-            where: { userId: { in: userIds } },
-            select: { userId: true, username: true, avatar: true, activeCurrencyType: true },
-          })
-          const userMap = new Map(userDetails.map((ud) => [ud.userId, ud]))
-
-          const recentGamesPlayedByUser = await prisma.gameSession.findMany({
-            where: { userId: { in: userIds }, startTime: { gte: sevenDaysAgo } },
-            orderBy: { startTime: 'desc' },
-            distinct: ['userId'],
+        select: {
+          userId: true,
+          totalWagered: true,
+          updatedAt: true, // Use last activity time
+          refferenceToUserProfile: {
             select: {
-              userId: true,
-              game: { select: { id: true, name: true, title: true, thumbnailUrl: true } },
+              username: true,
+              avatar: true,
             },
-          })
-          const userRecentGameMap = new Map(recentGamesPlayedByUser.map((s) => [s.userId, s.game]))
+          },
+        },
+        orderBy: {
+          totalWagered: 'desc', // Initial sort by total wagered
+        },
+        take: highRollersFetchLimit, // Fetch more initially
+      });
 
-          for (const agg of highRollersAggregates) {
-            if (agg.userId) {
-              const userDetail = userMap.get(agg.userId)
-              const recentGame = userRecentGameMap.get(agg.userId)
-              final_high_rollers.push({
-                id: agg.userId,
-                userId: agg.userId,
-                username: userDetail?.username || 'High Roller',
-                avatar: userDetail?.avatar || null,
-                gameId: recentGame?.id || null,
-                gameName: recentGame?.name || recentGame?.name || 'Multiple Games',
-                wagerAmount: agg._sum.totalWagered || 0,
-                timestamp: agg._max.startTime || new Date(),
-                currency_code: userDetail?.activeCurrencyType || 'N/A',
-                description: `Wagered ${(agg._sum.totalWagered || 0) / 100} in total recently`,
-                winAmount: 0, // Placeholder, adjust as needed
-              })
-            }
+      const userTotalWagers = new Map<string, { totalWagered: number; lastActivity: Date; username: string | null; avatar: string | null }>();
+
+      for (const session of rawHighRollersData) {
+        if (!session.userId || !session.refferenceToUserProfile) {
+          continue;
+        }
+        const userId = session.userId;
+        const currentWager = userTotalWagers.get(userId);
+        if (currentWager) {
+          currentWager.totalWagered += session.totalWagered;
+          if (session.updatedAt > currentWager.lastActivity) {
+            currentWager.lastActivity = session.updatedAt;
           }
+        } else {
+          userTotalWagers.set(userId, {
+            totalWagered: session.totalWagered,
+            lastActivity: session.updatedAt,
+            username: session.refferenceToUserProfile.username,
+            avatar: session.refferenceToUserProfile.avatar,
+          });
         }
       }
 
-      // Map OutputGameBigWinItem[] to PrismaGameBigWinItem[]
-      function mapToPrismaGameBigWinItem(item: OutputGameBigWinItem): any {
-        return {
-          game_id: item.gameId ?? null,
-          game_name: item.gameName ?? null,
-          game_icon: null, // Set if available
-          user_name: item.username ?? null,
-          user_avatar: item.avatar ?? null,
-          user_id: item.userId ?? null,
-          win_amount: item.winAmount ?? 0,
-          wager_amount: item.wagerAmount ?? 0,
-          multiplier: item.multiplier ?? null,
-          timestamp: item.timestamp ?? null,
-          currency_code: (item as any).currency_code ?? null,
-          description: (item as any).description ?? null,
-        }
-      }
+      // Convert map values to array, map to HighRollerInfo, and take the top N
+      const highRollers = Array.from(userTotalWagers.entries())
+        .map(([userId, data]) => ({
+          userId: userId,
+          username: data.username,
+          avatar: data.avatar,
+          totalWagered: data.totalWagered,
+          lastActivity: data.lastActivity,
+        }))
+        .sort((a, b) => b.totalWagered - a.totalWagered) // Sort by total wagered descending
+        .slice(0, finalDisplayLimit); // Take top N
 
       return {
-        high_rollers: final_high_rollers
-          .sort((a, b) => (b.wagerAmount || 0) - (a.wagerAmount || 0))
-          .slice(0, finalDisplayLimit)
-          .map(mapToPrismaGameBigWinItem),
-        lucky_bets: diversifiedLuckyBets.map(mapToPrismaGameBigWinItem),
-      }
-    }),
+        lucky_bets: luckyBets,
+        high_rollers: highRollers,
+      };
+    } catch (error) {
+      logger.error('Failed to fetch game big wins', { error });
+      // Return an empty result to satisfy the return type
+      return {
+        lucky_bets: [],
+        high_rollers: [],
 
   getFavoriteGames: protectedProcedure
-    .output(z.array(z.string())) // Assuming it returns an array of game IDs (CUIDs)
+    .output(z.array(z.string()))
     .handler(async (): Promise<string[]> => {
-      // You need a model to store user's favorite games, e.g., UserFavoriteGame
-      // For example: model UserFavoriteGame { userId String, gameId String, @@id([userId, gameId]) }
-      // const favorites = await prisma.userFavoriteGame.findMany({
-      //   where: { userId: userId },
-      //   select: { gameId: true },
-      // });
-      // return favorites.map(f => f.gameId);
-      return [] // Placeholder
+      return [];
     }),
 
   setFavoriteGame: protectedProcedure
     .input(SetFavoriteGameSchema)
     .output(z.object({ success: z.boolean() }))
-    .handler(async ({}): Promise<{ success: boolean }> => {
-      // Again, depends on your UserFavoriteGame model
-      // if (isFavorite) {
-      //   await prisma.userFavoriteGame.upsert({
-      //     where: { userId_gameId: { userId, gameId } },
-      //     create: { userId, gameId },
-      //     update: {},
-      //   });
-      // } else {
-      //   await prisma.userFavoriteGame.deleteMany({
-      //     where: { userId, gameId },
-      //   });
-      // }
+    .handler(async (): Promise<{ success: boolean }> => ({
+      success: true,
+    })),
+});
+
+// Helper function for processing lucky bets
+async function processLuckyBets(rawLuckyBetsData: any[]): Promise<LuckyBetInfo[]> {
+  const userBestSpins = new Map<string, LuckyBetInfo>();
+
+  for (const spin of rawLuckyBetsData) {
+    if (!spin.gameSession?.userId || !spin.gameSession.refferenceToUserProfile) {
+      continue;
+    }
+
+    const userId = spin.gameSession.userId;
+    const winAmount = spin.grossWinAmount;
+    const wagerAmount = spin.wagerAmount;
+    const multiplier = wagerAmount > 0 ? winAmount / wagerAmount : null;
+
+    const existingBestSpin = userBestSpins.get(userId);
+
+    if (!existingBestSpin || (multiplier !== null && (!existingBestSpin.multiplier || multiplier > existingBestSpin.multiplier))) {
+      userBestSpins.set(userId, {
+        id: spin.id,
+        userId: userId,
+        username: spin.gameSession.refferenceToUserProfile.username,
+        avatar: spin.gameSession.refferenceToUserProfile.avatar,
+        gameId: spin.gameSession.game?.id ?? null,
+        gameName: spin.gameSession.game?.name ?? null,
+        winAmount: winAmount,
+        wagerAmount: wagerAmount,
+        multiplier: multiplier,
+        timestamp: spin.createdAt,
+      });
+    }
+  }
+
+  return Array.from(userBestSpins.values())
+    .sort((a, b) => (b.multiplier ?? 0) - (a.multiplier ?? 0))
+    .slice(0, 10);
+})
+
       return { success: true } // Placeholder
-    }),
+
+}
 }

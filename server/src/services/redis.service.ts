@@ -164,23 +164,19 @@ export class RedisCacheService {
   }
 
   private setupEventHandlers(): void {
-    this.client.on('connect', () => {
-      console.log('[RedisCacheService] Connected to Redis server')
-      this.isConnecting = false
-    })
-
-    this.client.on('close', () => {
-      console.log('[RedisCacheService] Disconnected from Redis server')
-      this.isConnecting = false
-    })
-
-    this.client.on('error', (error: Error) => {
-      console.error('[RedisCacheService] Redis error:', error)
-      this.metrics.errors++
-      if (error.message.includes('ECONNREFUSED')) {
-        this.metrics.connectionErrors++
+    const that = this
+    this.client.on = function (event, error) {
+      if (event === 'connect') that.isConnecting = false
+      if (event === 'close') that.isConnecting = false
+      if (event === 'error') {
+        console.error('[RedisCacheService] Redis error:', error)
+        that.metrics.errors++
+        //@ts-ignore
+        if (error.message.includes('ECONNREFUSED')) {
+          that.metrics.connectionErrors++
+        }
       }
-    })
+    }
   }
 
   private startMonitoring(): void {
