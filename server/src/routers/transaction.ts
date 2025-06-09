@@ -1,15 +1,15 @@
 import { type } from '@orpc/server'
-import { Product, TransactionType } from 'prisma/generated'
+import { Product, TransactionType } from '@/generated'
 import {
   DepositHistoryItem,
   DepositHistoryResponse,
-  DepositProduct,
   GetOperatorDataResponse,
   OperatorData,
-} from 'shared'
+} from '@/types'
+import type { DepositProduct } from '@/types/transaction'
 import z from 'zod/v4'
-import type { ExtendedPrismaClient } from '../../prisma' // Import the exported type
-import prisma from '../../prisma/index'
+import type { ExtendedPrismaClient } from '@/prisma' // Import the exported type
+import { prisma } from '@/index'
 import { protectedProcedure } from '../lib/orpc'
 
 const _prisma: ExtendedPrismaClient = prisma
@@ -173,12 +173,14 @@ export const transactionRouter: Record<string, unknown> = {
     const products: DepositProduct[] = _operator.products.map((product): DepositProduct => {
       return {
         id: product.id,
-        priceInCents: product.priceInCents,
         description: product.description,
-        title: product.title,
-        iconUrl: null,
-        amountToReceiveInCredits: product.amountToReceiveInCredits,
-        bonusSpins: product.bonusSpins,
+        // Add all required fields from DepositProduct type
+        name: product.name,
+        price: product.price,
+        currency: product.currency,
+        isActive: product.isActive,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
       }
     })
 

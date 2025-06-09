@@ -1,7 +1,7 @@
 import { withAccelerate } from '@prisma/extension-accelerate'
 import { performance } from 'perf_hooks'
 import * as util from 'util'
-import { Prisma, PrismaClient } from '../prisma/generated/index.js'
+import { Prisma, PrismaClient } from '../src/generated/index.js'
 
 
 // Helper type definitions (PrismaModelName, PayloadObjects, RelationFieldNames, IncludeAllRelationsForModel)

@@ -18,7 +18,7 @@ import {
   TournamentParticipantJoinedPayload,
   TournamentLeaderboardUpdatedPayload,
   UserBalanceUpdatePayload,
-} from 'shared'
+} from '@/types'
 
 // --------------- Event Emitter Instance ---------------
 /**

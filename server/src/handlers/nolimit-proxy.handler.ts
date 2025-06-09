@@ -1,5 +1,5 @@
-import { WsData, OpenHandlerContext, CloseHandlerContext, UserProfile, AppWsData } from 'shared'
-import { ServerWebSocket } from 'bun'
+import {  OpenHandlerContext, CloseHandlerContext, UserProfile, AppWsData } from '@/types'
+import { BufferSource, ServerWebSocket } from 'bun'
 
 // --- Configuration & Constants ---
 const NOLIMIT_FS_URL = 'https://demo.nolimitcity.com/EjsFrontWeb/fs'

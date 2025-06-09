@@ -7,7 +7,7 @@ import {
   UserBalanceUpdatePayload,
   UserProfile,
   WsData,
-} from 'shared'
+} from '@/types'
 
 export interface UserEventWsData extends WsData {
   clientId: string
@@ -115,11 +115,11 @@ export function handleLaravelCommand(
   }
 
   // 1. Publish the message to all other users in the same room on the Bun server
-  console.log(`[Bun] Broadcasting message from ${user.name} to room ${payload}`)
+  console.log(`[Bun] Broadcasting message from ${user.username} to room ${payload}`)
   // server.publish(roomId, JSON.stringify(messageToSend))
 
   // 2. Forward the message to Laravel for processing/storage
-  console.log(`[Bun -> Laravel] Forwarding message from ${user.name} to Laravel backend.`)
+  console.log(`[Bun -> Laravel] Forwarding message from ${user.username} to Laravel backend.`)
   sendToLaravel(ws, {
     ws,
     event: 'client-message', // Use a clear event name for Laravel

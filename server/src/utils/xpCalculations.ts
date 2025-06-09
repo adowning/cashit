@@ -1,6 +1,6 @@
 // server/src/utils/xpCalculations.ts
 
-import { VipInfo } from 'prisma/generated'
+import { VipInfo } from '@/generated'
 import { getVipLevelConfiguration } from '../config/leveling.config'
 
 /**

@@ -13,7 +13,7 @@ import {
   TournamentParticipantJoinedPayload,
   TournamentStartedEvent,
   TournamentStartedPayload,
-} from '../../../shared/dist'
+} from '@/types'
 import * as tournamentService from '../services/tournament.service'
 
 // Helper to construct a WebSocket message structure if not using validateAndPublish strictly

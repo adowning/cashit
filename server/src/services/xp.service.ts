@@ -1,7 +1,7 @@
 // server/src/services/xp.service.ts
 
-import { VipInfo } from '../../prisma/generated/client'
-import prisma from '../../prisma/index'
+import { VipInfo } from '@/generated/client'
+import { prisma } from '@/index'
 import { getVipLevelConfiguration } from '../config/leveling.config'
 
 const db = prisma

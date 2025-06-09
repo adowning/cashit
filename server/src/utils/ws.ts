@@ -1,5 +1,5 @@
 import type { Server, ServerWebSocket } from 'bun'
-import type { AppWsData, MessageSchemaType } from 'shared'
+import type { AppWsData, MessageSchemaType } from '@/types'
 import { z, ZodTypeAny } from 'zod'
 
 export interface WebSocketMessage {

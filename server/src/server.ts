@@ -1,5 +1,5 @@
 // Core Framework Imports
-import { Scalar } from '@scalar/hono-api-reference'
+// import { Scalar } from '@scalar/hono-api-reference'
 import { Hono } from 'hono'
 
 // Middleware Imports
@@ -40,7 +40,7 @@ import { setupTournamentWebSocketListeners } from './handlers/tournament.handler
 import { jackpotJobs } from '@/jobs/jackpot.jobs'
 import { OpenAPIHandler } from '@orpc/openapi/fetch'
 import { ZodSmartCoercionPlugin } from '@orpc/zod'
-import { AppWsData, HonoEnv } from 'shared'
+import { AppWsData, HonoEnv } from '@/types'
 import {
   initializeGlobalEventListeners,
   userEventsOpenHandler,
@@ -59,7 +59,7 @@ const resthandler = new OpenAPIHandler(appRouter, {
 
 const app = new Hono<HonoEnv>()
 app.use(logger())
-app.get('/scalar', Scalar({ url: '/doc' }))
+// app.get('/scalar', Scalar({ url: '/doc' }))
 const rtgApi = new RtgApi(app)
 console.log(rtgApi)
 app.route('/performance', performanceRoutes)
@@ -79,7 +79,7 @@ app.all('/api/auth/*', async (c) => {
 })
 
 app.use('/rpc/*', async (c, next) => {
-  const context = await createContext({ context: c })
+  const context = await createContext({ context: { req: c.req.raw } })
   const authSession = await auth.api.getSession({
     headers: c.req.raw.headers,
   })

@@ -1,7 +1,7 @@
 import { InferRouterOutputs } from '@orpc/server'
-import { VipInfo } from 'shared/dist'
-import type { ExtendedPrismaClient } from '../../prisma' // Import Prisma namespace for input types
-import prisma from '../../prisma/index' // Your extended Prisma client
+import { VipInfo } from '@/types/'
+import type { ExtendedPrismaClient } from '@/prisma' // Import Prisma namespace for input types
+import { prisma } from '@/index' // Your extended Prisma client
 import { protectedProcedure } from '../lib/orpc'
 
 const _prisma: ExtendedPrismaClient = prisma

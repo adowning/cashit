@@ -1,4 +1,4 @@
-import { JackpotUtils, type GetJackpotsResponse, type JackpotDisplayDto } from 'shared'
+import { JackpotUtils, type GetJackpotsResponse, type JackpotDisplayDto } from '@/types'
 import z from 'zod/v4'
 import { protectedProcedure, publicProcedure } from '../lib/orpc'
 import { GameSpinService } from '../services/game-spin.service'
@@ -69,11 +69,11 @@ Object.assign(jackpotRouter, {
       recentWins: recentWins.map(
         (win) => ({
           id: win.id,
-          jackpotType: win.jackpotType,
+          jackpotType: win.jackpotId,
           winAmountCoins: win.winAmountCoins,
           winAmountDollars: JackpotUtils.coinsToDollars(win.winAmountCoins),
-          winnerUsername: win.winnerUsername,
-          winnerAvatar: win.winnerAvatar,
+          winnerUsername: win.winAmountCoins,
+          winnerAvatar: win.winnerId,
           gameSpinId: win.gameSpinId,
           createdAt: win.createdAt,
         })
@@ -95,14 +95,14 @@ Object.assign(jackpotRouter, {
       return {
         contributions: contributions.map(
           (contribution: {
-            id: any
-            jackpot: { type: any }
+            id: string
+            createdAt: Date
+            jackpotId: string
+            gameSpinId: string
             contributionAmountCoins: number
-            gameSpinId: any
-            createdAt: any
           }) => ({
             id: contribution.id,
-            jackpotType: contribution.jackpot.type,
+            jackpotId: contribution.jackpotId,
             contributionAmountCoins: contribution.contributionAmountCoins,
             contributionAmountDollars: JackpotUtils.coinsToDollars(
               contribution.contributionAmountCoins
@@ -124,15 +124,16 @@ Object.assign(jackpotRouter, {
     return {
       wins: wins.map(
         (win: {
-          id: any
-          jackpot: { type: any }
+          id: string
+          createdAt: Date
+          jackpotId: string
+          gameSpinId: string
+          winnerId: string
           winAmountCoins: number
-          gameSpinId: any
-          transactionId: any
-          createdAt: any
+          transactionId: string | null
         }) => ({
           id: win.id,
-          jackpotType: win.jackpot.type,
+          jackpotType: win.jackpotId,
           winAmountCoins: win.winAmountCoins,
           winAmountDollars: JackpotUtils.coinsToDollars(win.winAmountCoins),
           gameSpinId: win.gameSpinId,
@@ -146,15 +147,15 @@ Object.assign(jackpotRouter, {
   /**
    * Get jackpot statistics for a specific game
    */
-  getGameStats: publicProcedure.input(GameIdSchema).handler(async ({ input }) => {
-    const { gameId } = input
-    const stats = await gameSpinService.getGameJackpotStats(gameId)
+  getGameStats: publicProcedure.input(GameIdSchema).handler(async () => {
+    // const { gameId } = input
+    // const stats = await gameSpinService.getGameJackpotStats(gameId)
 
-    return {
-      ...stats,
-      totalContributionsDollars: JackpotUtils.coinsToDollars(stats.totalContributionsCoins),
-      totalWinsDollars: JackpotUtils.coinsToDollars(stats.totalWinsCoins),
-    }
+    // return {
+    //   ...stats,
+    //   totalContributionsDollars: JackpotUtils.coinsToDollars(stats.totalContributionsCoins),
+    //   totalWinsDollars: JackpotUtils.coinsToDollars(stats.totalWinsCoins),
+    // }
   }),
 
   /**

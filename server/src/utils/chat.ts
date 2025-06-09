@@ -1,5 +1,5 @@
 import type { ServerWebSocket } from 'bun'
-import type { MessageHandlerContext, JoinRoom, SendMessage } from 'shared'
+import type { MessageHandlerContext, JoinRoom, SendMessage } from '@/types'
 
 interface AppWebSocketData {
   clientId: string;

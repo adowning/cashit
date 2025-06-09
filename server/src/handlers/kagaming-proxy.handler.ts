@@ -1,5 +1,5 @@
 import { BufferSource, ServerWebSocket } from 'bun'
-import { CloseHandlerContext, OpenHandlerContext, UserProfile, WsData } from 'shared'
+import { CloseHandlerContext, OpenHandlerContext, UserProfile, WsData } from '@/types'
 
 // --- Configuration & Constants ---
 const KAGAMING_WD_DOMAIN = 'wss://pml.kaga88.com'
@@ -125,6 +125,7 @@ function lzwDecode(input: string): string {
 // --- App specific WsData extension for KaGaming Proxy ---
 // Ensure this is compatible or merged with your global AppWsData in types.ts
 export interface KaGamingProxyWsData extends WsData {
+  data: any
   isKaGamingProxy?: boolean
   clientId: string
   kagamingSessionKey?: string

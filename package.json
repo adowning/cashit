@@ -3,7 +3,6 @@
   "private": true,
   "workspaces": [
     "./server",
-    "./client",
     "./shared"
   ],
   "scripts": {
@@ -18,32 +17,26 @@
     "build:server": "cd server && bun run build",
     "build:admin": "cd server && bun run admin",
     "build": "bun run build:shared && bun run build:server && bun run build:client",
-    "postinstall": "bun run build:shared && bun run build:server",
+    "postinstallx": "bun run build:shared && bun run build:server",
     "db:push": "bun --filter=server db:push",
     "db:studio": "bun --filter=server db:studio",
     "db:gen": "cd server && bun db:generate",
     "db:migrate": "bun --filter=server db:migrate",
-    "clean": "rm -rf node_modules .turbo && bunx turbo run clean && rm bun.lock "
+    "cleanx": "rm -rf node_modules .turbo && bunx turbo run clean && rm bun.lock "
   },
   "devDependencies": {
-    "bun-types": "latest",
+    "@types/pg": "^8.15.4",
+    "bun-types": "^1.2.15",
     "concurrently": "^9.1.2"
   },
   "peerDependencies": {
     "typescript": "^5.0.0"
   },
   "dependencies": {
-    "@faker-js/faker": "^9.8.0",
-    "@headlessui/vue": "^1.7.23",
-    "@orpc/vue-colada": "^1.3.0",
-    "@orpc/vue-query": "^1.3.0",
-    "@rstore/vue": "^0.6.15",
-    "@tanstack/vue-query": "^5.77.2",
-    "bcryptjs": "^3.0.2",
+    "@orpc/server": "^1.4.5",
+    "@types/bun": "^1.2.15",
     "date-fns": "^4.1.0",
-    "hono": "^4.7.10",
-    "lucide-vue-next": "^0.511.0",
-    "partysocket": "^1.1.4",
+    "prettier": "^3.5.3",
     "prisma-generator-typescript-interfaces": "^2.1.0"
   },
   "packageManager": "bun@1.2.10"

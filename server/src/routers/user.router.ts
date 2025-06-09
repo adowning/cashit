@@ -1,13 +1,13 @@
 // File: ai/server/src/routers/user.routes.ts
 import { protectedProcedure } from '@/lib/orpc'
-import { Prisma } from 'prisma/generated'
+import { Prisma } from '@/generated'
 import {
   PaginatedResponse as PaginatedResponseType,
   PrismaUserProfile as PrismaUserProfileType,
-} from 'shared/dist'
+} from '@/types/'
 import z from 'zod/v4'
-import type { ExtendedPrismaClient } from '../../prisma' // Import Prisma namespace for input types
-import prisma from '../../prisma/index' // Your extended Prisma client
+import type { ExtendedPrismaClient } from '@/prisma' // Import Prisma namespace for input types
+import { prisma } from '@/index' // Your extended Prisma client
 
 const _prisma: ExtendedPrismaClient = prisma
 

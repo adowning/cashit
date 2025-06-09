@@ -4,8 +4,8 @@
  */
 
 import { SQL } from 'bun'
-import { JACKPOT_CONFIG, JackpotUtils } from 'shared'
-import { TransactionStatus } from '../../prisma/generated/client'
+import { JACKPOT_CONFIG, JackpotUtils } from '@/types'
+import { TransactionStatus } from '@/generated/client'
 import { CACHE_KEYS, cacheService } from './redis.service'
 
 const jackpotSql = new SQL(

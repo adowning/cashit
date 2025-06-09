@@ -2,8 +2,8 @@ import { Context } from 'hono'
 import { User, Session } from 'better-auth/types' // Assuming these types are external or defined elsewhere
 import { SQL, sql as bunSqlUtil } from 'bun' // Changed to use global sql import and added sql util for raw
 import { typedAppEventEmitter, AppEvents } from '../lib/events' // Assuming these are project-specific
-import { TransactionType, TransactionStatus } from '../../prisma/generated/index' // Assuming this path is correct
-import type { RTGSpinRequestDto, ProviderSpinResponseData, RtgSpinResult } from 'shared' // Assuming these types are from a shared package
+import { TransactionType, TransactionStatus } from '@/generated/index' // Assuming this path is correct
+import type { RTGSpinRequestDto, ProviderSpinResponseData, RtgSpinResult } from '@/types' // Assuming these types are from a shared package
 import { toCents } from './transaction.service' // Project-specific service
 import { cacheService } from './redis-new.service' // Cache service
 import { RgsProxyError, isRgsProxyError } from 'shared/errors/rgs-proxy.error' // Shared error class

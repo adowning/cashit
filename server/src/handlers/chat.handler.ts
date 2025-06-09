@@ -1,5 +1,5 @@
 import { publish } from '@/utils'
-import { JoinRoom, MessageHandlerContext, NewMessage, SendMessage, UserJoined } from 'shared'
+import { JoinRoom, MessageHandlerContext, NewMessage, SendMessage, UserJoined } from '@/types'
 
 // Handler for JOIN_ROOM
 export function handleJoinRoom(context: MessageHandlerContext<typeof JoinRoom>) {

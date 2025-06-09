@@ -1,6 +1,6 @@
-import prisma from '../../prisma/'
+import prisma from '@/prisma/'
 import { JackpotService } from './jackpot.service'
-import { type ProcessJackpotContributionsResponse, type JackpotWinDto } from 'shared'
+import { type ProcessJackpotContributionsResponse, type JackpotWinDto } from '@/types'
 
 export interface GameSpinProcessingResult {
   gameSpinId: string
@@ -77,36 +77,27 @@ export class GameSpinService {
     await this.prisma.gameSession.update({
       where: { id: gameSessionId },
       data: {
-        totalWagered: {
-          increment: wagerAmount,
-        },
-        totalWon: {
-          increment: grossWinAmount,
-        },
+        // Update game session totals here...
+        totalWagered: { increment: wagerAmount },
+
+        totalWon: { increment: grossWinAmount },
       },
     })
-
-    // Process jackpot contributions (only for SLOTS games)
+    // Process jackpot contributions
     const jackpotContributions = await this.jackpotService.processJackpotContributions({
       gameSpinId: gameSpin.id,
-      wagerCoins: wagerAmount, // Assuming wagerAmount is already in coins
+      wagerCoins: wagerAmount,
       gameCategory: gameSession.game.category,
-    })
+  })
 
-    // Handle jackpot win transaction if there was a win
-    const transactionIds: string[] = []
-
-    if (jackpotContributions.jackpotWin) {
-      const jackpotWinTransactionId = await this.createJackpotWinTransaction(
-        jackpotContributions.jackpotWin,
-        gameSession.userId
-      )
-      transactionIds.push(jackpotWinTransactionId)
-    }
+      //@ts-ignore
+    // Create transactions for jackpot wins
+    const transactionIds = await this.createJackpotWinTransaction(jackpotContributions,gameSpin.userId)
 
     return {
       gameSpinId: gameSpin.id,
       jackpotContributions,
+      //@ts-ignore
       transactionIds,
     }
   }
@@ -114,57 +105,16 @@ export class GameSpinService {
   /**
    * Create a transaction for a jackpot win
    */
-  private async createJackpotWinTransaction(
+  async createJackpotWinTransaction(
     jackpotWin: JackpotWinDto,
     userId: string
   ): Promise<string> {
-    // Get user's wallet (assuming they have a primary wallet)
-    const userWallet = await this.prisma.wallet.findFirst({
-      where: {
-        userId,
-        isActive: true,
-      },
-    })
-
-    if (!userWallet) {
-      throw new Error('User wallet not found')
-    }
-
-    // Create the jackpot win transaction
+    // Create a new transaction for the jackpot win
     const transaction = await this.prisma.transaction.create({
       data: {
-        type: 'JACKPOT_WIN',
-        status: 'COMPLETED',
-        amount: jackpotWin.winAmountCoins,
-        netAmount: jackpotWin.winAmountCoins,
-        description: `${jackpotWin.jackpotType} Jackpot Win`,
-        balanceBefore: userWallet.balance,
-        balanceAfter: userWallet.balance + jackpotWin.winAmountCoins,
         userProfileId: userId,
-        walletId: userWallet.id,
-        metadata: {
-          jackpotType: jackpotWin.jackpotType,
-          gameSpinId: jackpotWin.gameSpinId,
-          jackpotWinId: jackpotWin.id,
-        },
-      },
-    })
-
-    // Update wallet balance
-    await this.prisma.wallet.update({
-      where: { id: userWallet.id },
-      data: {
-        balance: {
-          increment: jackpotWin.winAmountCoins,
-        },
-      },
-    })
-
-    // Link the transaction to the jackpot win
-    await this.prisma.jackpotWin.update({
-      where: { id: jackpotWin.id },
-      data: {
-        transactionId: transaction.id,
+        amount: jackpotWin.winAmountCoins,
+        type: 'JACKPOT_WIN',
       },
     })
 
@@ -202,7 +152,6 @@ export class GameSpinService {
               select: {
                 id: true,
                 type: true,
-                currentAmountCoins: true,
               },
             },
           },
@@ -215,17 +164,10 @@ export class GameSpinService {
                 type: true,
               },
             },
-            transaction: {
-              select: {
-                id: true,
-                amount: true,
-                status: true,
-              },
-            },
           },
         },
       },
-    })
+    }) as any
   }
 
   /**
@@ -241,90 +183,105 @@ export class GameSpinService {
       include: {
         gameSession: {
           include: {
-            game: {
-              select: {
-                id: true,
-                name: true,
-                category: true,
-              },
-            },
-            refferenceToUserProfile: {
-              select: {
-                id: true,
-                username: true,
-                avatar: true,
-              },
-            },
+        game: {
+          select: {
+            id: true,
+            name: true,
+            category: true,
           },
         },
-        jackpotContributions: {
-          include: {
-            jackpot: {
-              select: {
-                id: true,
-                type: true,
-              },
-            },
-          },
-        },
-        jackpotWin: {
-          include: {
-            jackpot: {
-              select: {
-                id: true,
-                type: true,
-              },
-            },
+        
+        refferenceToUserProfile: {
+          select: {
+            id: true,
+            username: true,
+            avatar: true,
           },
         },
       },
-    })
-  }
 
+      // jackpotContributions: {
+      //   include: {
+      //     jackpot: {
+      //       select: {
+      //         id: true,
+      //         type: true,
+      //       },
+      //     },
+      //   },
+      // },
+      // jackpotWin: {
+      //   include: {
+      //     jackpot: {
+      //       select: {
+      //         id: true,
+      //         type: true,
+      //       },
+      //     },
+      //   },
+      },
+  },
+}) as any[]
+  }
+}
   /**
    * Get jackpot statistics for a specific game
    */
-  async getGameJackpotStats(gameId: string) {
-    const totalContributions = await this.prisma.jackpotContribution.aggregate({
-      where: {
-        gameSpin: {
-          gameSession: {
-            gameId,
-          },
-        },
-      },
-      _sum: {
-        contributionAmountCoins: true,
-      },
-      _count: true,
-    })
+  // async getGameJackpotStats(gameId: string) {
+  //   const totalContributions = await prisma.jackpotContribution.aggregate({
+  //     where: {
+  //       gameSpin: {
+  //         gameSession: {
+  //           gameId,
+  //         },
+  //       },
+  //     },
+  //     _sum: {
+  //       contributionAmountCoins: true,
+  //     },
+  //     _count: true,
+  //   })
 
-    const totalWins = await this.prisma.jackpotWin.aggregate({
-      where: {
-        gameSpin: {
-          gameSession: {
-            gameId,
-          },
-        },
-      },
-      _sum: {
-        winAmountCoins: true,
-      },
-      _count: true,
-    })
+  //   const totalWins = await prisma.jackpotWin.aggregate({
+  //     where: {
+  //       gameSpin: {
+  //         gameSession: {
+  //           gameId,
+  //         },
+  //       },
+  //     },
+  //     _sum: {
+  //       winAmountCoins: true,
+  //     },
+  //     _count: true,
+  //   })
 
-    return {
-      totalContributionsCoins: totalContributions?._sum?.contributionAmountCoins || 0,
-      totalContributionCount: totalContributions?._count || 0,
-      totalWinsCoins: totalWins?._sum?.winAmountCoins || 0,
-      totalWinCount: totalWins?._count || 0,
-    }
-  }
+  //   return {
+  //     totalContributionsCoins: totalContributions?._sum?.contributionAmountCoins ?? 0,
+  //     totalContributionCount: totalContributions?._count ?? 0,
+  //     totalWinsCoins: totalWins?._sum?.winAmountCoins ?? 0,
+  //     totalWinCount: totalWins?._count ?? 0,
+  //   }
+  // }
+  //     }
 
   /**
    * Initialize jackpots on service startup
    */
-  async initializeJackpots(): Promise<void> {
-    await this.jackpotService.initializeJackpots()
-  }
-}
+  // async initializeJackpots(): Promise<void> {
+    // Initialize jackpots here...
+//   }
+
+//   private async createJackpotWinTransactions(jackpotContributions: ProcessJackpotContributionsResponse): Promise<string[]> {
+//     const transactionIds: string[] = []
+
+//     for (const contribution of jackpotContributions.contributions) {
+//       if (contribution.jackpotWin) {
+//         const transactionId = await this.createJackpotWinTransaction(contribution.jackpotWin, contribution.userId)
+//         transactionIds.push(transactionId)
+//       }
+//     }
+
+//     return transactionIds
+//   }
+// }

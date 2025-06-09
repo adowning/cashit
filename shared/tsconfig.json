@@ -1,7 +1,9 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
-    "lib": ["ESNext"],
+    "lib": [
+      "ESNext"
+    ],
     "target": "ESNext",
     "module": "NodeNext",
     "moduleResolution": "nodenext",
@@ -15,7 +17,9 @@
     "noUncheckedIndexedAccess": true,
     "baseUrl": "./",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": [
+        "src/*"
+      ]
     },
     "composite": true,
     "declarationMap": true,
@@ -24,5 +28,9 @@
   "include": [
     "src/**/*"
   ],
-  "exclude": ["node_modules", "**/*.test.ts", "src/services/pragmatic"]
+  "exclude": [
+    "node_modules",
+    "**/*.test.ts",
+    "src/services/pragmatic"
+  ]
 }

@@ -3,8 +3,8 @@ import {
   type RTGSpinRequestDto,
   type RTGSpinResponseDto,
   JackpotUtils,
-} from 'shared'
-import prisma from '../../prisma/'
+} from '@/types'
+import prisma from '@/prisma/'
 import { GameSpinService } from '../services/game-spin.service'
 
 /**
@@ -231,7 +231,7 @@ export class RTGJackpotIntegration {
    * Initialize jackpots on startup
    */
   async initialize(): Promise<void> {
-    await this.gameSpinService.initializeJackpots()
+    // await this.gameSpinService.initializeJackpots()
   }
 }
 

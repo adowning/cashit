@@ -1,7 +1,7 @@
 // server/src/services/tournament.service.ts
 
 import { AppEvents, typedAppEventEmitter } from '@/lib/events'
-import { Prisma, Tournament, TournamentStatus, UserProfile } from 'prisma/generated'
+import { Prisma, Tournament, TournamentStatus, UserProfile } from '@/generated'
 import {
   TournamentCreatedPayload,
   TournamentEndedPayload,
@@ -9,9 +9,9 @@ import {
   TournamentParticipantJoinedPayload,
   TournamentParticipantType,
   TournamentStartedPayload,
-} from 'shared/dist'
-import type { ExtendedPrismaClient } from '../../prisma' // Import Prisma namespace for input types
-import prisma from '../../prisma/index' // Your extended Prisma client
+} from '@/types/'
+import type { ExtendedPrismaClient } from '@/prisma' // Import Prisma namespace for input types
+import prisma from '@/prisma' // Your extended Prisma client
 
 const db: ExtendedPrismaClient = prisma
 // Use Prisma's TournamentStatus enum directly for consistency

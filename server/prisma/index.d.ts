@@ -1,5 +1,4 @@
-import { Prisma, PrismaClient } from './generated/client';
-export type { UserProfile } from './generated';
+import { Prisma, PrismaClient } from '../src/generated/index.js';
 type PrismaModelName = Prisma.ModelName;
 type PayloadObjects<M extends PrismaModelName> = Prisma.TypeMap['model'][M]['payload'] extends infer P ? P extends {
     objects: infer O;

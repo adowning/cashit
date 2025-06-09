@@ -7,9 +7,9 @@ import {
   TournamentDetailed,
   TournamentParticipantInfo,
   TournamentStatus,
-} from 'shared/dist'
+} from '@/types/'
 import z from 'zod/v4'
-import prisma from '../../prisma/index'
+import { prisma } from '@/index'
 import { protectedProcedure, publicProcedure } from '../lib/orpc'
 
 // Zod Schemas for input validation, mirroring shared types
@@ -29,26 +29,35 @@ const TournamentIdSchema = z.object({
 const mapPrismaTournamentToTournamentCore = (
   tournament: PrismaTournament & {
     participants?: PrismaTournamentParticipant[]
-    TournamentGames?: any[]
+    tournamentGames?: Array<{ games: { name: string; thumbnailUrl?: string } }>
     rewards?: PrismaTournamentReward[]
+    user?: { id: string; username: string } | null
   }
 ): TournamentCore => {
+  // Handle date conversion safely
+  const startTime = tournament.startTime instanceof Date 
+    ? tournament.startTime.toISOString() 
+    : new Date(tournament.startTime).toISOString()
+    
+  const endTime = tournament.endTime 
+    ? (tournament.endTime instanceof Date 
+      ? tournament.endTime.toISOString() 
+      : new Date(tournament.endTime).toISOString())
+    : null
+
   return {
     id: tournament.id,
     name: tournament.name,
-    description: tournament.description,
-    startTime: tournament.startTime.toISOString(),
-    endTime: tournament.endTime?.toISOString() || null,
-    targetScore: tournament.targetScore,
-    status: tournament.status as TournamentStatus, // Prisma enum should match shared enum
+    description: tournament.description || null,
+    startTime,
+    endTime,
+    targetScore: tournament.targetScore || null,
+    status: tournament.status as TournamentStatus,
     participantCount: tournament.participants?.length ?? 0,
-    // prizeFund is not directly in PrismaTournament, might need to be calculated or added
-    prizeFund:
-      tournament.rewards?.reduce(
-        (acc, reward) =>
-          acc + (reward.description.includes('USD') ? parseInt(reward.description) : 0),
-        0
-      ) || 'Dynamic',
+    prizeFund: tournament.rewards?.reduce(
+      (acc, reward) => acc + (reward.description.includes('USD') ? parseInt(reward.description) : 0),
+      0
+    ) || 'Dynamic',
   }
 }
 
@@ -87,53 +96,76 @@ export const tournamentRouter: any = {
   getDetails: publicProcedure
     .input(TournamentIdSchema)
     .handler(async ({ input }): Promise<TournamentDetailed | null> => {
-      const tournament = (await prisma.tournament.findUnique({
+      const tournament = await prisma.tournament.findUnique({
         where: { id: input.tournamentId },
         include: {
           tournamentGames: { include: { games: true } },
-          rewards: { include: { winner: true } },
-          participants: {
-            include: { user: true },
-            orderBy: { score: 'desc' },
+          rewards: { 
+            include: { 
+              winner: { 
+                select: { username: true }
+              } 
+            } 
           },
-          user: true, // For createdBy
+          participants: {
+            include: { 
+              user: {
+                select: {
+                  id: true,
+                  username: true,
+                  avatar: true
+                }
+              }
+            },
+            orderBy: { score: 'desc' as const },
+          },
+          user: {
+            select: {
+              id: true,
+              username: true
+            }
+          },
         },
-      })) as TournamentDetailed | null
+      })
 
       if (!tournament) return null
 
-      return {
-        ...mapPrismaTournamentToTournamentCore(tournament),
-        eligibleGames: (tournament as any).TournamentGames.map(
-          (tg: { A: any; games: { name: any; thumbnailUrl: any } }) => ({
-            gameId: tg.A,
-            name: tg.games?.name ?? 'Unknown Game',
-            pointMultiplier: 1.0, // Default multiplier since TournamentGames doesn't have this field
-            thumbnailUrl: tg.games?.thumbnailUrl ?? undefined,
-          })
-        ),
-        rewards: tournament.rewards.map((r) => ({
-          id: r.id,
-          rank: r.rank,
-          description: r.description,
-          isClaimed: r.isClaimed,
-          winnerId: r.winnerId,
-          winnerUsername: r.winner?.username,
-        })),
-        participants: tournament.participants?.map((p) => ({
-          userId: p.userId,
-          username: p.user?.username ?? 'Unknown User',
-          avatarUrl: p.user?.avatar,
-          score: p.score,
-          rank: p.rank,
-          joinedAt: p.joinedAt.toISOString(),
-        })),
-        createdBy: tournament.user
-          ? { id: tournament.user.id, username: tournament.user.username }
-          : undefined,
-        createdAt: tournament.createdAt.toISOString(),
-        updatedAt: tournament.updatedAt.toISOString(),
-      }
+      if (!tournament) return null;
+
+  const formatDate = (date: Date | string): string => 
+    date instanceof Date ? date.toISOString() : new Date(date).toISOString();
+
+  return {
+    ...mapPrismaTournamentToTournamentCore(tournament),
+    eligibleGames: tournament.tournamentGames?.map((tg) => ({
+      gameId: tg.games?.id || '',
+      name: tg.games?.name || 'Unknown Game',
+      pointMultiplier: 1.0,
+      thumbnailUrl: tg.games?.thumbnailUrl,
+    })) || [],
+    rewards: tournament.rewards?.map((r) => ({
+      id: r.id,
+      rank: r.rank,
+      description: r.description,
+      isClaimed: r.isClaimed || false,
+      winnerId: r.winnerId || null,
+      winnerUsername: r.winner?.username || null,
+    })) || [],
+    participants: tournament.participants?.map((p) => ({
+      userId: p.userId,
+      username: p.user?.username || 'Unknown User',
+      avatarUrl: p.user?.avatar || null,
+      score: p.score,
+      rank: p.rank || null,
+      joinedAt: formatDate(p.joinedAt),
+    })) || [],
+    createdBy: tournament.user ? {
+      id: tournament.user.id,
+      username: tournament.user.username
+    } : undefined,
+    createdAt: formatDate(tournament.createdAt),
+    updatedAt: formatDate(tournament.updatedAt),
+  }
     }),
 
   getLeaderboard: publicProcedure
@@ -147,8 +179,16 @@ export const tournamentRouter: any = {
     .handler(async ({ input }): Promise<TournamentParticipantInfo[]> => {
       const participants = await prisma.tournamentParticipant.findMany({
         where: { tournamentId: input.tournamentId },
-        include: { user: true },
-        orderBy: { score: 'desc' },
+        include: { 
+          user: {
+            select: {
+              id: true,
+              username: true,
+              avatar: true
+            }
+          }
+        },
+        orderBy: { score: 'desc' as const },
         take: input.limit,
         skip: input.offset,
       })

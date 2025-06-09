@@ -1,7 +1,7 @@
-import { Prisma, PrismaClient } from './generated/client';
 import { withAccelerate } from '@prisma/extension-accelerate';
 import { performance } from 'perf_hooks';
 import * as util from 'util';
+import { Prisma, PrismaClient } from '../src/generated/index.js';
 // Define the findUniqueDetailsExtension (this definition is correct)
 const findUniqueDetailsExtension = Prisma.defineExtension((client) => {
     return client.$extends({

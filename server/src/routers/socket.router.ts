@@ -29,7 +29,7 @@ import {
   UserBalanceUpdate,
   UserBalanceUpdatePayload,
   UserLeft,
-} from 'shared'
+} from '@/types'
 import { v4 as randomUUIDv7 } from 'uuid'
 import { z } from 'zod'
 
@@ -411,10 +411,10 @@ export class WebSocketRouter<T extends AppWsData = AppWsData> {
       kagamingProxyMessageHandler(ws as ServerWebSocket<KaGamingProxyWsData>, message)
       return
     }
-    if (ws.data['isphpProxy'] && typeof phpProxyOpenHandler === 'function') {
-      phpProxyMessageHandler({ ws: ws as any, send: this.createSendFunction(ws as any) })
-      return
-    }
+    // if (ws.data['isphpProxy'] && typeof handleLaravelCommand === 'function') {
+    //   handleLaravelCommand({ ws: ws as any, send: this.createSendFunction(ws as any) })
+    //   return
+    // }
     const messageString = message instanceof Buffer ? message.toString() : message
     const parseResult = safeJsonParse(messageString) as any
 

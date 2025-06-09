@@ -1,12 +1,12 @@
 generator client {
   provider     = "prisma-client"
-  output       = "../generated"
+  output       = "../../src/generated"
   moduleFormat = "esm"
 }
 
 generator typescriptInterfaces {
   provider          = "ts-node ../node_modules/.bin/prisma-generator-typescript-interfaces"
-  output            = "../../../shared/src/types/prisma.ts"
+  output            = "../../src/types/types/prisma.ts"
   client            = "../generated"
   enumPrefix        = "Prisma"
   modelPrefix       = "Prisma"

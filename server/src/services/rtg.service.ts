@@ -9,8 +9,8 @@ import {
   RgsProxyError,
   RTGSpinRequestDto,
   RtgSpinResult,
-} from 'shared'
-import { Session, TransactionStatus, TransactionType, User } from '../../prisma/generated/index' // Assuming this path is correct
+} from '@/types'
+import { Session, TransactionStatus, TransactionType, User } from '@/generated/index' // Assuming this path is correct
 import { cacheService } from './redis.service' // Cache service
 import { PROVIDER_CONFIGS } from './rtg-proxy.service'
 import { toCents } from './transaction.service'
@@ -577,6 +577,94 @@ async function proxyRequestToRgs<TRequest, TResponse>(
       500, // Internal Server Error type for unparseable response
       { responseText }
     )
+  }
+}
+
+// Basic RTG settings handler
+export async function rtgSettings(c: Context,  gameName: string) {
+  try {
+    // Get game settings from cache or database
+    const gameSettings = await cacheService.getGameSettings(gameName);
+    
+    if (gameSettings) {
+      return c.json({ success: true, data: gameSettings });
+    }
+
+    // If not in cache, fetch from database
+    const [settings] = await sql`
+      SELECT * FROM game_settings 
+      WHERE game_name = ${gameName} AND is_active = true
+      LIMIT 1
+    `;
+
+    if (!settings) {
+      return c.json({ success: false, error: 'Game settings not found' }, 404);
+    }
+
+    // Cache the settings for future use
+    await cacheService.setGameSettings(gameName, settings);
+    
+    return c.json({ success: true, data: settings });
+  } catch (error) {
+    console.error('Error in rtgSettings:', error);
+    return c.json({ success: false, error: 'Internal server error' }, 500);
+  }
+}
+
+// Basic RTG spin handler
+export async function rtgSpin(c: Context, user: User, session: Session, token: string) {
+  try {
+    const spinResult = await rtgSpinCached(c, user, session, token);
+    return spinResult;
+  } catch (error) {
+    console.error('Error in rtgSpin:', error);
+    return c.json({ success: false, error: 'Spin processing failed' }, 500);
+  }
+}
+
+// RTG spin with performance metrics
+export async function rtgSpinWithPerformanceMetrics(c: Context, user: User, session: Session, token: string) {
+  const performanceLogger = new CachedPerformanceLogger();
+  performanceLogger.startTimer();
+  
+  try {
+    const startTime = performance.now();
+    const spinResult = await rtgSpinCached(c, user, session, token);
+    const endTime = performance.now();
+    
+    // Log performance metrics
+    performanceLogger.metrics.rgs_call_time = endTime - startTime;
+    performanceLogger.logMetrics(user.id, token, true);
+    
+    return spinResult;
+  } catch (error: any) {
+    performanceLogger.logMetrics(user.id, token, false, error.message);
+    console.error('Error in rtgSpinWithPerformanceMetrics:', error);
+    return c.json({ success: false, error: 'Spin processing failed' }, 500);
+  }
+}
+
+// Optimized RTG spin handler
+export async function rtgSpinOptimized(c: Context, user: User, session: Session, gameName: string) {
+  try {
+    // Get optimized settings
+    const [settings] = await sql`
+      SELECT * FROM game_optimizations 
+      WHERE game_name = ${gameName} AND is_active = true
+      LIMIT 1
+    `;
+
+    if (!settings) {
+      return rtgSpinCached(c, user, session, gameName);
+    }
+
+    // Apply optimizations
+    // ... (add any optimization logic here)
+    
+    return rtgSpinCached(c, user, session, gameName);
+  } catch (error) {
+    console.error('Error in rtgSpinOptimized:', error);
+    return c.json({ success: false, error: 'Optimized spin processing failed' }, 500);
   }
 }
 

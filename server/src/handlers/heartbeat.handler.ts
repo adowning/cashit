@@ -1,4 +1,4 @@
-import { MessageHandlerContext, Ping, Pong } from 'shared'
+import { MessageHandlerContext, Ping, Pong } from '@/types'
 
 // Handler for PING
 export function handlePing(context: MessageHandlerContext<typeof Ping>) {

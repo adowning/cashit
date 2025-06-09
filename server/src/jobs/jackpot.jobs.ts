@@ -1,6 +1,6 @@
-import prisma from '../../prisma/'
+import prisma from '@/prisma/'
 import { JackpotService } from '../services/jackpot.service.js'
-import { JACKPOT_CONFIG, JackpotUtils } from 'shared'
+import { JACKPOT_CONFIG, JackpotUtils } from '@/types'
 
 const jackpotService = new JackpotService()
 

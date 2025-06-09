@@ -49,7 +49,7 @@ export const protectedProcedure = publicProcedure.use(requireAuth)
 // import { ORPCError, os } from '@orpc/server'
 // import { Session } from 'better-auth'
 // import type { Server, ServerWebSocket } from 'bun'
-// import type { AppWsData } from 'shared' // Your shared ws.data type from the `shared` package
+// import type { AppWsData } from '@/types' // Your shared ws.data type from the `shared` package
 
 // // Define the comprehensive context ORPC procedures will receive
 // export interface OrpcContext {

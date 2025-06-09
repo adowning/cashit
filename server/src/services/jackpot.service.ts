@@ -5,8 +5,8 @@ import {
   type JackpotWinDto,
   type ProcessJackpotContributionsRequest,
   type ProcessJackpotContributionsResponse,
-} from 'shared'
-import prisma from '../../prisma/'
+} from '@/types'
+import prisma from '@/prisma/'
 
 export class JackpotService {
   prisma: typeof prisma

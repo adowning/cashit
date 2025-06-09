@@ -6,9 +6,9 @@ import {
   TransactionStatus,
   TransactionType,
   Wallet,
-} from 'prisma/generated/client'
+} from '@/generated/client'
 
-import prisma from '../../prisma/index'
+import prisma from '@/prisma/index'
 import { AppEvents, typedAppEventEmitter } from '../lib/events'
 
 // --- Core Transaction Creation ---

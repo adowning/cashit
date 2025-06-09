@@ -1,16 +1,15 @@
 import {
   PrismaGameBigWinData as GameBigWinData,
   PrismaGameHistoryItem as GameHistoryItem,
-  GameSpin,
   LaunchGameResponseDto,
   PaginatedResponse,
   PrismaGameProviderName,
   PrismaGameProvider as SharedGameProvider,
   PrismaGame as SharedPrismaGame,
-} from 'shared/dist'
+} from '@/types/'
 import z from 'zod/v4'
-import prisma from '../../prisma/'
-import { Prisma, GameCategory as PrismaGameCategoryEnum } from '../../prisma/generated/client'
+import prisma from '@/prisma/'
+import { Prisma, GameCategory as PrismaGameCategoryEnum } from '@/generated/client'
 import { protectedProcedure, publicProcedure } from '../lib/orpc'
 // Initialize prisma client (already imported at top)
 
@@ -107,18 +106,18 @@ const mapPrismaGameToSharedGame = (game: GameWithProvider): SharedPrismaGame => 
 };
 
 // Lucky bet info interface
-interface LuckyBetInfo {
-  id: string;
-  userId: string;
-  username: string;
-  avatar: string | null;
-  gameId: string | null;
-  gameName: string | null;
-  winAmount: number;
-  wagerAmount: number;
-  multiplier: number | null;
-  timestamp: Date;
-}
+// interface LuckyBetInfo {
+//   id: string;
+//   userId: string;
+//   username: string;
+//   avatar: string | null;
+//   gameId: string | null;
+//   gameName: string | null;
+//   winAmount: number;
+//   wagerAmount: number;
+//   multiplier: number | null;
+//   timestamp: Date;
+// }
 
 export const gameRouter = {
   getGameCategories: publicProcedure
@@ -182,7 +181,7 @@ export const gameRouter = {
         ]
       }
       if (category) {
-        whereClause.category = category
+        whereClause.category = category as PrismaGameCategoryEnum
       }
       if (provider) {
         // Assuming provider name is stored on the Game model or via relation
@@ -394,7 +393,7 @@ export const gameRouter = {
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * limit,
         take: limit,
-      })
+      }) as any[]
 
       const records: GameHistoryItem[] = spins.map((spin) => {
         // You need to parse spin.spinData to get bet, win, multiplier etc.
@@ -470,7 +469,7 @@ export const gameRouter = {
             },
           },
         },
-      })
+      }) as any[]
 
       interface LuckyBetInfo {
         id: string;
@@ -483,7 +482,7 @@ export const gameRouter = {
         wagerAmount: number;
         multiplier: number | null;
         timestamp: Date;
-      }
+      } 
       const userBestSpins = new Map<string, LuckyBetInfo>();
 
       for (const spin of rawLuckyBetsData) {
@@ -518,7 +517,7 @@ export const gameRouter = {
       // Convert map values to array and take the top N for display
       const luckyBets = Array.from(userBestSpins.values())
         .sort((a, b) => (b.multiplier ?? 0) - (a.multiplier ?? 0)) // Sort by multiplier descending
-        .slice(0, finalDisplayLimit); // Take top N
+        .slice(0, finalDisplayLimit) as any[] // Take top N
 
       // --- Fetch High Rollers (users with highest total wagered in last 7 days) ---
       // This requires aggregating game session data per user.
@@ -551,7 +550,7 @@ export const gameRouter = {
           totalWagered: 'desc', // Initial sort by total wagered
         },
         take: highRollersFetchLimit, // Fetch more initially
-      });
+      }) as any[]
 
       const userTotalWagers = new Map<string, { totalWagered: number; lastActivity: Date; username: string | null; avatar: string | null }>();
 
@@ -584,21 +583,23 @@ export const gameRouter = {
           avatar: data.avatar,
           totalWagered: data.totalWagered,
           lastActivity: data.lastActivity,
-        }))
+        })) 
         .sort((a, b) => b.totalWagered - a.totalWagered) // Sort by total wagered descending
-        .slice(0, finalDisplayLimit); // Take top N
+        .slice(0, finalDisplayLimit)as any[] // Take top N
 
       return {
         lucky_bets: luckyBets,
         high_rollers: highRollers,
       };
     } catch (error) {
-      logger.error('Failed to fetch game big wins', { error });
+      console.error('Failed to fetch game big wins', { error });
       // Return an empty result to satisfy the return type
       return {
         lucky_bets: [],
         high_rollers: [],
-
+      }
+    }
+  }),
   getFavoriteGames: protectedProcedure
     .output(z.array(z.string()))
     .handler(async (): Promise<string[]> => {
@@ -611,46 +612,46 @@ export const gameRouter = {
     .handler(async (): Promise<{ success: boolean }> => ({
       success: true,
     })),
-});
-
-// Helper function for processing lucky bets
-async function processLuckyBets(rawLuckyBetsData: any[]): Promise<LuckyBetInfo[]> {
-  const userBestSpins = new Map<string, LuckyBetInfo>();
-
-  for (const spin of rawLuckyBetsData) {
-    if (!spin.gameSession?.userId || !spin.gameSession.refferenceToUserProfile) {
-      continue;
-    }
-
-    const userId = spin.gameSession.userId;
-    const winAmount = spin.grossWinAmount;
-    const wagerAmount = spin.wagerAmount;
-    const multiplier = wagerAmount > 0 ? winAmount / wagerAmount : null;
-
-    const existingBestSpin = userBestSpins.get(userId);
-
-    if (!existingBestSpin || (multiplier !== null && (!existingBestSpin.multiplier || multiplier > existingBestSpin.multiplier))) {
-      userBestSpins.set(userId, {
-        id: spin.id,
-        userId: userId,
-        username: spin.gameSession.refferenceToUserProfile.username,
-        avatar: spin.gameSession.refferenceToUserProfile.avatar,
-        gameId: spin.gameSession.game?.id ?? null,
-        gameName: spin.gameSession.game?.name ?? null,
-        winAmount: winAmount,
-        wagerAmount: wagerAmount,
-        multiplier: multiplier,
-        timestamp: spin.createdAt,
-      });
-    }
+// });
   }
+// Helper function for processing lucky bets
+// async function processLuckyBets(rawLuckyBetsData: any[]): Promise<LuckyBetInfo[]> {
+//   const userBestSpins = new Map<string, LuckyBetInfo>();
 
-  return Array.from(userBestSpins.values())
-    .sort((a, b) => (b.multiplier ?? 0) - (a.multiplier ?? 0))
-    .slice(0, 10);
-})
+//   for (const spin of rawLuckyBetsData) {
+//     if (!spin.gameSession?.userId || !spin.gameSession.refferenceToUserProfile) {
+//       continue;
+//     }
 
-      return { success: true } // Placeholder
+//     const userId = spin.gameSession.userId;
+//     const winAmount = spin.grossWinAmount;
+//     const wagerAmount = spin.wagerAmount;
+//     const multiplier = wagerAmount > 0 ? winAmount / wagerAmount : null;
 
-}
-}
+//     const existingBestSpin = userBestSpins.get(userId);
+
+//     if (!existingBestSpin || (multiplier !== null && (!existingBestSpin.multiplier || multiplier > existingBestSpin.multiplier))) {
+//       userBestSpins.set(userId, {
+//         id: spin.id,
+//         userId: userId,
+//         username: spin.gameSession.refferenceToUserProfile.username,
+//         avatar: spin.gameSession.refferenceToUserProfile.avatar,
+//         gameId: spin.gameSession.game?.id ?? null,
+//         gameName: spin.gameSession.game?.name ?? null,
+//         winAmount: winAmount,
+//         wagerAmount: wagerAmount,
+//         multiplier: multiplier,
+//         timestamp: spin.createdAt,
+//       });
+//     }
+//   // }
+
+//   return Array.from(userBestSpins.values())
+//     .sort((a, b) => (b.multiplier ?? 0) - (a.multiplier ?? 0))
+//     .slice(0, 10);
+// // })
+
+//       return { success: true } // Placeholder
+
+// }
+// // }

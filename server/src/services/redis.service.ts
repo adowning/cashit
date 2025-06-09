@@ -23,6 +23,7 @@ export const CACHE_KEYS = {
   USER_PROFILE: 'user_profile',
   GAME: 'game',
   GAME_SESSION: 'game_session',
+  GAME_SETTINGS: 'game_settings',
   WALLET: 'wallet',
   PROVIDER_CONFIG: 'provider_config',
   JACKPOTS: 'jackpots',
@@ -409,9 +410,19 @@ export class RedisCacheService {
     return session
   }
 
+  async getGameSettings( gameName: string): Promise<any | null> {
+    const session = await this.get(CACHE_KEYS.GAME_SETTINGS, gameName)
+    if (session) this.metrics.hits++
+    else this.metrics.misses++
+    return session
+  }
+
   async setGameSession(userId: string, gameId: string, session: any): Promise<boolean> {
     const sessionKey = `${userId}:${gameId}`
     return this.set(CACHE_KEYS.GAME_SESSION, sessionKey, session, CACHE_TTL.GAME_SESSION)
+  }
+  async setGameSettings( gameName: string, settings: any ): Promise<boolean> {
+    return this.set(CACHE_KEYS.GAME_SETTINGS, gameName, settings, CACHE_TTL.GAME_SESSION)
   }
 
   async getProviderConfig(providerName: string): Promise<any | null> {

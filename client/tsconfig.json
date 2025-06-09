@@ -1,6 +1,7 @@
 {
   "compilerOptions": {
     "target": "ESNext",
+    "composite": true,
     "useDefineForClassFields": true,
     "module": "ESNext",
     "moduleResolution": "bundler",
@@ -16,7 +17,6 @@
       "DOM.Iterable"
     ],
     "skipLibCheck": true,
-    "noEmit": true,
     "baseUrl": ".",
     "paths": {
       "@/*": [
